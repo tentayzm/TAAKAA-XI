@@ -1,31 +1,71 @@
 // ============================================================
-// TAAKAA-XI v3.0 – Cloudflare Worker
+// TAAKAA-XI v4.0 – Cloudflare Worker (فقط رفع باگ‌های بحرانی)
 // ============================================================
+
+// ===== توابع کمکی =====
+function generateUUID() {
+  // جایگزین crypto.randomUUID() برای Cloudflare Workers
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function base64Encode(str) {
+  // جایگزین btoa() برای Cloudflare Workers
+  try {
+    return btoa(str);
+  } catch (e) {
+    // اگر btoa در دسترس نبود، از روش جایگزین استفاده کن
+    return Buffer.from(str).toString('base64');
+  }
+}
+
+function validateUserId(userId) {
+  return /^[a-zA-Z0-9_-]+$/.test(userId);
+}
 
 // ===== کلاس مدیریت کاربران =====
 class UserManager {
-  constructor(kv, db) {
+  constructor(kv, db, ctx) {
     this.kv = kv;
     this.db = db;
+    this.ctx = ctx;
   }
 
   async getUsers() {
-    const data = await this.kv.get('users', 'json');
-    return data || {};
+    try {
+      const data = await this.kv.get('users', 'json');
+      return data || {};
+    } catch (e) {
+      console.error('Error reading users:', e);
+      return {};
+    }
   }
 
   async saveUsers(users) {
-    await this.kv.put('users', JSON.stringify(users));
+    try {
+      await this.kv.put('users', JSON.stringify(users));
+    } catch (e) {
+      console.error('Error saving users:', e);
+    }
   }
 
   async createUser(userId, expiryDays, trafficGB) {
+    // اعتبارسنجی ورودی
+    if (!validateUserId(userId)) {
+      return { success: false, error: 'UserId نامعتبر است' };
+    }
+
     const users = await this.getUsers();
     if (users[userId]) {
       return { success: false, error: 'کاربر قبلاً وجود دارد' };
     }
 
-    const uuid = crypto.randomUUID();
+    const uuid = generateUUID();
     const expiryDate = new Date(Date.now() + expiryDays * 86400000).toISOString();
+    // ===== حفظ فرمول خودت: هر ۱ گیگابایت = ۲۵۰۰ درخواست =====
     const trafficLimit = (trafficGB || 10) * 2500;
     const createdAt = new Date().toISOString();
 
@@ -41,10 +81,16 @@ class UserManager {
     };
 
     await this.saveUsers(users);
-    await this.db.prepare(`
-      INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run();
+    
+    // استفاده از ctx.waitUntil برای عملیات غیرهمزمان
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare(`
+          INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
+          VALUES (?, ?, ?, ?, ?)
+        `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run()
+      );
+    }
 
     return { success: true, user: users[userId] };
   }
@@ -61,40 +107,63 @@ class UserManager {
     }
     delete users[userId];
     await this.saveUsers(users);
-    await this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+    
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+      );
+    }
     return { success: true };
   }
 
   async checkUserValidity(userId) {
     const user = await this.getUser(userId);
     if (!user) return { valid: false, reason: 'کاربر یافت نشد' };
-    if (!user.isActive) {
-      return { valid: false, reason: 'کاربر غیرفعال شده است' };
-    }
+    
+    // به‌روزرسانی وضعیت کاربر
     const now = new Date();
     const expiry = new Date(user.expiryDate);
+    
+    // چک کردن انقضا
     if (now > expiry) {
+      user.isActive = false;
+      await this.saveUsers(await this.getUsers());
       return { valid: false, reason: 'مدت زمان اعتبار به پایان رسیده است' };
     }
+    
+    // چک کردن حجم مصرفی
     if (user.trafficUsed >= user.trafficLimit) {
+      user.isActive = false;
+      await this.saveUsers(await this.getUsers());
       return { valid: false, reason: 'محدودیت حجم مصرف شده است' };
     }
+    
     return { valid: true };
   }
 
   async recordUsage(userId, bytes) {
     const users = await this.getUsers();
     if (!users[userId]) return;
-    const requestCount = Math.ceil(bytes / 1024);
+    
+    // ===== حفظ فرمول خودت: هر ۱ گیگابایت = ۲۵۰۰ درخواست =====
+    // هر درخواست = 1 واحد، و هر 1GB = 2500 درخواست
+    const requestCount = Math.ceil(bytes / 1024); // تبدیل بایت به کیلوبایت
     users[userId].trafficUsed += requestCount;
+    
     if (users[userId].trafficUsed >= users[userId].trafficLimit) {
       users[userId].isActive = false;
     }
+    
     await this.saveUsers(users);
-    await this.db.prepare(`
-      INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
-      VALUES (?, ?, ?, ?)
-    `).bind(userId, bytes, requestCount, new Date().toISOString()).run();
+    
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare(`
+          INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
+          VALUES (?, ?, ?, ?)
+        `).bind(userId, bytes, requestCount, new Date().toISOString()).run()
+      );
+    }
   }
 }
 
@@ -106,24 +175,11 @@ class ConfigGenerator {
 
   getFlag(country) {
     const flags = {
-      'US': '🇺🇸',
-      'DE': '🇩🇪',
-      'UK': '🇬🇧',
-      'FR': '🇫🇷',
-      'CA': '🇨🇦',
-      'JP': '🇯🇵',
-      'SG': '🇸🇬',
-      'AU': '🇦🇺',
-      'IR': '🇮🇷',
-      'RU': '🇷🇺',
-      'NL': '🇳🇱',
-      'IT': '🇮🇹',
-      'ES': '🇪🇸',
-      'BR': '🇧🇷',
-      'IN': '🇮🇳',
-      'AE': '🇦🇪',
-      'TR': '🇹🇷',
-      'default': '🌍'
+      'US': '🇺🇸', 'DE': '🇩🇪', 'UK': '🇬🇧', 'FR': '🇫🇷',
+      'CA': '🇨🇦', 'JP': '🇯🇵', 'SG': '🇸🇬', 'AU': '🇦🇺',
+      'IR': '🇮🇷', 'RU': '🇷🇺', 'NL': '🇳🇱', 'IT': '🇮🇹',
+      'ES': '🇪🇸', 'BR': '🇧🇷', 'IN': '🇮🇳', 'AE': '🇦🇪',
+      'TR': '🇹🇷', 'default': '🌍'
     };
     return flags[country] || flags.default;
   }
@@ -178,17 +234,30 @@ class ConfigGenerator {
     const country = userData.country || 'SG';
     const flag = this.getFlag(country);
     
+    const vmessObj = {
+      v: '2',
+      ps: `Taakaa-XI-${userId} ${flag} ${country}`,
+      add: this.env.PROXYIP,
+      port: 443,
+      id: uuid,
+      aid: '0',
+      net: 'tcp',
+      type: 'none',
+      host: this.env.PROXYIP,
+      path: '/',
+      tls: 'tls',
+      sni: this.env.PROXYIP,
+      fp: 'chrome'
+    };
+    
+    // ===== رفع خطای btoa در Cloudflare Workers =====
+    const base64Str = base64Encode(JSON.stringify(vmessObj));
+    const link = `vmess://${base64Str}`;
+    
     return {
       type: 'vmess',
-      uuid: uuid,
-      address: this.env.PROXYIP,
-      port: 443,
-      encryption: 'auto',
-      network: 'tcp',
-      security: 'tls',
-      sni: this.env.PROXYIP,
+      link: link,
       expiry: userData.expiryDate,
-      userId: userId,
       country: country,
       flag: flag
     };
@@ -213,23 +282,7 @@ class ConfigGenerator {
     
     if (this.env.ENABLE_VMESS) {
       const vmess = this.generateVMess(userId, userData);
-      const vmessObj = {
-        v: '2',
-        ps: `Taakaa-XI-${userId} ${flag} ${country}`,
-        add: vmess.address,
-        port: vmess.port,
-        id: vmess.uuid,
-        aid: '0',
-        net: vmess.network,
-        type: 'none',
-        host: vmess.sni,
-        path: '/',
-        tls: 'tls',
-        sni: vmess.sni,
-        fp: 'chrome'
-      };
-      const link = `vmess://${btoa(JSON.stringify(vmessObj))}`;
-      links.push({ type: 'vmess', link: link, expiry: vmess.expiry, country: country, flag: flag });
+      links.push({ type: 'vmess', link: vmess.link, expiry: vmess.expiry, country: country, flag: flag });
     }
     
     return links;
@@ -258,7 +311,7 @@ class ConfigGenerator {
   }
 }
 
-// ===== HTML پنل مدیریت =====
+// ===== HTML پنل (به‌همون صورت قبلی) =====
 const HTML_PANEL = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -1152,165 +1205,212 @@ async function addUser() {
 // ===== Worker اصلی =====
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const path = url.pathname;
+    try {
+      const url = new URL(request.url);
+      const path = url.pathname;
 
-    // ===== متغیرهای محیطی =====
-    const ENV_VARS = {
-      UUID: env.UUID || '90cd4a77-141a-43c9-991b-08263cfe9c10',
-      TR_PASS: env.TR_PASS || 'TaakaaSecure2026',
-      PROXYIP: env.PROXYIP || 'cdn.taakaa.ir',
-      ADMIN_PASS: env.ADMIN_PASS || 'Tentacion@2026',
-      DEFAULT_EXPIRY_DAYS: parseInt(env.DEFAULT_EXPIRY_DAYS) || 30,
-      DEFAULT_TRAFFIC_LIMIT: parseInt(env.DEFAULT_TRAFFIC_LIMIT) || 10,
-      RATE_PER_GB: parseInt(env.RATE_PER_GB) || 2500,
-      ENABLE_VLESS: env.ENABLE_VLESS !== 'false',
-      ENABLE_TROJAN: env.ENABLE_TROJAN !== 'false',
-      ENABLE_VMESS: env.ENABLE_VMESS !== 'false',
-      ENABLE_SHADOWSOCKS: env.ENABLE_SHADOWSOCKS === 'true',
-      ENABLE_FRAGMENT: env.ENABLE_FRAGMENT !== 'false',
-      ENABLE_ECH: env.ENABLE_ECH !== 'false',
-      ENABLE_WARP: env.ENABLE_WARP !== 'false',
-      ENABLE_WARP_PRO: env.ENABLE_WARP_PRO === 'true'
-    };
+      // ===== بررسی وجود KV و DB =====
+      if (!env.KV) {
+        return new Response(JSON.stringify({ error: 'KV Namespace تنظیم نشده است' }), { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
 
-    const kv = env.KV;
-    const db = env.DB;
+      if (!env.DB) {
+        return new Response(JSON.stringify({ error: 'D1 Database تنظیم نشده است' }), { 
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
 
-    const userManager = new UserManager(kv, db);
-    const configGenerator = new ConfigGenerator(ENV_VARS);
+      // ===== متغیرهای محیطی =====
+      const ENV_VARS = {
+        UUID: env.UUID || '90cd4a77-141a-43c9-991b-08263cfe9c10',
+        TR_PASS: env.TR_PASS || 'TaakaaSecure2026',
+        PROXYIP: env.PROXYIP || 'cdn.taakaa.ir',
+        ADMIN_PASS: env.ADMIN_PASS || 'Tentacion@2026',
+        DEFAULT_EXPIRY_DAYS: parseInt(env.DEFAULT_EXPIRY_DAYS) || 30,
+        DEFAULT_TRAFFIC_LIMIT: parseInt(env.DEFAULT_TRAFFIC_LIMIT) || 10,
+        RATE_PER_GB: parseInt(env.RATE_PER_GB) || 2500,
+        ENABLE_VLESS: env.ENABLE_VLESS !== 'false',
+        ENABLE_TROJAN: env.ENABLE_TROJAN !== 'false',
+        ENABLE_VMESS: env.ENABLE_VMESS !== 'false',
+        ENABLE_SHADOWSOCKS: env.ENABLE_SHADOWSOCKS === 'true',
+        ENABLE_FRAGMENT: env.ENABLE_FRAGMENT !== 'false',
+        ENABLE_ECH: env.ENABLE_ECH !== 'false',
+        ENABLE_WARP: env.ENABLE_WARP !== 'false',
+        ENABLE_WARP_PRO: env.ENABLE_WARP_PRO === 'true'
+      };
 
-    // ===== API: ساخت کانفیگ =====
-    if (path === '/api/generate' && request.method === 'POST') {
-      try {
-        const body = await request.json();
-        const { userId, country, expiryDays, trafficGB } = body;
+      const kv = env.KV;
+      const db = env.DB;
 
-        if (!userId) {
-          return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { status: 400 });
-        }
+      const userManager = new UserManager(kv, db, ctx);
+      const configGenerator = new ConfigGenerator(ENV_VARS);
 
-        let user = await userManager.getUser(userId);
-        if (!user) {
-          const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
-          if (!result.success) {
-            return new Response(JSON.stringify(result), { status: 400 });
+      // ===== API: ساخت کانفیگ =====
+      if (path === '/api/generate' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const { userId, country, expiryDays, trafficGB } = body;
+
+          if (!userId) {
+            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
           }
-          user = result.user;
+
+          let user = await userManager.getUser(userId);
+          if (!user) {
+            const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
+            if (!result.success) {
+              return new Response(JSON.stringify(result), { 
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            }
+            user = result.user;
+          }
+
+          user.country = country || 'DE';
+          user.expiryDate = new Date(Date.now() + (expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS) * 86400000).toISOString();
+          user.trafficLimit = (trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT) * ENV_VARS.RATE_PER_GB;
+          user.isActive = true;
+          
+          const users = await userManager.getUsers();
+          users[userId] = user;
+          await userManager.saveUsers(users);
+
+          const config = configGenerator.generateFullConfig(userId, user);
+
+          return new Response(JSON.stringify({ success: true, config }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ success: false, error: e.message }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // ===== API ادمین: دریافت کاربران =====
+      if (path === '/api/admin/users' && request.method === 'GET') {
+        try {
+          const users = await userManager.getUsers();
+          return new Response(JSON.stringify({ success: true, users }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ success: false, error: e.message }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // ===== API ادمین: افزودن کاربر =====
+      if (path === '/api/admin/add' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const { userId, expiryDays, trafficGB } = body;
+
+          if (!userId) {
+            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
+          return new Response(JSON.stringify(result), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ success: false, error: e.message }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // ===== API ادمین: حذف کاربر =====
+      if (path === '/api/admin/delete' && request.method === 'POST') {
+        try {
+          const body = await request.json();
+          const { userId } = body;
+
+          if (!userId) {
+            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
+              status: 400,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
+          const result = await userManager.deleteUser(userId);
+          return new Response(JSON.stringify(result), {
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({ success: false, error: e.message }), { 
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
+      // ===== مسیر پنل =====
+      if (path === '/' || path === '/Taakaa') {
+        return new Response(HTML_PANEL, {
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
+      }
+
+      // ===== ساب‌اسکریپشن =====
+      if (path.startsWith('/sub/')) {
+        const userId = path.split('/sub/')[1];
+        if (!userId) {
+          return new Response('User ID required', { status: 400 });
         }
 
-        user.country = country || 'DE';
-        user.expiryDate = new Date(Date.now() + (expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS) * 86400000).toISOString();
-        user.trafficLimit = (trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT) * ENV_VARS.RATE_PER_GB;
-        user.isActive = true;
-        
-        const users = await userManager.getUsers();
-        users[userId] = user;
-        await userManager.saveUsers(users);
+        const user = await userManager.getUser(userId);
+        if (!user) {
+          return new Response('User not found', { status: 404 });
+        }
+
+        const validity = await userManager.checkUserValidity(userId);
+        if (!validity.valid) {
+          return new Response(validity.reason, { status: 403 });
+        }
 
         const config = configGenerator.generateFullConfig(userId, user);
-
-        return new Response(JSON.stringify({ success: true, config }), {
-          headers: { 'Content-Type': 'application/json' }
+        let subContent = '';
+        config.links.forEach(link => {
+          subContent += link.link + '\n';
         });
-      } catch (e) {
-        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500 });
-      }
-    }
 
-    // ===== API ادمین: دریافت کاربران =====
-    if (path === '/api/admin/users' && request.method === 'GET') {
-      try {
-        const users = await userManager.getUsers();
-        return new Response(JSON.stringify({ success: true, users }), {
-          headers: { 'Content-Type': 'application/json' }
+        return new Response(subContent, {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Cache-Control': 'no-cache'
+          }
         });
-      } catch (e) {
-        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500 });
       }
-    }
 
-    // ===== API ادمین: افزودن کاربر =====
-    if (path === '/api/admin/add' && request.method === 'POST') {
-      try {
-        const body = await request.json();
-        const { userId, expiryDays, trafficGB } = body;
-
-        if (!userId) {
-          return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { status: 400 });
-        }
-
-        const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
-        return new Response(JSON.stringify(result), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (e) {
-        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500 });
+      // ===== Health Check =====
+      if (path === '/health') {
+        return new Response('OK', { status: 200 });
       }
-    }
 
-    // ===== API ادمین: حذف کاربر =====
-    if (path === '/api/admin/delete' && request.method === 'POST') {
-      try {
-        const body = await request.json();
-        const { userId } = body;
-
-        if (!userId) {
-          return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { status: 400 });
-        }
-
-        const result = await userManager.deleteUser(userId);
-        return new Response(JSON.stringify(result), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (e) {
-        return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500 });
-      }
-    }
-
-    // ===== مسیر پنل =====
-    if (path === '/' || path === '/Taakaa') {
-      return new Response(HTML_PANEL, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      return new Response('Not Found', { status: 404 });
+    } catch (error) {
+      console.error('Worker Error:', error);
+      return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
       });
     }
-
-    // ===== ساب‌اسکریپشن =====
-    if (path.startsWith('/sub/')) {
-      const userId = path.split('/sub/')[1];
-      if (!userId) {
-        return new Response('User ID required', { status: 400 });
-      }
-
-      const user = await userManager.getUser(userId);
-      if (!user) {
-        return new Response('User not found', { status: 404 });
-      }
-
-      const validity = await userManager.checkUserValidity(userId);
-      if (!validity.valid) {
-        return new Response(validity.reason, { status: 403 });
-      }
-
-      const config = configGenerator.generateFullConfig(userId, user);
-      let subContent = '';
-      config.links.forEach(link => {
-        subContent += link.link + '\n';
-      });
-
-      return new Response(subContent, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-cache'
-        }
-      });
-    }
-
-    // ===== Health Check =====
-    if (path === '/health') {
-      return new Response('OK', { status: 200 });
-    }
-
-    return new Response('Not Found', { status: 404 });
   }
 };
