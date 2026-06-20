@@ -1,41 +1,6 @@
 // ============================================================
 // TAAKAA-XI v3.0 – Cloudflare Worker
 // ============================================================
-// قابلیت‌ها:
-// ✅ VLESS / Trojan / VMess / Shadowsocks
-// ✅ محدودیت حجم (بر اساس درخواست)
-// ✅ محدودیت زمان (تاریخ انقضا)
-// ✅ چند کاربره با UUID مجزا
-// ✅ ذخیره‌سازی در KV + D1
-// ✅ IP شخصی + IP اسکنر
-// ✅ پنل مدیریت کامل با ظاهر مدرن
-// ✅ پرچم منطقه روی کانفیگ‌ها
-// ✅ مشاوره آفلاین برای اپراتورها
-// ✅ Fragment, ECH, WARP, WARP Pro
-// ✅ مناسب برای فروش
-// ============================================================
-
-// ===== متغیرهای محیطی =====
-const ENV = {
-  UUID: env.UUID || '90cd4a77-141a-43c9-991b-08263cfe9c10',
-  TR_PASS: env.TR_PASS || 'TaakaaSecure2026',
-  PROXYIP: env.PROXYIP || 'cdn.taakaa.ir',
-  ADMIN_PASS: env.ADMIN_PASS || 'Tentacion@2026',
-  DEFAULT_EXPIRY_DAYS: parseInt(env.DEFAULT_EXPIRY_DAYS) || 30,
-  DEFAULT_TRAFFIC_LIMIT: parseInt(env.DEFAULT_TRAFFIC_LIMIT) || 10,
-  RATE_PER_GB: parseInt(env.RATE_PER_GB) || 2500,
-  ENABLE_VLESS: env.ENABLE_VLESS !== 'false',
-  ENABLE_TROJAN: env.ENABLE_TROJAN !== 'false',
-  ENABLE_VMESS: env.ENABLE_VMESS !== 'false',
-  ENABLE_SHADOWSOCKS: env.ENABLE_SHADOWSOCKS === 'true',
-  ENABLE_FRAGMENT: env.ENABLE_FRAGMENT !== 'false',
-  ENABLE_ECH: env.ENABLE_ECH !== 'false',
-  ENABLE_WARP: env.ENABLE_WARP !== 'false',
-  ENABLE_WARP_PRO: env.ENABLE_WARP_PRO === 'true',
-  ALLOW_IP_SCANNING: env.ALLOW_IP_SCANNING !== 'false',
-  BLOCK_IRAN_IPS: env.BLOCK_IRAN_IPS !== 'false',
-  AUTO_BAN_MALICIOUS: env.AUTO_BAN_MALICIOUS !== 'false'
-};
 
 // ===== کلاس مدیریت کاربران =====
 class UserManager {
@@ -61,7 +26,7 @@ class UserManager {
 
     const uuid = crypto.randomUUID();
     const expiryDate = new Date(Date.now() + expiryDays * 86400000).toISOString();
-    const trafficLimit = (trafficGB || ENV.DEFAULT_TRAFFIC_LIMIT) * ENV.RATE_PER_GB;
+    const trafficLimit = (trafficGB || 10) * 2500;
     const createdAt = new Date().toISOString();
 
     users[userId] = {
@@ -283,9 +248,9 @@ class ConfigGenerator {
       trafficLimit: trafficLimit,
       trafficUsed: trafficUsed,
       trafficRemaining: trafficRemaining,
-      trafficLimitGB: Math.round(trafficLimit / this.env.RATE_PER_GB * 100) / 100,
-      trafficUsedGB: Math.round(trafficUsed / this.env.RATE_PER_GB * 100) / 100,
-      trafficRemainingGB: Math.round(trafficRemaining / this.env.RATE_PER_GB * 100) / 100,
+      trafficLimitGB: Math.round(trafficLimit / 2500 * 100) / 100,
+      trafficUsedGB: Math.round(trafficUsed / 2500 * 100) / 100,
+      trafficRemainingGB: Math.round(trafficRemaining / 2500 * 100) / 100,
       expiryDate: new Date(expiry).toLocaleDateString('fa-IR'),
       links: links,
       isActive: trafficRemaining > 0 && new Date(expiry) > new Date()
@@ -293,9 +258,8 @@ class ConfigGenerator {
   }
 }
 
-// ===== HTML پنل مدیریت (مدرن و شخصی‌سازی‌شده) =====
-const HTML_PANEL = `
-<!DOCTYPE html>
+// ===== HTML پنل مدیریت =====
+const HTML_PANEL = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -715,7 +679,6 @@ const HTML_PANEL = `
     <div class="badge">✨ نسخه ۳.۰ | مدرن &amp; شخصی‌سازی‌شده</div>
   </div>
 
-  <!-- ===== بخش اصلی: ساخت کانفیگ ===== -->
   <div class="grid-2">
     <div class="card">
       <h3><span class="icon">🔑</span> ساخت کانفیگ جدید</h3>
@@ -774,7 +737,6 @@ const HTML_PANEL = `
     </div>
   </div>
 
-  <!-- ===== بخش مشاوره آفلاین ===== -->
   <div class="card" style="margin-top:24px;">
     <h3><span class="icon">📡</span> مشاوره آفلاین</h3>
     <p style="color:#888; font-size:0.85rem; margin-bottom:16px;">اپراتور خود را انتخاب کنید تا بهترین کانفیگ را پیشنهاد بگیرید</p>
@@ -799,7 +761,6 @@ const HTML_PANEL = `
     </div>
   </div>
 
-  <!-- ===== بخش ادمین ===== -->
   <div class="admin-section">
     <div class="admin-login">
       <input type="password" id="adminPass" placeholder="🔐 رمز پنل">
@@ -843,10 +804,8 @@ const HTML_PANEL = `
 </div>
 
 <script>
-// ===== تنظیمات =====
 const ADMIN_PASS = 'Tentacion@2026';
 
-// ===== دیتابیس پیشنهادات اپراتور =====
 const OPERATOR_SUGGESTIONS = {
   'mobin-net': {
     name: 'مبین نت',
@@ -910,7 +869,6 @@ const OPERATOR_SUGGESTIONS = {
   }
 };
 
-// ===== تابع نمایش پیام وضعیت =====
 function showStatus(msg, type = 'info') {
   const div = document.getElementById('statusMsg');
   div.className = 'status-msg ' + type;
@@ -918,7 +876,6 @@ function showStatus(msg, type = 'info') {
   setTimeout(() => { div.className = ''; div.textContent = ''; }, 8000);
 }
 
-// ===== تابع کپی =====
 function copyText(text) {
   navigator.clipboard.writeText(text).then(() => {
     showStatus('✅ کپی شد!', 'success');
@@ -927,7 +884,6 @@ function copyText(text) {
   });
 }
 
-// ===== ساخت کانفیگ =====
 async function generateConfig() {
   const userId = document.getElementById('userId').value.trim();
   const country = document.getElementById('countrySelect').value;
@@ -958,12 +914,10 @@ async function generateConfig() {
   }
 }
 
-// ===== نمایش اطلاعات کاربر =====
 function showUserInfo(config) {
   const div = document.getElementById('userInfo');
   let html = '<div style="text-align:right;">';
   
-  // پرچم و وضعیت
   const statusIcon = config.isActive ? '🟢' : '🔴';
   const statusText = config.isActive ? 'فعال' : 'غیرفعال';
   
@@ -1016,7 +970,6 @@ function showUserInfo(config) {
   div.innerHTML = html;
 }
 
-// ===== مشاوره آفلاین =====
 function getConsultation() {
   const operator = document.getElementById('operatorSelect').value;
   const resultDiv = document.getElementById('consultationResult');
@@ -1067,7 +1020,6 @@ function getConsultation() {
   `;
 }
 
-// ===== ورود به پنل ادمین =====
 function loginAdmin() {
   const pass = document.getElementById('adminPass').value;
   if (pass === ADMIN_PASS) {
@@ -1080,7 +1032,6 @@ function loginAdmin() {
   }
 }
 
-// ===== بارگذاری دیتای ادمین =====
 async function loadAdminData() {
   try {
     const res = await fetch('/api/admin/users');
@@ -1094,7 +1045,6 @@ async function loadAdminData() {
   }
 }
 
-// ===== نمایش لیست کاربران =====
 function renderUserList(users) {
   const div = document.getElementById('userList');
   if (!users || Object.keys(users).length === 0) {
@@ -1121,7 +1071,6 @@ function renderUserList(users) {
   div.innerHTML = html;
 }
 
-// ===== نمایش آمار =====
 function renderStats(data) {
   const div = document.getElementById('statsContent');
   const users = data.users || {};
@@ -1147,7 +1096,6 @@ function renderStats(data) {
   `;
 }
 
-// ===== حذف کاربر =====
 async function deleteUser(userId) {
   if (!confirm(`آیا از حذف کاربر ${userId} مطمئن هستید؟`)) return;
   
@@ -1169,7 +1117,6 @@ async function deleteUser(userId) {
   }
 }
 
-// ===== افزودن کاربر =====
 async function addUser() {
   const userId = document.getElementById('newUserId').value.trim();
   const expiryDays = parseInt(document.getElementById('newExpiryDays').value);
@@ -1200,8 +1147,7 @@ async function addUser() {
 }
 </script>
 </body>
-</html>
-`;
+</html>`;
 
 // ===== Worker اصلی =====
 export default {
