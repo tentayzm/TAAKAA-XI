@@ -1,5 +1,5 @@
 // ============================================================
-// TAAKAA-XI v5.0 – Cloudflare Worker (نسخه نهایی و بی‌نقص)
+// TAAKAA-XI v5.1 – Cloudflare Worker (نسخه نهایی)
 // ============================================================
 // آدرس پنل: YOUR_WORKER.workers.dev/TaaKaa
 // رمز پیش‌فرض: Tentacion@2026 (قابل تغییر در متغیر محیطی ADMIN_PASS)
@@ -24,11 +24,15 @@ function generateUUID() {
 
 function base64Encode(str) {
   try {
+    return btoa(str);
+  } catch (e) {
     const encoder = new TextEncoder();
     const data = encoder.encode(str);
-    return btoa(String.fromCharCode(...data));
-  } catch (e) {
-    return btoa(str);
+    let binary = '';
+    for (let i = 0; i < data.length; i++) {
+      binary += String.fromCharCode(data[i]);
+    }
+    return btoa(binary);
   }
 }
 
@@ -55,9 +59,10 @@ function createCorsResponse(data, status = 200) {
 
 // ===== کلاس مدیریت کاربران =====
 class UserManager {
-  constructor(kv, db) {
+  constructor(kv, db, ctx) {
     this.kv = kv;
     this.db = db;
+    this.ctx = ctx;
   }
 
   async getUsers() {
@@ -106,13 +111,13 @@ class UserManager {
 
     await this.saveUsers(users);
     
-    try {
-      await this.db.prepare(`
-        INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
-        VALUES (?, ?, ?, ?, ?)
-      `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run();
-    } catch (e) {
-      console.error('DB insert error:', e);
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare(`
+          INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
+          VALUES (?, ?, ?, ?, ?)
+        `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run()
+      );
     }
 
     return { success: true, user: users[userId] };
@@ -131,10 +136,10 @@ class UserManager {
     delete users[userId];
     await this.saveUsers(users);
     
-    try {
-      await this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
-    } catch (e) {
-      console.error('DB delete error:', e);
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
+      );
     }
     return { success: true };
   }
@@ -180,13 +185,13 @@ class UserManager {
     
     await this.saveUsers(users);
     
-    try {
-      await this.db.prepare(`
-        INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
-        VALUES (?, ?, ?, ?)
-      `).bind(userId, bytes, requestCount, new Date().toISOString()).run();
-    } catch (e) {
-      console.error('Usage log error:', e);
+    if (this.ctx) {
+      this.ctx.waitUntil(
+        this.db.prepare(`
+          INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
+          VALUES (?, ?, ?, ?)
+        `).bind(userId, bytes, requestCount, new Date().toISOString()).run()
+      );
     }
   }
 }
@@ -260,7 +265,7 @@ class ConfigGenerator {
     
     const vmessObj = {
       v: '2',
-      ps: `Taakaa-XI-${userId} ${flag} ${country}`,
+      ps: 'Taakaa-XI-' + userId + ' ' + flag + ' ' + country,
       add: this.env.PROXYIP,
       port: 443,
       id: uuid,
@@ -275,7 +280,7 @@ class ConfigGenerator {
     };
     
     const base64Str = base64Encode(JSON.stringify(vmessObj));
-    const link = `vmess://${base64Str}`;
+    const link = 'vmess://' + base64Str;
     
     return {
       type: 'vmess',
@@ -293,13 +298,13 @@ class ConfigGenerator {
     
     if (this.env.ENABLE_VLESS) {
       const vless = this.generateVLESS(userId, userData);
-      const link = `vless://${vless.uuid}@${vless.address}:${vless.port}?encryption=${vless.encryption}&flow=${vless.flow}&security=${vless.security}&sni=${vless.sni}&fp=chrome&type=${vless.network}&path=/&fragment=${vless.fragment}&ech=${vless.ech}&warp=${vless.warp}#${encodeURIComponent('Taakaa-XI-' + userId + ' ' + flag + ' ' + country)}`;
+      const link = 'vless://' + vless.uuid + '@' + vless.address + ':' + vless.port + '?encryption=' + vless.encryption + '&flow=' + vless.flow + '&security=' + vless.security + '&sni=' + vless.sni + '&fp=chrome&type=' + vless.network + '&path=/&fragment=' + vless.fragment + '&ech=' + vless.ech + '&warp=' + vless.warp + '#' + encodeURIComponent('Taakaa-XI-' + userId + ' ' + flag + ' ' + country);
       links.push({ type: 'vless', link: link, expiry: vless.expiry, country: country, flag: flag });
     }
     
     if (this.env.ENABLE_TROJAN) {
       const trojan = this.generateTrojan(userId, userData);
-      const link = `trojan://${trojan.password}@${trojan.address}:${trojan.port}?sni=${trojan.sni}&security=${trojan.security}&fragment=${trojan.fragment}&ech=${trojan.ech}#${encodeURIComponent('Taakaa-XI-' + userId + ' ' + flag + ' ' + country)}`;
+      const link = 'trojan://' + trojan.password + '@' + trojan.address + ':' + trojan.port + '?sni=' + trojan.sni + '&security=' + trojan.security + '&fragment=' + trojan.fragment + '&ech=' + trojan.ech + '#' + encodeURIComponent('Taakaa-XI-' + userId + ' ' + flag + ' ' + country);
       links.push({ type: 'trojan', link: link, expiry: trojan.expiry, country: country, flag: flag });
     }
     
@@ -341,44 +346,36 @@ const HTML_PANEL = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Taakaa-XI | پنل مدیریت</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
     body {
       font-family: 'Inter', 'Segoe UI', sans-serif;
       background: #0a0a0f;
       color: #e0e0e0;
       min-height: 100vh;
       padding: 20px;
-      background-image: 
-        radial-gradient(ellipse at 10% 20%, rgba(255,107,107,0.05) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 80%, rgba(238,90,36,0.05) 0%, transparent 50%);
+      background-image: radial-gradient(ellipse at 10% 20%, rgba(255,107,107,0.05) 0%, transparent 50%), radial-gradient(ellipse at 90% 80%, rgba(238,90,36,0.05) 0%, transparent 50%);
     }
-    
     .container {
       max-width: 1200px;
       margin: 0 auto;
       background: rgba(26, 26, 35, 0.8);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border-radius: 24px;
       padding: 30px;
       border: 1px solid rgba(255,255,255,0.06);
       box-shadow: 0 20px 60px rgba(0,0,0,0.8);
     }
-    
     .login-box {
       max-width: 400px;
       margin: 100px auto;
       text-align: center;
     }
-    
     .login-box h2 {
       margin-bottom: 20px;
       color: #fff;
     }
-    
     .login-box input {
       width: 100%;
       padding: 12px 16px;
@@ -389,12 +386,10 @@ const HTML_PANEL = `<!DOCTYPE html>
       font-size: 1rem;
       margin-bottom: 12px;
     }
-    
     .login-box input:focus {
       border-color: #ff6b6b;
       outline: none;
     }
-    
     .login-box .btn {
       width: 100%;
       padding: 12px;
@@ -406,24 +401,20 @@ const HTML_PANEL = `<!DOCTYPE html>
       cursor: pointer;
       font-size: 1rem;
     }
-    
     .login-box .btn:hover {
       opacity: 0.8;
     }
-    
     .login-box .error {
       color: #ff4444;
       margin-top: 10px;
       display: none;
     }
-    
     .header {
       text-align: center;
       margin-bottom: 30px;
       padding-bottom: 20px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    
     .header .logo {
       font-size: 2.8rem;
       font-weight: 700;
@@ -433,19 +424,16 @@ const HTML_PANEL = `<!DOCTYPE html>
       -webkit-text-fill-color: transparent;
       animation: gradientShift 4s ease infinite;
     }
-    
     @keyframes gradientShift {
       0%, 100% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
     }
-    
     .header .subtitle {
       color: #888;
       font-size: 1rem;
       margin-top: 4px;
       letter-spacing: 2px;
     }
-    
     .header .badge {
       display: inline-block;
       background: rgba(255,107,107,0.15);
@@ -456,13 +444,11 @@ const HTML_PANEL = `<!DOCTYPE html>
       color: #ff6b6b;
       margin-top: 8px;
     }
-    
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
-    
     .card {
       background: rgba(16, 16, 24, 0.6);
       border-radius: 16px;
@@ -470,12 +456,10 @@ const HTML_PANEL = `<!DOCTYPE html>
       border: 1px solid rgba(255,255,255,0.05);
       transition: all 0.3s ease;
     }
-    
     .card:hover {
       border-color: rgba(255,107,107,0.15);
       box-shadow: 0 8px 30px rgba(255,107,107,0.03);
     }
-    
     .card h3 {
       color: #fff;
       font-size: 1.1rem;
@@ -484,15 +468,12 @@ const HTML_PANEL = `<!DOCTYPE html>
       align-items: center;
       gap: 8px;
     }
-    
     .card h3 .icon {
       font-size: 1.3rem;
     }
-    
     .form-group {
       margin-bottom: 14px;
     }
-    
     .form-group label {
       color: #aaa;
       font-size: 0.8rem;
@@ -502,7 +483,6 @@ const HTML_PANEL = `<!DOCTYPE html>
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
     .form-group input, .form-group select {
       width: 100%;
       padding: 10px 14px;
@@ -513,17 +493,14 @@ const HTML_PANEL = `<!DOCTYPE html>
       font-size: 0.95rem;
       transition: all 0.3s;
     }
-    
     .form-group input:focus, .form-group select:focus {
       border-color: #ff6b6b;
       outline: none;
       box-shadow: 0 0 20px rgba(255,107,107,0.05);
     }
-    
     .form-group input::placeholder {
       color: #555;
     }
-    
     .btn {
       background: linear-gradient(135deg, #ff6b6b, #ee5a24);
       border: none;
@@ -536,26 +513,21 @@ const HTML_PANEL = `<!DOCTYPE html>
       font-size: 0.95rem;
       width: 100%;
     }
-    
     .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(255,107,107,0.25);
     }
-    
     .btn:active {
       transform: scale(0.98);
     }
-    
     .btn-secondary {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.08);
     }
-    
     .btn-secondary:hover {
       background: rgba(255,255,255,0.1);
       box-shadow: none;
     }
-    
     .link-box {
       background: rgba(0,0,0,0.5);
       padding: 10px 14px;
@@ -567,12 +539,10 @@ const HTML_PANEL = `<!DOCTYPE html>
       border: 1px solid rgba(0,255,136,0.05);
       font-family: 'Monaco', 'Menlo', monospace;
     }
-    
     .link-box .flag {
       font-size: 1.1rem;
       margin-right: 6px;
     }
-    
     .user-item {
       display: flex;
       justify-content: space-between;
@@ -584,16 +554,13 @@ const HTML_PANEL = `<!DOCTYPE html>
       border: 1px solid rgba(255,255,255,0.03);
       transition: all 0.2s;
     }
-    
     .user-item:hover {
       background: rgba(0,0,0,0.5);
     }
-    
     .user-item .id {
       color: #aaa;
       font-size: 0.85rem;
     }
-    
     .user-item .status-badge {
       padding: 2px 12px;
       border-radius: 12px;
@@ -602,25 +569,21 @@ const HTML_PANEL = `<!DOCTYPE html>
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
     .status-badge.active {
       background: rgba(0,255,136,0.15);
       color: #00ff88;
       border: 1px solid rgba(0,255,136,0.2);
     }
-    
     .status-badge.expired {
       background: rgba(255,68,68,0.15);
       color: #ff4444;
       border: 1px solid rgba(255,68,68,0.2);
     }
-    
     .status-badge.finished {
       background: rgba(255,170,0,0.15);
       color: #ffaa00;
       border: 1px solid rgba(255,170,0,0.2);
     }
-    
     .del-btn {
       background: rgba(255,68,68,0.2);
       border: none;
@@ -631,67 +594,55 @@ const HTML_PANEL = `<!DOCTYPE html>
       transition: all 0.2s;
       font-size: 0.75rem;
     }
-    
     .del-btn:hover {
       background: rgba(255,68,68,0.4);
     }
-    
     .user-list {
       max-height: 400px;
       overflow-y: auto;
     }
-    
     .user-list::-webkit-scrollbar {
       width: 4px;
     }
-    
     .user-list::-webkit-scrollbar-track {
       background: rgba(255,255,255,0.03);
       border-radius: 4px;
     }
-    
     .user-list::-webkit-scrollbar-thumb {
       background: #ff6b6b;
       border-radius: 4px;
     }
-    
     .status-msg {
       padding: 12px 16px;
       border-radius: 10px;
       margin-top: 12px;
       font-size: 0.9rem;
     }
-    
     .status-msg.success {
       background: rgba(0,255,136,0.08);
       border: 1px solid rgba(0,255,136,0.15);
       color: #00ff88;
     }
-    
     .status-msg.error {
       background: rgba(255,68,68,0.08);
       border: 1px solid rgba(255,68,68,0.15);
       color: #ff4444;
     }
-    
     .status-msg.info {
       background: rgba(255,170,0,0.08);
       border: 1px solid rgba(255,170,0,0.15);
       color: #ffaa00;
     }
-    
     .admin-section {
       margin-top: 30px;
       padding-top: 24px;
       border-top: 1px solid rgba(255,255,255,0.05);
     }
-    
     .admin-login {
       display: flex;
       gap: 12px;
       align-items: center;
     }
-    
     .admin-login input {
       flex: 1;
       padding: 10px 14px;
@@ -701,17 +652,14 @@ const HTML_PANEL = `<!DOCTYPE html>
       color: #fff;
       font-size: 0.95rem;
     }
-    
     .admin-login input:focus {
       border-color: #ff6b6b;
       outline: none;
     }
-    
     .admin-login .btn {
       width: auto;
       padding: 10px 24px;
     }
-    
     .consultation-result {
       margin-top: 16px;
       background: rgba(0,0,0,0.3);
@@ -720,11 +668,9 @@ const HTML_PANEL = `<!DOCTYPE html>
       border: 1px solid rgba(255,255,255,0.05);
       display: none;
     }
-    
     .consultation-result.show {
       display: block;
     }
-    
     .consultation-result .rec-card {
       background: rgba(0,0,0,0.3);
       border-radius: 10px;
@@ -732,20 +678,17 @@ const HTML_PANEL = `<!DOCTYPE html>
       margin: 6px 0;
       border-right: 3px solid #ff6b6b;
     }
-    
     .consultation-result .rec-card .label {
       color: #888;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
     .consultation-result .rec-card .value {
       color: #00ff88;
       font-weight: 600;
       font-size: 0.95rem;
     }
-    
     .copy-btn {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.08);
@@ -756,45 +699,12 @@ const HTML_PANEL = `<!DOCTYPE html>
       font-size: 0.7rem;
       transition: all 0.2s;
     }
-    
     .copy-btn:hover {
       background: rgba(255,255,255,0.12);
       color: #fff;
     }
-    
-    .flag-selector {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin: 8px 0;
-    }
-    
-    .flag-selector .flag-btn {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px;
-      padding: 6px 12px;
-      color: #aaa;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.8rem;
-    }
-    
-    .flag-selector .flag-btn:hover,
-    .flag-selector .flag-btn.active {
-      background: rgba(255,107,107,0.15);
-      border-color: #ff6b6b;
-      color: #fff;
-    }
-    
-    #adminPanel {
-      display: none;
-    }
-    
-    #loginSection {
-      display: block;
-    }
-    
+    #adminPanel { display: none; }
+    #loginSection { display: block; }
     @media (max-width: 768px) {
       .grid-2 { grid-template-columns: 1fr; }
       .container { padding: 16px; }
@@ -806,7 +716,6 @@ const HTML_PANEL = `<!DOCTYPE html>
 </head>
 <body>
 <div class="container" id="app">
-  <!-- ===== بخش لاگین ===== -->
   <div id="loginSection">
     <div class="login-box">
       <h2>🔐 ورود به پنل</h2>
@@ -815,15 +724,12 @@ const HTML_PANEL = `<!DOCTYPE html>
       <div class="error" id="loginError">❌ رمز عبور اشتباه است!</div>
     </div>
   </div>
-
-  <!-- ===== بخش اصلی پنل ===== -->
   <div id="adminPanel">
     <div class="header">
       <div class="logo">🚀 Taakaa-XI</div>
       <div class="subtitle">پنل مدیریت کانفیگ با محدودیت حجم و زمان</div>
-      <div class="badge">✨ نسخه ۳.۰ | مدرن &amp; شخصی‌سازی‌شده</div>
+      <div class="badge">✨ نسخه 5.1 | مدرن و شخصی‌سازی‌شده</div>
     </div>
-
     <div class="grid-2">
       <div class="card">
         <h3><span class="icon">🔑</span> ساخت کانفیگ جدید</h3>
@@ -873,19 +779,14 @@ const HTML_PANEL = `<!DOCTYPE html>
         <button class="btn" onclick="generateConfig()">⚡ ساخت کانفیگ</button>
         <div id="statusMsg"></div>
       </div>
-
       <div class="card">
         <h3><span class="icon">📋</span> اطلاعات کاربر</h3>
-        <div id="userInfo" style="color:#666; text-align:center; padding:30px 0; font-size:0.9rem;">
-          برای مشاهده اطلاعات، کانفیگ بسازید.
-        </div>
+        <div id="userInfo" style="color:#666; text-align:center; padding:30px 0; font-size:0.9rem;">برای مشاهده اطلاعات، کانفیگ بسازید.</div>
       </div>
     </div>
-
     <div class="card" style="margin-top:24px;">
       <h3><span class="icon">📡</span> مشاوره آفلاین</h3>
       <p style="color:#888; font-size:0.85rem; margin-bottom:16px;">اپراتور خود را انتخاب کنید تا بهترین کانفیگ را پیشنهاد بگیرید</p>
-      
       <div class="form-group">
         <label>📱 اپراتور</label>
         <select id="operatorSelect">
@@ -898,19 +799,15 @@ const HTML_PANEL = `<!DOCTYPE html>
           <option value="hamrahe-aval">📶 همراه اول</option>
         </select>
       </div>
-      
       <button class="btn" onclick="getConsultation()">🔍 دریافت مشاوره</button>
-      
       <div class="consultation-result" id="consultationResult">
         <div id="consultationContent"></div>
       </div>
     </div>
-
     <div class="admin-section">
       <div class="admin-login">
         <button class="btn btn-secondary" onclick="logout()" style="width:auto; padding:8px 16px;">🚪 خروج</button>
       </div>
-      
       <div id="adminPanelContent" style="margin-top:20px;">
         <div class="grid-2">
           <div class="card">
@@ -931,12 +828,9 @@ const HTML_PANEL = `<!DOCTYPE html>
           </div>
           <div class="card">
             <h3><span class="icon">📊</span> آمار</h3>
-            <div id="statsContent" style="color:#888; text-align:center; padding:20px 0;">
-              در حال بارگذاری...
-            </div>
+            <div id="statsContent" style="color:#888; text-align:center; padding:20px 0;">در حال بارگذاری...</div>
           </div>
         </div>
-        
         <div class="card" style="margin-top:20px;">
           <h3><span class="icon">📋</span> لیست کاربران</h3>
           <div class="user-list" id="userList">
@@ -947,12 +841,8 @@ const HTML_PANEL = `<!DOCTYPE html>
     </div>
   </div>
 </div>
-
 <script>
-// ===== تنظیمات =====
 const ADMIN_PASS = 'Tentacion@2026';
-
-// ===== دیتابیس پیشنهادات اپراتور =====
 const OPERATOR_SUGGESTIONS = {
   'mobin-net': {
     name: 'مبین نت',
@@ -1016,24 +906,27 @@ const OPERATOR_SUGGESTIONS = {
   }
 };
 
-// ===== توابع =====
-function showStatus(msg, type = 'info') {
-  const div = document.getElementById('statusMsg');
+function showStatus(msg, type) {
+  type = type || 'info';
+  var div = document.getElementById('statusMsg');
   div.className = 'status-msg ' + type;
   div.textContent = msg;
-  setTimeout(() => { div.className = ''; div.textContent = ''; }, 8000);
+  setTimeout(function() {
+    div.className = '';
+    div.textContent = '';
+  }, 8000);
 }
 
 function copyText(text) {
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(text).then(function() {
     showStatus('✅ کپی شد!', 'success');
-  }).catch(() => {
+  }).catch(function() {
     showStatus('❌ خطا در کپی', 'error');
   });
 }
 
 function login() {
-  const pass = document.getElementById('loginPass').value;
+  var pass = document.getElementById('loginPass').value;
   if (pass === ADMIN_PASS) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
@@ -1051,12 +944,11 @@ function logout() {
   document.getElementById('loginPass').value = '';
 }
 
-// ===== ساخت کانفیگ =====
 async function generateConfig() {
-  const userId = document.getElementById('userId').value.trim();
-  const country = document.getElementById('countrySelect').value;
-  const expiryDays = parseInt(document.getElementById('expiryDays').value);
-  const trafficGB = parseInt(document.getElementById('trafficGB').value);
+  var userId = document.getElementById('userId').value.trim();
+  var country = document.getElementById('countrySelect').value;
+  var expiryDays = parseInt(document.getElementById('expiryDays').value);
+  var trafficGB = parseInt(document.getElementById('trafficGB').value);
 
   if (!userId) {
     showStatus('❌ لطفاً آیدی کاربر را وارد کنید', 'error');
@@ -1064,12 +956,12 @@ async function generateConfig() {
   }
 
   try {
-    const res = await fetch('/api/generate', {
+    var res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, country, expiryDays, trafficGB })
+      body: JSON.stringify({ userId: userId, country: country, expiryDays: expiryDays, trafficGB: trafficGB })
     });
-    const data = await res.json();
+    var data = await res.json();
 
     if (data.success) {
       showUserInfo(data.config);
@@ -1083,117 +975,97 @@ async function generateConfig() {
 }
 
 function showUserInfo(config) {
-  const div = document.getElementById('userInfo');
-  let html = '<div style="text-align:right;">';
+  var div = document.getElementById('userInfo');
+  var html = '<div style="text-align:right;">';
   
-  const statusText = config.isActive ? 'فعال' : 'غیرفعال';
+  var statusText = config.isActive ? 'فعال' : 'غیرفعال';
   
-  html += `<div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-    <span style="font-size:2rem;">${config.links[0]?.flag || '🌍'}</span>
-    <div>
-      <div style="font-size:1.2rem; font-weight:600; color:#fff;">${config.userId}</div>
-      <div style="display:flex; gap:8px; margin-top:4px;">
-        <span style="font-size:0.8rem; color:#888;">${config.links[0]?.country || 'N/A'}</span>
-        <span class="status-badge ${config.isActive ? 'active' : 'expired'}">${statusText}</span>
-      </div>
-    </div>
-  </div>`;
+  var flag = '🌍';
+  var country = 'N/A';
+  if (config.links && config.links.length > 0) {
+    flag = config.links[0].flag || '🌍';
+    country = config.links[0].country || 'N/A';
+  }
   
-  html += `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
-    <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px;">
-      <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📅 تاریخ انقضا</div>
-      <div style="color:#fff; font-size:0.9rem;">${config.expiryDate}</div>
-    </div>
-    <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px;">
-      <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم مصرفی</div>
-      <div style="color:#fff; font-size:0.9rem;">${config.trafficUsedGB} / ${config.trafficLimitGB} GB</div>
-    </div>
-    <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; grid-column: span 2;">
-      <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم باقی‌مانده</div>
-      <div style="color:#00ff88; font-size:1rem; font-weight:600;">${config.trafficRemainingGB} GB</div>
-    </div>
-  </div>`;
+  html = html + '<div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">';
+  html = html + '<span style="font-size:2rem;">' + flag + '</span>';
+  html = html + '<div><div style="font-size:1.2rem; font-weight:600; color:#fff;">' + config.userId + '</div>';
+  html = html + '<div style="display:flex; gap:8px; margin-top:4px;">';
+  html = html + '<span style="font-size:0.8rem; color:#888;">' + country + '</span>';
+  html = html + '<span class="status-badge ' + (config.isActive ? 'active' : 'expired') + '">' + statusText + '</span>';
+  html = html + '</div></div></div>';
   
-  html += '<hr style="border-color:rgba(255,255,255,0.05); margin:12px 0;">';
-  html += '<div style="font-size:0.8rem; color:#888; margin-bottom:8px;">🔗 لینک‌های کانفیگ:</div>';
+  html = html + '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">';
+  html = html + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px;">';
+  html = html + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📅 تاریخ انقضا</div>';
+  html = html + '<div style="color:#fff; font-size:0.9rem;">' + config.expiryDate + '</div></div>';
+  html = html + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px;">';
+  html = html + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم مصرفی</div>';
+  html = html + '<div style="color:#fff; font-size:0.9rem;">' + config.trafficUsedGB + ' / ' + config.trafficLimitGB + ' GB</div></div>';
+  html = html + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; grid-column: span 2;">';
+  html = html + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم باقی‌مانده</div>';
+  html = html + '<div style="color:#00ff88; font-size:1rem; font-weight:600;">' + config.trafficRemainingGB + ' GB</div></div></div>';
   
-  config.links.forEach((link, idx) => {
-    const typeColors = {
-      'vless': '#00ff88',
-      'trojan': '#ff6b6b',
-      'vmess': '#ffaa00'
-    };
-    const color = typeColors[link.type] || '#fff';
-    html += `<div class="link-box" style="border-left: 3px solid ${color};">
-      <span class="flag">${link.flag}</span>
-      <span style="color:${color}; font-weight:600; font-size:0.7rem; text-transform:uppercase;">${link.type}</span>
-      <span style="color:#666; font-size:0.65rem; margin-left:8px;">${link.country}</span>
-      <br><span style="font-size:0.7rem; word-break:break-all;">${link.link}</span>
-    </div>`;
-    html += `<button class="copy-btn" onclick="copyText('${link.link}')">📋 کپی ${link.type}</button> `;
-  });
+  html = html + '<hr style="border-color:rgba(255,255,255,0.05); margin:12px 0;">';
+  html = html + '<div style="font-size:0.8rem; color:#888; margin-bottom:8px;">🔗 لینک‌های کانفیگ:</div>';
   
-  html += '</div>';
+  if (config.links) {
+    for (var i = 0; i < config.links.length; i++) {
+      var link = config.links[i];
+      var typeColors = { 'vless': '#00ff88', 'trojan': '#ff6b6b', 'vmess': '#ffaa00' };
+      var color = typeColors[link.type] || '#fff';
+      html = html + '<div class="link-box" style="border-left: 3px solid ' + color + ';">';
+      html = html + '<span class="flag">' + link.flag + '</span>';
+      html = html + '<span style="color:' + color + '; font-weight:600; font-size:0.7rem; text-transform:uppercase;">' + link.type + '</span>';
+      html = html + '<span style="color:#666; font-size:0.65rem; margin-left:8px;">' + link.country + '</span>';
+      html = html + '<br><span style="font-size:0.7rem; word-break:break-all;">' + link.link + '</span></div>';
+      html = html + '<button class="copy-btn" onclick="copyText(\'' + link.link + '\')">📋 کپی ' + link.type + '</button> ';
+    }
+  }
+  
+  html = html + '</div>';
   div.innerHTML = html;
 }
 
 function getConsultation() {
-  const operator = document.getElementById('operatorSelect').value;
-  const resultDiv = document.getElementById('consultationResult');
-  const contentDiv = document.getElementById('consultationContent');
+  var operator = document.getElementById('operatorSelect').value;
+  var resultDiv = document.getElementById('consultationResult');
+  var contentDiv = document.getElementById('consultationContent');
   
   if (!operator) {
     showStatus('❌ لطفاً اپراتور خود را انتخاب کنید', 'error');
     return;
   }
   
-  const data = OPERATOR_SUGGESTIONS[operator];
+  var data = OPERATOR_SUGGESTIONS[operator];
   if (!data) {
     showStatus('❌ اطلاعاتی برای این اپراتور یافت نشد', 'error');
     return;
   }
   
   resultDiv.classList.add('show');
-  contentDiv.innerHTML = `
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-      <span style="font-size:2rem;">${data.flag}</span>
-      <div>
-        <h4 style="color:#fff; margin:0;">${data.name}</h4>
-        <span style="color:#888; font-size:0.75rem;">پیشنهاد ویژه</span>
-      </div>
-    </div>
-    <div class="rec-card">
-      <div class="label">🔹 بهترین پروتکل</div>
-      <div class="value">${data.bestProtocol}</div>
-    </div>
-    <div class="rec-card">
-      <div class="label">🔹 بهترین Fragment</div>
-      <div class="value">${data.bestFragment}</div>
-    </div>
-    <div class="rec-card">
-      <div class="label">🔹 بهترین پورت</div>
-      <div class="value">${data.bestPort}</div>
-    </div>
-    <div class="rec-card">
-      <div class="label">🌍 بهترین منطقه</div>
-      <div class="value">${data.bestCountry}</div>
-    </div>
-    <p style="color:#aaa; font-size:0.85rem; margin:12px 0;">📝 ${data.description}</p>
-    <div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:10px; border:1px solid rgba(255,255,255,0.05);">
-      <p style="color:#666; font-size:0.65rem; margin-bottom:4px;">📋 نمونه کانفیگ:</p>
-      <code style="color:#00ff88; font-size:0.65rem; word-break:break-all;">${data.configExample}</code>
-    </div>
-    <button class="btn btn-secondary" onclick="copyText('${data.configExample}')" style="margin-top:8px; width:auto; padding:6px 16px; font-size:0.75rem;">📋 کپی کانفیگ</button>
-  `;
+  contentDiv.innerHTML = '<div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<span style="font-size:2rem;">' + data.flag + '</span>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div><h4 style="color:#fff; margin:0;">' + data.name + '</h4>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<span style="color:#888; font-size:0.75rem;">پیشنهاد ویژه</span></div></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div class="rec-card"><div class="label">🔹 بهترین پروتکل</div><div class="value">' + data.bestProtocol + '</div></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div class="rec-card"><div class="label">🔹 بهترین Fragment</div><div class="value">' + data.bestFragment + '</div></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div class="rec-card"><div class="label">🔹 بهترین پورت</div><div class="value">' + data.bestPort + '</div></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div class="rec-card"><div class="label">🌍 بهترین منطقه</div><div class="value">' + data.bestCountry + '</div></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<p style="color:#aaa; font-size:0.85rem; margin:12px 0;">📝 ' + data.description + '</p>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<div style="background:rgba(0,0,0,0.5); border-radius:8px; padding:10px; border:1px solid rgba(255,255,255,0.05);">';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<p style="color:#666; font-size:0.65rem; margin-bottom:4px;">📋 نمونه کانفیگ:</p>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<code style="color:#00ff88; font-size:0.65rem; word-break:break-all;">' + data.configExample + '</code></div>';
+  contentDiv.innerHTML = contentDiv.innerHTML + '<button class="btn btn-secondary" onclick="copyText(\'' + data.configExample + '\')" style="margin-top:8px; width:auto; padding:6px 16px; font-size:0.75rem;">📋 کپی کانفیگ</button>';
 }
 
 async function loadAdminData() {
   try {
-    const token = localStorage.getItem('adminToken') || '';
-    const res = await fetch('/api/admin/users', {
+    var token = localStorage.getItem('adminToken') || '';
+    var res = await fetch('/api/admin/users', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-    const data = await res.json();
+    var data = await res.json();
     if (data.success) {
       renderUserList(data.users);
       renderStats(data);
@@ -1204,70 +1076,71 @@ async function loadAdminData() {
 }
 
 function renderUserList(users) {
-  const div = document.getElementById('userList');
+  var div = document.getElementById('userList');
   if (!users || Object.keys(users).length === 0) {
     div.innerHTML = '<div style="color:#666; text-align:center; padding:30px 0;">هیچ کاربری ثبت نشده است</div>';
     return;
   }
   
-  let html = '';
-  for (const [id, user] of Object.entries(users)) {
-    const isActive = user.isActive && new Date(user.expiryDate) > new Date() && user.trafficUsed < user.trafficLimit;
-    const statusClass = isActive ? 'active' : (new Date(user.expiryDate) <= new Date() ? 'expired' : 'finished');
-    const statusText = isActive ? 'فعال' : (new Date(user.expiryDate) <= new Date() ? 'منقضی' : 'تمام‌شده');
+  var html = '';
+  for (var id in users) {
+    var user = users[id];
+    var isActive = user.isActive && new Date(user.expiryDate) > new Date() && user.trafficUsed < user.trafficLimit;
+    var statusClass = isActive ? 'active' : (new Date(user.expiryDate) <= new Date() ? 'expired' : 'finished');
+    var statusText = isActive ? 'فعال' : (new Date(user.expiryDate) <= new Date() ? 'منقضی' : 'تمام‌شده');
     
-    html += `
-      <div class="user-item">
-        <span class="id">🆔 ${id}</span>
-        <span style="color:#888; font-size:0.75rem;">📅 ${new Date(user.expiryDate).toLocaleDateString('fa-IR')}</span>
-        <span style="color:#888; font-size:0.75rem;">📊 ${Math.round(user.trafficUsed / 2500 * 100) / 100} / ${Math.round(user.trafficLimit / 2500 * 100) / 100} GB</span>
-        <span class="status-badge ${statusClass}">${statusText}</span>
-        <button class="del-btn" onclick="deleteUser('${id}')">🗑️</button>
-      </div>
-    `;
+    html = html + '<div class="user-item">';
+    html = html + '<span class="id">🆔 ' + id + '</span>';
+    html = html + '<span style="color:#888; font-size:0.75rem;">📅 ' + new Date(user.expiryDate).toLocaleDateString('fa-IR') + '</span>';
+    html = html + '<span style="color:#888; font-size:0.75rem;">📊 ' + (Math.round(user.trafficUsed / 2500 * 100) / 100) + ' / ' + (Math.round(user.trafficLimit / 2500 * 100) / 100) + ' GB</span>';
+    html = html + '<span class="status-badge ' + statusClass + '">' + statusText + '</span>';
+    html = html + '<button class="del-btn" onclick="deleteUser(\'' + id + '\')">🗑️</button>';
+    html = html + '</div>';
   }
   div.innerHTML = html;
 }
 
 function renderStats(data) {
-  const div = document.getElementById('statsContent');
-  const users = data.users || {};
-  const totalUsers = Object.keys(users).length;
-  const activeUsers = Object.values(users).filter(u => u.isActive && new Date(u.expiryDate) > new Date() && u.trafficUsed < u.trafficLimit).length;
-  const totalTraffic = Object.values(users).reduce((sum, u) => sum + (u.trafficLimit - u.trafficUsed), 0);
+  var div = document.getElementById('statsContent');
+  var users = data.users || {};
+  var totalUsers = Object.keys(users).length;
+  var activeUsers = 0;
+  var totalTraffic = 0;
   
-  div.innerHTML = `
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-      <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center;">
-        <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">👥 کل کاربران</div>
-        <div style="color:#fff; font-size:1.2rem; font-weight:600;">${totalUsers}</div>
-      </div>
-      <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center;">
-        <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">🟢 فعال</div>
-        <div style="color:#00ff88; font-size:1.2rem; font-weight:600;">${activeUsers}</div>
-      </div>
-      <div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center; grid-column: span 2;">
-        <div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم باقی‌مانده کل</div>
-        <div style="color:#ffaa00; font-size:1.2rem; font-weight:600;">${Math.round(totalTraffic / 2500 * 100) / 100} GB</div>
-      </div>
-    </div>
-  `;
+  for (var id in users) {
+    var u = users[id];
+    if (u.isActive && new Date(u.expiryDate) > new Date() && u.trafficUsed < u.trafficLimit) {
+      activeUsers = activeUsers + 1;
+    }
+    totalTraffic = totalTraffic + (u.trafficLimit - u.trafficUsed);
+  }
+  
+  div.innerHTML = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">';
+  div.innerHTML = div.innerHTML + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center;">';
+  div.innerHTML = div.innerHTML + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">👥 کل کاربران</div>';
+  div.innerHTML = div.innerHTML + '<div style="color:#fff; font-size:1.2rem; font-weight:600;">' + totalUsers + '</div></div>';
+  div.innerHTML = div.innerHTML + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center;">';
+  div.innerHTML = div.innerHTML + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">🟢 فعال</div>';
+  div.innerHTML = div.innerHTML + '<div style="color:#00ff88; font-size:1.2rem; font-weight:600;">' + activeUsers + '</div></div>';
+  div.innerHTML = div.innerHTML + '<div style="background:rgba(0,0,0,0.3); padding:8px 12px; border-radius:8px; text-align:center; grid-column: span 2;">';
+  div.innerHTML = div.innerHTML + '<div style="color:#666; font-size:0.65rem; text-transform:uppercase;">📊 حجم باقی‌مانده کل</div>';
+  div.innerHTML = div.innerHTML + '<div style="color:#ffaa00; font-size:1.2rem; font-weight:600;">' + (Math.round(totalTraffic / 2500 * 100) / 100) + ' GB</div></div></div>';
 }
 
 async function deleteUser(userId) {
-  if (!confirm(`آیا از حذف کاربر ${userId} مطمئن هستید؟`)) return;
+  if (!confirm('آیا از حذف کاربر ' + userId + ' مطمئن هستید؟')) return;
   
   try {
-    const token = localStorage.getItem('adminToken') || '';
-    const res = await fetch('/api/admin/delete', {
+    var token = localStorage.getItem('adminToken') || '';
+    var res = await fetch('/api/admin/delete', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token
       },
-      body: JSON.stringify({ userId })
+      body: JSON.stringify({ userId: userId })
     });
-    const data = await res.json();
+    var data = await res.json();
     if (data.success) {
       showStatus('✅ کاربر با موفقیت حذف شد', 'success');
       loadAdminData();
@@ -1280,9 +1153,9 @@ async function deleteUser(userId) {
 }
 
 async function addUser() {
-  const userId = document.getElementById('newUserId').value.trim();
-  const expiryDays = parseInt(document.getElementById('newExpiryDays').value);
-  const trafficGB = parseInt(document.getElementById('newTrafficGB').value);
+  var userId = document.getElementById('newUserId').value.trim();
+  var expiryDays = parseInt(document.getElementById('newExpiryDays').value);
+  var trafficGB = parseInt(document.getElementById('newTrafficGB').value);
 
   if (!userId) {
     showStatus('❌ لطفاً آیدی کاربر را وارد کنید', 'error');
@@ -1290,16 +1163,16 @@ async function addUser() {
   }
 
   try {
-    const token = localStorage.getItem('adminToken') || '';
-    const res = await fetch('/api/admin/add', {
+    var token = localStorage.getItem('adminToken') || '';
+    var res = await fetch('/api/admin/add', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + token
       },
-      body: JSON.stringify({ userId, expiryDays, trafficGB })
+      body: JSON.stringify({ userId: userId, expiryDays: expiryDays, trafficGB: trafficGB })
     });
-    const data = await res.json();
+    var data = await res.json();
     if (data.success) {
       showStatus('✅ کاربر با موفقیت اضافه شد!', 'success');
       loadAdminData();
@@ -1312,10 +1185,8 @@ async function addUser() {
   }
 }
 
-// ===== بارگذاری اولیه =====
 document.addEventListener('DOMContentLoaded', function() {
-  // بررسی لاگین بودن (با توکن)
-  const token = localStorage.getItem('adminToken');
+  var token = localStorage.getItem('adminToken');
   if (token) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
@@ -1370,7 +1241,7 @@ export default {
       const kv = env.KV;
       const db = env.DB;
 
-      const userManager = new UserManager(kv, db);
+      const userManager = new UserManager(kv, db, ctx);
       const configGenerator = new ConfigGenerator(ENV_VARS);
 
       // ===== OPTIONS (CORS) =====
@@ -1419,7 +1290,6 @@ export default {
 
       // ===== API ادمین: دریافت کاربران =====
       if (path === '/api/admin/users' && request.method === 'GET') {
-        // احراز هویت
         if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
           return createCorsResponse({ error: 'Unauthorized' }, 401);
         }
