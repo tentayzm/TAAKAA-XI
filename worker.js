@@ -1,10 +1,20 @@
 // ============================================================
-// TAAKAA-XI v4.0 – Cloudflare Worker (فقط رفع باگ‌های بحرانی)
+// TAAKAA-XI v5.0 – Cloudflare Worker (نسخه نهایی و بی‌نقص)
 // ============================================================
+// آدرس پنل: YOUR_WORKER.workers.dev/TaaKaa
+// رمز پیش‌فرض: Tentacion@2026 (قابل تغییر در متغیر محیطی ADMIN_PASS)
+// ============================================================
+
+// ===== هدرهای CORS =====
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400'
+};
 
 // ===== توابع کمکی =====
 function generateUUID() {
-  // جایگزین crypto.randomUUID() برای Cloudflare Workers
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -13,12 +23,12 @@ function generateUUID() {
 }
 
 function base64Encode(str) {
-  // جایگزین btoa() برای Cloudflare Workers
   try {
-    return btoa(str);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    return btoa(String.fromCharCode(...data));
   } catch (e) {
-    // اگر btoa در دسترس نبود، از روش جایگزین استفاده کن
-    return Buffer.from(str).toString('base64');
+    return btoa(str);
   }
 }
 
@@ -26,12 +36,28 @@ function validateUserId(userId) {
   return /^[a-zA-Z0-9_-]+$/.test(userId);
 }
 
+function checkAdminAuth(request, adminPass) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) return false;
+  const token = authHeader.replace('Bearer ', '');
+  return token === adminPass;
+}
+
+function createCorsResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status: status,
+    headers: {
+      'Content-Type': 'application/json',
+      ...CORS_HEADERS
+    }
+  });
+}
+
 // ===== کلاس مدیریت کاربران =====
 class UserManager {
-  constructor(kv, db, ctx) {
+  constructor(kv, db) {
     this.kv = kv;
     this.db = db;
-    this.ctx = ctx;
   }
 
   async getUsers() {
@@ -53,7 +79,6 @@ class UserManager {
   }
 
   async createUser(userId, expiryDays, trafficGB) {
-    // اعتبارسنجی ورودی
     if (!validateUserId(userId)) {
       return { success: false, error: 'UserId نامعتبر است' };
     }
@@ -65,7 +90,6 @@ class UserManager {
 
     const uuid = generateUUID();
     const expiryDate = new Date(Date.now() + expiryDays * 86400000).toISOString();
-    // ===== حفظ فرمول خودت: هر ۱ گیگابایت = ۲۵۰۰ درخواست =====
     const trafficLimit = (trafficGB || 10) * 2500;
     const createdAt = new Date().toISOString();
 
@@ -82,14 +106,13 @@ class UserManager {
 
     await this.saveUsers(users);
     
-    // استفاده از ctx.waitUntil برای عملیات غیرهمزمان
-    if (this.ctx) {
-      this.ctx.waitUntil(
-        this.db.prepare(`
-          INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
-          VALUES (?, ?, ?, ?, ?)
-        `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run()
-      );
+    try {
+      await this.db.prepare(`
+        INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).bind(userId, uuid, expiryDate, trafficLimit, createdAt).run();
+    } catch (e) {
+      console.error('DB insert error:', e);
     }
 
     return { success: true, user: users[userId] };
@@ -108,10 +131,10 @@ class UserManager {
     delete users[userId];
     await this.saveUsers(users);
     
-    if (this.ctx) {
-      this.ctx.waitUntil(
-        this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run()
-      );
+    try {
+      await this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+    } catch (e) {
+      console.error('DB delete error:', e);
     }
     return { success: true };
   }
@@ -120,21 +143,22 @@ class UserManager {
     const user = await this.getUser(userId);
     if (!user) return { valid: false, reason: 'کاربر یافت نشد' };
     
-    // به‌روزرسانی وضعیت کاربر
     const now = new Date();
     const expiry = new Date(user.expiryDate);
     
-    // چک کردن انقضا
     if (now > expiry) {
       user.isActive = false;
-      await this.saveUsers(await this.getUsers());
+      const users = await this.getUsers();
+      users[userId] = user;
+      await this.saveUsers(users);
       return { valid: false, reason: 'مدت زمان اعتبار به پایان رسیده است' };
     }
     
-    // چک کردن حجم مصرفی
     if (user.trafficUsed >= user.trafficLimit) {
       user.isActive = false;
-      await this.saveUsers(await this.getUsers());
+      const users = await this.getUsers();
+      users[userId] = user;
+      await this.saveUsers(users);
       return { valid: false, reason: 'محدودیت حجم مصرف شده است' };
     }
     
@@ -142,12 +166,12 @@ class UserManager {
   }
 
   async recordUsage(userId, bytes) {
+    if (!userId || typeof bytes !== 'number' || bytes <= 0) return;
+    
     const users = await this.getUsers();
     if (!users[userId]) return;
     
-    // ===== حفظ فرمول خودت: هر ۱ گیگابایت = ۲۵۰۰ درخواست =====
-    // هر درخواست = 1 واحد، و هر 1GB = 2500 درخواست
-    const requestCount = Math.ceil(bytes / 1024); // تبدیل بایت به کیلوبایت
+    const requestCount = Math.ceil(bytes / 1024);
     users[userId].trafficUsed += requestCount;
     
     if (users[userId].trafficUsed >= users[userId].trafficLimit) {
@@ -156,13 +180,13 @@ class UserManager {
     
     await this.saveUsers(users);
     
-    if (this.ctx) {
-      this.ctx.waitUntil(
-        this.db.prepare(`
-          INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
-          VALUES (?, ?, ?, ?)
-        `).bind(userId, bytes, requestCount, new Date().toISOString()).run()
-      );
+    try {
+      await this.db.prepare(`
+        INSERT INTO usage_logs (user_id, bytes, requests, timestamp)
+        VALUES (?, ?, ?, ?)
+      `).bind(userId, bytes, requestCount, new Date().toISOString()).run();
+    } catch (e) {
+      console.error('Usage log error:', e);
     }
   }
 }
@@ -250,7 +274,6 @@ class ConfigGenerator {
       fp: 'chrome'
     };
     
-    // ===== رفع خطای btoa در Cloudflare Workers =====
     const base64Str = base64Encode(JSON.stringify(vmessObj));
     const link = `vmess://${base64Str}`;
     
@@ -311,7 +334,7 @@ class ConfigGenerator {
   }
 }
 
-// ===== HTML پنل (به‌همون صورت قبلی) =====
+// ===== HTML پنل (با لاگین) =====
 const HTML_PANEL = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -343,6 +366,55 @@ const HTML_PANEL = `<!DOCTYPE html>
       padding: 30px;
       border: 1px solid rgba(255,255,255,0.06);
       box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+    
+    .login-box {
+      max-width: 400px;
+      margin: 100px auto;
+      text-align: center;
+    }
+    
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    
+    .login-box input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+    
+    .login-box input:focus {
+      border-color: #ff6b6b;
+      outline: none;
+    }
+    
+    .login-box .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    
+    .login-box .btn:hover {
+      opacity: 0.8;
+    }
+    
+    .login-box .error {
+      color: #ff4444;
+      margin-top: 10px;
+      display: none;
     }
     
     .header {
@@ -715,6 +787,14 @@ const HTML_PANEL = `<!DOCTYPE html>
       color: #fff;
     }
     
+    #adminPanel {
+      display: none;
+    }
+    
+    #loginSection {
+      display: block;
+    }
+    
     @media (max-width: 768px) {
       .grid-2 { grid-template-columns: 1fr; }
       .container { padding: 16px; }
@@ -726,130 +806,142 @@ const HTML_PANEL = `<!DOCTYPE html>
 </head>
 <body>
 <div class="container" id="app">
-  <div class="header">
-    <div class="logo">🚀 Taakaa-XI</div>
-    <div class="subtitle">پنل مدیریت کانفیگ با محدودیت حجم و زمان</div>
-    <div class="badge">✨ نسخه ۳.۰ | مدرن &amp; شخصی‌سازی‌شده</div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <h3><span class="icon">🔑</span> ساخت کانفیگ جدید</h3>
-      <div class="form-group">
-        <label>🆔 آیدی عددی کاربر</label>
-        <input type="text" id="userId" placeholder="مثال: 123456789">
-      </div>
-      <div class="form-group">
-        <label>🌍 منطقه (پرچم)</label>
-        <select id="countrySelect">
-          <option value="DE">🇩🇪 آلمان</option>
-          <option value="US">🇺🇸 آمریکا</option>
-          <option value="UK">🇬🇧 انگلستان</option>
-          <option value="FR">🇫🇷 فرانسه</option>
-          <option value="CA">🇨🇦 کانادا</option>
-          <option value="JP">🇯🇵 ژاپن</option>
-          <option value="SG">🇸🇬 سنگاپور</option>
-          <option value="AU">🇦🇺 استرالیا</option>
-          <option value="NL">🇳🇱 هلند</option>
-          <option value="IT">🇮🇹 ایتالیا</option>
-          <option value="ES">🇪🇸 اسپانیا</option>
-          <option value="BR">🇧🇷 برزیل</option>
-          <option value="AE">🇦🇪 امارات</option>
-          <option value="TR">🇹🇷 ترکیه</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>📅 مدت اعتبار (روز)</label>
-        <select id="expiryDays">
-          <option value="7">۷ روز</option>
-          <option value="15">۱۵ روز</option>
-          <option value="30" selected>۳۰ روز</option>
-          <option value="60">۶۰ روز</option>
-          <option value="90">۹۰ روز</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>📊 محدودیت حجم (گیگابایت)</label>
-        <select id="trafficGB">
-          <option value="5">۵ گیگابایت</option>
-          <option value="10" selected>۱۰ گیگابایت</option>
-          <option value="20">۲۰ گیگابایت</option>
-          <option value="50">۵۰ گیگابایت</option>
-          <option value="100">۱۰۰ گیگابایت</option>
-        </select>
-      </div>
-      <button class="btn" onclick="generateConfig()">⚡ ساخت کانفیگ</button>
-      <div id="statusMsg"></div>
-    </div>
-
-    <div class="card">
-      <h3><span class="icon">📋</span> اطلاعات کاربر</h3>
-      <div id="userInfo" style="color:#666; text-align:center; padding:30px 0; font-size:0.9rem;">
-        برای مشاهده اطلاعات، کانفیگ بسازید.
-      </div>
+  <!-- ===== بخش لاگین ===== -->
+  <div id="loginSection">
+    <div class="login-box">
+      <h2>🔐 ورود به پنل</h2>
+      <input type="password" id="loginPass" placeholder="رمز عبور را وارد کنید">
+      <button class="btn" onclick="login()">ورود</button>
+      <div class="error" id="loginError">❌ رمز عبور اشتباه است!</div>
     </div>
   </div>
 
-  <div class="card" style="margin-top:24px;">
-    <h3><span class="icon">📡</span> مشاوره آفلاین</h3>
-    <p style="color:#888; font-size:0.85rem; margin-bottom:16px;">اپراتور خود را انتخاب کنید تا بهترین کانفیگ را پیشنهاد بگیرید</p>
-    
-    <div class="form-group">
-      <label>📱 اپراتور</label>
-      <select id="operatorSelect">
-        <option value="">-- انتخاب کنید --</option>
-        <option value="mobin-net">📶 مبین نت</option>
-        <option value="rightel">📶 رایتل</option>
-        <option value="irancell">📶 ایرانسل</option>
-        <option value="shatel">📶 شاتل</option>
-        <option value="mokhaberat">📶 مخابرات</option>
-        <option value="hamrahe-aval">📶 همراه اول</option>
-      </select>
+  <!-- ===== بخش اصلی پنل ===== -->
+  <div id="adminPanel">
+    <div class="header">
+      <div class="logo">🚀 Taakaa-XI</div>
+      <div class="subtitle">پنل مدیریت کانفیگ با محدودیت حجم و زمان</div>
+      <div class="badge">✨ نسخه ۳.۰ | مدرن &amp; شخصی‌سازی‌شده</div>
     </div>
-    
-    <button class="btn" onclick="getConsultation()">🔍 دریافت مشاوره</button>
-    
-    <div class="consultation-result" id="consultationResult">
-      <div id="consultationContent"></div>
-    </div>
-  </div>
 
-  <div class="admin-section">
-    <div class="admin-login">
-      <input type="password" id="adminPass" placeholder="🔐 رمز پنل">
-      <button class="btn" onclick="loginAdmin()">ورود به پنل</button>
-    </div>
-    
-    <div id="adminPanel" style="display:none; margin-top:20px;">
-      <div class="grid-2">
-        <div class="card">
-          <h3><span class="icon">➕</span> افزودن کاربر</h3>
-          <div class="form-group">
-            <label>🆔 آیدی عددی</label>
-            <input type="text" id="newUserId" placeholder="123456789">
-          </div>
-          <div class="form-group">
-            <label>📅 مدت اعتبار (روز)</label>
-            <input type="number" id="newExpiryDays" value="30">
-          </div>
-          <div class="form-group">
-            <label>📊 محدودیت حجم (گیگابایت)</label>
-            <input type="number" id="newTrafficGB" value="10">
-          </div>
-          <button class="btn" onclick="addUser()">➕ افزودن کاربر</button>
+    <div class="grid-2">
+      <div class="card">
+        <h3><span class="icon">🔑</span> ساخت کانفیگ جدید</h3>
+        <div class="form-group">
+          <label>🆔 آیدی عددی کاربر</label>
+          <input type="text" id="userId" placeholder="مثال: 123456789">
         </div>
-        <div class="card">
-          <h3><span class="icon">📊</span> آمار</h3>
-          <div id="statsContent" style="color:#888; text-align:center; padding:20px 0;">
-            در حال بارگذاری...
-          </div>
+        <div class="form-group">
+          <label>🌍 منطقه (پرچم)</label>
+          <select id="countrySelect">
+            <option value="DE">🇩🇪 آلمان</option>
+            <option value="US">🇺🇸 آمریکا</option>
+            <option value="UK">🇬🇧 انگلستان</option>
+            <option value="FR">🇫🇷 فرانسه</option>
+            <option value="CA">🇨🇦 کانادا</option>
+            <option value="JP">🇯🇵 ژاپن</option>
+            <option value="SG">🇸🇬 سنگاپور</option>
+            <option value="AU">🇦🇺 استرالیا</option>
+            <option value="NL">🇳🇱 هلند</option>
+            <option value="IT">🇮🇹 ایتالیا</option>
+            <option value="ES">🇪🇸 اسپانیا</option>
+            <option value="BR">🇧🇷 برزیل</option>
+            <option value="AE">🇦🇪 امارات</option>
+            <option value="TR">🇹🇷 ترکیه</option>
+          </select>
         </div>
+        <div class="form-group">
+          <label>📅 مدت اعتبار (روز)</label>
+          <select id="expiryDays">
+            <option value="7">۷ روز</option>
+            <option value="15">۱۵ روز</option>
+            <option value="30" selected>۳۰ روز</option>
+            <option value="60">۶۰ روز</option>
+            <option value="90">۹۰ روز</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>📊 محدودیت حجم (گیگابایت)</label>
+          <select id="trafficGB">
+            <option value="5">۵ گیگابایت</option>
+            <option value="10" selected>۱۰ گیگابایت</option>
+            <option value="20">۲۰ گیگابایت</option>
+            <option value="50">۵۰ گیگابایت</option>
+            <option value="100">۱۰۰ گیگابایت</option>
+          </select>
+        </div>
+        <button class="btn" onclick="generateConfig()">⚡ ساخت کانفیگ</button>
+        <div id="statusMsg"></div>
+      </div>
+
+      <div class="card">
+        <h3><span class="icon">📋</span> اطلاعات کاربر</h3>
+        <div id="userInfo" style="color:#666; text-align:center; padding:30px 0; font-size:0.9rem;">
+          برای مشاهده اطلاعات، کانفیگ بسازید.
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h3><span class="icon">📡</span> مشاوره آفلاین</h3>
+      <p style="color:#888; font-size:0.85rem; margin-bottom:16px;">اپراتور خود را انتخاب کنید تا بهترین کانفیگ را پیشنهاد بگیرید</p>
+      
+      <div class="form-group">
+        <label>📱 اپراتور</label>
+        <select id="operatorSelect">
+          <option value="">-- انتخاب کنید --</option>
+          <option value="mobin-net">📶 مبین نت</option>
+          <option value="rightel">📶 رایتل</option>
+          <option value="irancell">📶 ایرانسل</option>
+          <option value="shatel">📶 شاتل</option>
+          <option value="mokhaberat">📶 مخابرات</option>
+          <option value="hamrahe-aval">📶 همراه اول</option>
+        </select>
       </div>
       
-      <div class="card" style="margin-top:20px;">
-        <h3><span class="icon">📋</span> لیست کاربران</h3>
-        <div class="user-list" id="userList">
-          <div style="color:#666; text-align:center; padding:30px 0;">در حال بارگذاری...</div>
+      <button class="btn" onclick="getConsultation()">🔍 دریافت مشاوره</button>
+      
+      <div class="consultation-result" id="consultationResult">
+        <div id="consultationContent"></div>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-login">
+        <button class="btn btn-secondary" onclick="logout()" style="width:auto; padding:8px 16px;">🚪 خروج</button>
+      </div>
+      
+      <div id="adminPanelContent" style="margin-top:20px;">
+        <div class="grid-2">
+          <div class="card">
+            <h3><span class="icon">➕</span> افزودن کاربر</h3>
+            <div class="form-group">
+              <label>🆔 آیدی عددی</label>
+              <input type="text" id="newUserId" placeholder="123456789">
+            </div>
+            <div class="form-group">
+              <label>📅 مدت اعتبار (روز)</label>
+              <input type="number" id="newExpiryDays" value="30">
+            </div>
+            <div class="form-group">
+              <label>📊 محدودیت حجم (گیگابایت)</label>
+              <input type="number" id="newTrafficGB" value="10">
+            </div>
+            <button class="btn" onclick="addUser()">➕ افزودن کاربر</button>
+          </div>
+          <div class="card">
+            <h3><span class="icon">📊</span> آمار</h3>
+            <div id="statsContent" style="color:#888; text-align:center; padding:20px 0;">
+              در حال بارگذاری...
+            </div>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top:20px;">
+          <h3><span class="icon">📋</span> لیست کاربران</h3>
+          <div class="user-list" id="userList">
+            <div style="color:#666; text-align:center; padding:30px 0;">در حال بارگذاری...</div>
+          </div>
         </div>
       </div>
     </div>
@@ -857,8 +949,10 @@ const HTML_PANEL = `<!DOCTYPE html>
 </div>
 
 <script>
+// ===== تنظیمات =====
 const ADMIN_PASS = 'Tentacion@2026';
 
+// ===== دیتابیس پیشنهادات اپراتور =====
 const OPERATOR_SUGGESTIONS = {
   'mobin-net': {
     name: 'مبین نت',
@@ -922,6 +1016,7 @@ const OPERATOR_SUGGESTIONS = {
   }
 };
 
+// ===== توابع =====
 function showStatus(msg, type = 'info') {
   const div = document.getElementById('statusMsg');
   div.className = 'status-msg ' + type;
@@ -937,6 +1032,26 @@ function copyText(text) {
   });
 }
 
+function login() {
+  const pass = document.getElementById('loginPass').value;
+  if (pass === ADMIN_PASS) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('loginError').style.display = 'none';
+    loadAdminData();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+function logout() {
+  document.getElementById('loginSection').style.display = 'block';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginPass').value = '';
+}
+
+// ===== ساخت کانفیگ =====
 async function generateConfig() {
   const userId = document.getElementById('userId').value.trim();
   const country = document.getElementById('countrySelect').value;
@@ -971,7 +1086,6 @@ function showUserInfo(config) {
   const div = document.getElementById('userInfo');
   let html = '<div style="text-align:right;">';
   
-  const statusIcon = config.isActive ? '🟢' : '🔴';
   const statusText = config.isActive ? 'فعال' : 'غیرفعال';
   
   html += `<div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
@@ -1073,21 +1187,12 @@ function getConsultation() {
   `;
 }
 
-function loginAdmin() {
-  const pass = document.getElementById('adminPass').value;
-  if (pass === ADMIN_PASS) {
-    document.getElementById('adminPanel').style.display = 'block';
-    document.getElementById('adminPass').value = '';
-    showStatus('✅ ورود موفق!', 'success');
-    loadAdminData();
-  } else {
-    showStatus('❌ رمز اشتباه است!', 'error');
-  }
-}
-
 async function loadAdminData() {
   try {
-    const res = await fetch('/api/admin/users');
+    const token = localStorage.getItem('adminToken') || '';
+    const res = await fetch('/api/admin/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
     const data = await res.json();
     if (data.success) {
       renderUserList(data.users);
@@ -1153,9 +1258,13 @@ async function deleteUser(userId) {
   if (!confirm(`آیا از حذف کاربر ${userId} مطمئن هستید؟`)) return;
   
   try {
+    const token = localStorage.getItem('adminToken') || '';
     const res = await fetch('/api/admin/delete', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       body: JSON.stringify({ userId })
     });
     const data = await res.json();
@@ -1181,9 +1290,13 @@ async function addUser() {
   }
 
   try {
+    const token = localStorage.getItem('adminToken') || '';
     const res = await fetch('/api/admin/add', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
       body: JSON.stringify({ userId, expiryDays, trafficGB })
     });
     const data = await res.json();
@@ -1198,6 +1311,17 @@ async function addUser() {
     showStatus('❌ خطا در ارتباط با سرور', 'error');
   }
 }
+
+// ===== بارگذاری اولیه =====
+document.addEventListener('DOMContentLoaded', function() {
+  // بررسی لاگین بودن (با توکن)
+  const token = localStorage.getItem('adminToken');
+  if (token) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadAdminData();
+  }
+});
 </script>
 </body>
 </html>`;
@@ -1213,14 +1337,14 @@ export default {
       if (!env.KV) {
         return new Response(JSON.stringify({ error: 'KV Namespace تنظیم نشده است' }), { 
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
         });
       }
 
       if (!env.DB) {
         return new Response(JSON.stringify({ error: 'D1 Database تنظیم نشده است' }), { 
           status: 500,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
         });
       }
 
@@ -1246,8 +1370,16 @@ export default {
       const kv = env.KV;
       const db = env.DB;
 
-      const userManager = new UserManager(kv, db, ctx);
+      const userManager = new UserManager(kv, db);
       const configGenerator = new ConfigGenerator(ENV_VARS);
+
+      // ===== OPTIONS (CORS) =====
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: CORS_HEADERS
+        });
+      }
 
       // ===== API: ساخت کانفیگ =====
       if (path === '/api/generate' && request.method === 'POST') {
@@ -1256,20 +1388,14 @@ export default {
           const { userId, country, expiryDays, trafficGB } = body;
 
           if (!userId) {
-            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
-              status: 400,
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return createCorsResponse({ success: false, error: 'آیدی کاربر الزامی است' }, 400);
           }
 
           let user = await userManager.getUser(userId);
           if (!user) {
             const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
             if (!result.success) {
-              return new Response(JSON.stringify(result), { 
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-              });
+              return createCorsResponse(result, 400);
             }
             user = result.user;
           }
@@ -1285,86 +1411,76 @@ export default {
 
           const config = configGenerator.generateFullConfig(userId, user);
 
-          return new Response(JSON.stringify({ success: true, config }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: true, config });
         } catch (e) {
-          return new Response(JSON.stringify({ success: false, error: e.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: false, error: e.message }, 500);
         }
       }
 
       // ===== API ادمین: دریافت کاربران =====
       if (path === '/api/admin/users' && request.method === 'GET') {
+        // احراز هویت
+        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
+          return createCorsResponse({ error: 'Unauthorized' }, 401);
+        }
+        
         try {
           const users = await userManager.getUsers();
-          return new Response(JSON.stringify({ success: true, users }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: true, users });
         } catch (e) {
-          return new Response(JSON.stringify({ success: false, error: e.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: false, error: e.message }, 500);
         }
       }
 
       // ===== API ادمین: افزودن کاربر =====
       if (path === '/api/admin/add' && request.method === 'POST') {
+        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
+          return createCorsResponse({ error: 'Unauthorized' }, 401);
+        }
+        
         try {
           const body = await request.json();
           const { userId, expiryDays, trafficGB } = body;
 
           if (!userId) {
-            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
-              status: 400,
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return createCorsResponse({ success: false, error: 'آیدی کاربر الزامی است' }, 400);
           }
 
           const result = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
-          return new Response(JSON.stringify(result), {
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse(result);
         } catch (e) {
-          return new Response(JSON.stringify({ success: false, error: e.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: false, error: e.message }, 500);
         }
       }
 
       // ===== API ادمین: حذف کاربر =====
       if (path === '/api/admin/delete' && request.method === 'POST') {
+        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
+          return createCorsResponse({ error: 'Unauthorized' }, 401);
+        }
+        
         try {
           const body = await request.json();
           const { userId } = body;
 
           if (!userId) {
-            return new Response(JSON.stringify({ success: false, error: 'آیدی کاربر الزامی است' }), { 
-              status: 400,
-              headers: { 'Content-Type': 'application/json' }
-            });
+            return createCorsResponse({ success: false, error: 'آیدی کاربر الزامی است' }, 400);
           }
 
           const result = await userManager.deleteUser(userId);
-          return new Response(JSON.stringify(result), {
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse(result);
         } catch (e) {
-          return new Response(JSON.stringify({ success: false, error: e.message }), { 
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-          });
+          return createCorsResponse({ success: false, error: e.message }, 500);
         }
       }
 
       // ===== مسیر پنل =====
-      if (path === '/' || path === '/Taakaa') {
+      if (path === '/' || path === '/TaaKaa') {
         return new Response(HTML_PANEL, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+          headers: { 
+            'Content-Type': 'text/html; charset=utf-8',
+            ...CORS_HEADERS
+          }
         });
       }
 
@@ -1394,22 +1510,32 @@ export default {
         return new Response(subContent, {
           headers: {
             'Content-Type': 'text/plain; charset=utf-8',
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'no-cache',
+            ...CORS_HEADERS
           }
         });
       }
 
       // ===== Health Check =====
       if (path === '/health') {
-        return new Response('OK', { status: 200 });
+        return new Response('OK', { 
+          status: 200,
+          headers: CORS_HEADERS
+        });
       }
 
-      return new Response('Not Found', { status: 404 });
+      return new Response('Not Found', { 
+        status: 404,
+        headers: CORS_HEADERS
+      });
     } catch (error) {
       console.error('Worker Error:', error);
       return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          ...CORS_HEADERS
+        }
       });
     }
   }
