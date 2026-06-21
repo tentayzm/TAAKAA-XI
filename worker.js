@@ -1,5 +1,5 @@
 // ============================================================
-// TAAKAA-XI v6.4 – بخش اول (Constants, Helpers, UserManager, ConfigGenerator)
+// TAAKAA-XI v6.5 – بخش ۱: Constants, Helpers, UserManager
 // ============================================================
 
 const GB = 1024 * 1024 * 1024;
@@ -108,14 +108,6 @@ async function checkRateLimit(env, ip, action) {
     await env.KV.put(key, String(current + 1), { expirationTtl: 3600 });
     return true;
   } catch { return true; }
-}
-
-async function logAdminAction(env, userId, action, details, ip) {
-  try {
-    await env.DB.prepare(
-      'INSERT INTO audit_logs (user_id, action, details, ip, timestamp) VALUES (?, ?, ?, ?, ?)'
-    ).bind(userId, action, JSON.stringify(details), ip, new Date().toISOString()).run();
-  } catch {}
 }
 
 function getFlag(country) { return FLAG_MAP[country] || DEFAULT_FLAG; }
@@ -304,9 +296,11 @@ class UserManager {
       return true;
     } catch { return false; }
   }
-}
+        }
+// ============================================================
+// TAAKAA-XI v6.5 – بخش ۲: ConfigGenerator
+// ============================================================
 
-// ===== کلاس ConfigGenerator =====
 class ConfigGenerator {
   constructor(env) { this.env = env; }
 
@@ -407,9 +401,9 @@ class ConfigGenerator {
       isActive: trafficRemaining > 0 && new Date(expiry) > new Date()
     };
   }
-  }
+                                          }
 // ============================================================
-// TAAKAA-XI v6.4 – بخش دوم (HTML_PANEL + Worker اصلی)
+// TAAKAA-XI v6.5 – بخش ۳: HTML_PANEL (مشکی-نارنجی)
 // ============================================================
 
 const HTML_PANEL = `<!DOCTYPE html>
@@ -417,68 +411,73 @@ const HTML_PANEL = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TAAKAA | پنل مدیریت</title>
+<title>TAAKAA-XI | پنل مدیریت</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--primary:#6C3CE1;--secondary:#00D4FF;--success:#00FF88;--bg:#0A0A12}
+:root{--primary:#FF6B00;--secondary:#FF9500;--success:#00FF88;--bg:#0A0A0A;--card-bg:#1A1A1A;--border:#2A2A2A}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100vh}
 .app-container{max-width:1400px;margin:0 auto;padding:20px}
-.card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;margin-bottom:20px}
-.btn{background:linear-gradient(135deg,var(--primary),#5A2DBF);border:none;border-radius:10px;padding:12px 24px;color:#fff;font-weight:600;cursor:pointer;width:100%}
-.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(108,60,225,0.3)}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
+.btn{background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;border-radius:10px;padding:12px 24px;color:#fff;font-weight:600;cursor:pointer;width:100%;transition:all 0.3s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,107,0,0.3)}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 @media(max-width:768px){.grid-2{grid-template-columns:1fr}}
-input,select{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;margin:6px 0}
+input,select{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:#fff;margin:6px 0;transition:border 0.3s}
+input:focus,select:focus{outline:none;border-color:var(--primary)}
 .form-group{margin-bottom:12px}
 .form-group label{display:block;color:rgba(255,255,255,0.7);font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
-.header{display:flex;justify-content:space-between;padding:16px 24px;background:rgba(255,255,255,0.03);border-radius:16px;margin-bottom:24px}
+.header{display:flex;justify-content:space-between;padding:16px 24px;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;margin-bottom:24px}
 .logo{font-size:24px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px}
+.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
 .stat-label{color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase}
 .stat-value{font-size:24px;font-weight:700}
 .toast-container{position:fixed;top:20px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:400px}
-.toast{background:rgba(0,0,0,0.9);border-radius:12px;padding:14px 18px;color:#fff;font-size:14px;border-right:4px solid var(--success)}
+.toast{background:rgba(0,0,0,0.95);border-radius:12px;padding:14px 18px;color:#fff;font-size:14px;border-right:4px solid var(--success)}
 .toast.error{border-right-color:#ff4444}
-.toast.info{border-right-color:#ffb800}
+.toast.info{border-right-color:var(--secondary)}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--secondary)}
 </style>
 </head>
 <body>
 <div id="loginSection" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
-  <div style="background:rgba(255,255,255,0.03);border-radius:24px;padding:48px 40px;max-width:420px;width:100%">
-    <h1 style="text-align:center;font-size:28px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent">⚡ TAAKAA</h1>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:24px;padding:48px 40px;max-width:420px;width:100%">
+    <h1 style="text-align:center;font-size:28px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent">⚡ TAAKAA-XI</h1>
     <p style="text-align:center;color:rgba(255,255,255,0.7);margin-bottom:32px">پنل مدیریت پیشرفته</p>
-    <input type="password" id="loginPass" placeholder="رمز عبور" style="width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;margin-bottom:16px">
-    <button class="btn" onclick="login()">ورود</button>
-    <div id="loginError" style="color:#ff4444;text-align:center;margin-top:12px;display:none">رمز اشتباه است!</div>
+    <input type="password" id="loginPass" placeholder="رمز عبور" style="width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:16px;font-size:16px">
+    <button class="btn" onclick="login()" style="font-size:16px">🚀 ورود</button>
+    <div id="loginError" style="color:#ff4444;text-align:center;margin-top:12px;display:none">❌ رمز اشتباه است!</div>
   </div>
 </div>
 <div id="adminPanel" style="display:none">
 <div class="app-container">
-<div class="header"><span class="logo">⚡ TAAKAA</span><button onclick="logout()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 16px;color:#fff;cursor:pointer">خروج</button></div>
+<div class="header"><span class="logo">⚡ TAAKAA-XI</span><button onclick="logout()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:#fff;cursor:pointer">🚪 خروج</button></div>
 <div class="stats-grid">
 <div class="stat-card"><div class="stat-label">👥 کل کاربران</div><div class="stat-value" id="statTotal">0</div></div>
 <div class="stat-card"><div class="stat-label">🟢 فعال</div><div class="stat-value" style="color:var(--success)" id="statActive">0</div></div>
-<div class="stat-card"><div class="stat-label">📊 حجم باقی‌مانده</div><div class="stat-value" style="color:#ffb800" id="statTraffic">0 GB</div></div>
+<div class="stat-card"><div class="stat-label">📊 حجم باقی‌مانده</div><div class="stat-value" style="color:var(--secondary)" id="statTraffic">0 GB</div></div>
 </div>
 <div class="grid-2">
-<div class="card"><h3>ساخت کانفیگ</h3>
-<div class="form-group"><label>🆔 آیدی کاربر</label><input type="text" id="userId" placeholder="123456789"></div>
+<div class="card"><h3 style="color:var(--secondary)">⚡ ساخت کانفیگ</h3>
+<div class="form-group"><label>🆔 آیدی کاربر</label><input type="text" id="userId" placeholder="مثال: 123456789"></div>
 <div class="form-group"><label>🌍 منطقه</label><select id="countrySelect"><option value="DE">🇩🇪 آلمان</option><option value="US">🇺🇸 آمریکا</option><option value="UK">🇬🇧 انگلستان</option><option value="FR">🇫🇷 فرانسه</option><option value="SG">🇸🇬 سنگاپور</option><option value="NL">🇳🇱 هلند</option><option value="TR">🇹🇷 ترکیه</option></select></div>
 <div class="form-group"><label>📅 مدت اعتبار</label><select id="expiryDays"><option value="7">۷ روز</option><option value="15">۱۵ روز</option><option value="30" selected>۳۰ روز</option><option value="60">۶۰ روز</option><option value="90">۹۰ روز</option></select></div>
 <div class="form-group"><label>📊 حجم</label><select id="trafficGB"><option value="5">۵ GB</option><option value="10" selected>۱۰ GB</option><option value="20">۲۰ GB</option><option value="50">۵۰ GB</option><option value="100">۱۰۰ GB</option></select></div>
 <button class="btn" onclick="generateConfig()">⚡ ساخت کانفیگ</button>
 <div id="statusMsg" style="margin-top:12px;display:none"></div>
 </div>
-<div class="card"><h3>اطلاعات کاربر</h3><div id="userInfo" style="color:rgba(255,255,255,0.4);text-align:center;padding:30px 0">کانفیگ بسازید</div></div>
+<div class="card"><h3 style="color:var(--secondary)">📋 اطلاعات کاربر</h3><div id="userInfo" style="color:rgba(255,255,255,0.4);text-align:center;padding:30px 0">کانفیگ بسازید</div></div>
 </div>
-<div class="card"><h3>🔗 لینک اشتراک</h3>
-<div style="display:flex;gap:12px"><input type="text" id="subUserId" placeholder="آیدی کاربر" style="flex:1"><button class="btn" onclick="generateSubLink()" style="width:auto;padding:12px 24px">دریافت</button></div>
-<div id="subResult" style="margin-top:12px;display:none"><code id="subLink" style="color:#00ff88;word-break:break-all"></code>
-<button onclick="copyText(document.getElementById('subLink').textContent)" style="margin-top:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 12px;color:#fff;cursor:pointer">📋 کپی</button></div>
+<div class="card"><h3 style="color:var(--secondary)">🔗 لینک اشتراک</h3>
+<div style="display:flex;gap:12px"><input type="text" id="subUserId" placeholder="آیدی کاربر" style="flex:1"><button class="btn" onclick="generateSubLink()" style="width:auto;padding:12px 24px">📥 دریافت</button></div>
+<div id="subResult" style="margin-top:12px;display:none"><code id="subLink" style="color:var(--success);word-break:break-all"></code>
+<button onclick="copyText(document.getElementById('subLink').textContent)" style="margin-top:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:#fff;cursor:pointer">📋 کپی</button></div>
 </div>
-<div class="card"><h3>🛠️ مدیریت کاربران</h3>
+<div class="card"><h3 style="color:var(--secondary)">🛠️ مدیریت کاربران</h3>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
 <div><div class="form-group"><label>🆔 آیدی جدید</label><input type="text" id="newUserId" placeholder="123456789"></div>
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -489,7 +488,7 @@ input,select{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1p
 </div>
 <div id="statsContent" style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">در حال بارگذاری...</div>
 </div>
-<div style="margin-top:16px"><input type="text" id="userSearch" placeholder="🔍 جستجوی کاربر..." style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#fff;margin-bottom:12px" oninput="filterUsers()">
+<div style="margin-top:16px"><input type="text" id="userSearch" placeholder="🔍 جستجوی کاربر..." style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:#fff;margin-bottom:12px" oninput="filterUsers()">
 <div id="userList" style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">در حال بارگذاری...</div>
 </div>
 </div>
@@ -498,38 +497,237 @@ input,select{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1p
 <script>
 let allUsers={},currentPage=1,pageSize=20;
 
-function showToast(msg,type){const c=document.getElementById('toastContainer')||(function(){const d=document.createElement('div');d.id='toastContainer';d.className='toast-container';document.body.appendChild(d);return d})();const t=document.createElement('div');t.className='toast'+(type==='error'?' error':'')+(type==='info'?' info':'');t.innerHTML='<span>'+msg+'</span><button onclick="this.parentElement.remove()" style="margin-right:auto;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px">✕</button>';c.appendChild(t);setTimeout(()=>{if(t.parentElement)t.remove()},5000)}
+function showToast(msg,type){
+  const c=document.getElementById('toastContainer')||(function(){
+    const d=document.createElement('div');
+    d.id='toastContainer';
+    d.className='toast-container';
+    document.body.appendChild(d);
+    return d;
+  })();
+  const t=document.createElement('div');
+  t.className='toast'+(type==='error'?' error':'')+(type==='info'?' info':'');
+  t.innerHTML='<span>'+msg+'</span><button onclick="this.parentElement.remove()" style="margin-right:auto;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px">✕</button>';
+  c.appendChild(t);
+  setTimeout(()=>{if(t.parentElement)t.remove()},5000);
+}
 
-function copyText(t){if(!t)return;navigator.clipboard.writeText(t).then(()=>showToast('✅ کپی شد!','success')).catch(()=>showToast('❌ خطا در کپی','error'))}
+function copyText(t){
+  if(!t)return;
+  navigator.clipboard.writeText(t).then(()=>showToast('✅ کپی شد!','success'))
+  .catch(()=>showToast('❌ خطا در کپی','error'));
+}
 
-function login(){const p=document.getElementById('loginPass').value;if(p==='Tentacion'){localStorage.setItem('adminToken',p);document.getElementById('loginSection').style.display='none';document.getElementById('adminPanel').style.display='block';document.getElementById('loginError').style.display='none';loadAdminData();showToast('✅ ورود موفق','success')}else{document.getElementById('loginError').style.display='block'}}
+async function login(){
+  const p=document.getElementById('loginPass').value.trim();
+  if(!p){showToast('❌ رمز را وارد کنید','error');return;}
+  try{
+    const res=await fetch('/api/admin/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({password:p})
+    });
+    const data=await res.json();
+    if(data.success){
+      localStorage.setItem('adminToken',p);
+      document.getElementById('loginSection').style.display='none';
+      document.getElementById('adminPanel').style.display='block';
+      loadAdminData();
+      showToast('✅ ورود موفق','success');
+    }else{
+      document.getElementById('loginError').style.display='block';
+      showToast('❌ '+data.error,'error');
+    }
+  }catch(e){
+    showToast('❌ خطا در ارتباط با سرور','error');
+  }
+}
 
-function logout(){localStorage.removeItem('adminToken');location.reload()}
+function logout(){
+  localStorage.removeItem('adminToken');
+  location.reload();
+}
 
-async function generateConfig(){const u=document.getElementById('userId').value.trim();if(!u){showToast('❌ آیدی کاربر الزامی است','error');return}try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:u,country:document.getElementById('countrySelect').value,expiryDays:parseInt(document.getElementById('expiryDays').value),trafficGB:parseInt(document.getElementById('trafficGB').value)})});const d=await r.json();if(d.success){showToast('✅ کانفیگ ساخته شد','success');document.getElementById('userInfo').innerHTML='<pre style="color:#00ff88;font-size:12px;word-break:break-all">'+JSON.stringify(d.config,null,2)+'</pre>';loadAdminData()}else{showToast('❌ '+d.error,'error')}}catch(e){showToast('❌ خطا در ارتباط','error')}}
+async function generateConfig(){
+  const u=document.getElementById('userId').value.trim();
+  if(!u){showToast('❌ آیدی کاربر الزامی است','error');return;}
+  try{
+    const r=await fetch('/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        userId:u,
+        country:document.getElementById('countrySelect').value,
+        expiryDays:parseInt(document.getElementById('expiryDays').value),
+        trafficGB:parseInt(document.getElementById('trafficGB').value)
+      })
+    });
+    const d=await r.json();
+    if(d.success){
+      showToast('✅ کانفیگ ساخته شد','success');
+      const info=d.config;
+      let html='<div style="text-align:right;font-size:13px;line-height:1.8">';
+      html+='<p>🆔 <strong>'+info.userId+'</strong></p>';
+      html+='<p>📅 اعتبار: <strong>'+info.expiryDate+'</strong></p>';
+      html+='<p>📊 حجم: <strong>'+info.trafficUsedGB+' / '+info.trafficLimitGB+' GB</strong></p>';
+      html+='<p>📊 باقی‌مانده: <strong style="color:var(--secondary)">'+info.trafficRemainingGB+' GB</strong></p>';
+      html+='<p>🔗 لینک‌ها:</p>';
+      info.links.forEach(l=>{
+        html+='<div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:6px;margin:4px 0;word-break:break-all;font-size:12px">';
+        html+='<span style="color:var(--secondary)">'+l.type.toUpperCase()+'</span>: ';
+        html+='<span style="color:#aaa">'+l.link.substring(0,60)+'...</span>';
+        html+=' <button onclick="copyText(\\''+l.link.replace(/'/g,"\\'")+'\\')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:#fff;cursor:pointer;font-size:11px">📋</button>';
+        html+='</div>';
+      });
+      html+='</div>';
+      document.getElementById('userInfo').innerHTML=html;
+      loadAdminData();
+    }else{
+      showToast('❌ '+d.error,'error');
+    }
+  }catch(e){showToast('❌ خطا در ارتباط','error');}
+}
 
-function generateSubLink(){const u=document.getElementById('subUserId').value.trim();if(!u){showToast('❌ آیدی کاربر را وارد کنید','error');return}document.getElementById('subLink').textContent=window.location.origin+'/sub/'+u;document.getElementById('subResult').style.display='block';showToast('✅ لینک ساخته شد','success')}
+function generateSubLink(){
+  const u=document.getElementById('subUserId').value.trim();
+  if(!u){showToast('❌ آیدی کاربر را وارد کنید','error');return;}
+  const link=window.location.origin+'/sub/'+u;
+  document.getElementById('subLink').textContent=link;
+  document.getElementById('subResult').style.display='block';
+  showToast('✅ لینک ساخته شد','success');
+}
 
-async function loadAdminData(){try{const r=await fetch('/api/admin/users',{headers:{'Authorization':'Bearer '+(localStorage.getItem('adminToken')||'')}});const d=await r.json();if(d.success){allUsers=d.users||{};renderUserList(allUsers);renderStats(allUsers)}}catch(e){}}
+async function loadAdminData(){
+  try{
+    const token=localStorage.getItem('adminToken')||'';
+    const r=await fetch('/api/admin/users',{
+      headers:{'Authorization':'Bearer '+token}
+    });
+    const d=await r.json();
+    if(d.success){
+      allUsers=d.users||{};
+      renderUserList(allUsers);
+      renderStats(allUsers);
+    }
+  }catch(e){}
+}
 
-function filterUsers(){const s=document.getElementById('userSearch').value.toLowerCase();if(!s){renderUserList(allUsers);return}const f={};for(const id in allUsers){if(id.toLowerCase().includes(s))f[id]=allUsers[id]}renderUserList(f)}
+function filterUsers(){
+  const s=document.getElementById('userSearch').value.toLowerCase();
+  if(!s){renderUserList(allUsers);return;}
+  const f={};
+  for(const id in allUsers){
+    if(id.toLowerCase().includes(s))f[id]=allUsers[id];
+  }
+  renderUserList(f);
+}
 
-function renderUserList(users){const div=document.getElementById('userList');const e=Object.entries(users);if(e.length===0){div.innerHTML='<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">هیچ کاربری یافت نشد</div>';return}const s=(currentPage-1)*pageSize,page=e.slice(s,s+pageSize);let html='';for(const[id,user]of page){const a=user.isActive&&new Date(user.expiryDate)>new Date()&&user.trafficUsed<user.trafficLimit;const c=a?'active':(new Date(user.expiryDate)<=new Date()?'expired':'finished');const t=a?'فعال':(new Date(user.expiryDate)<=new Date()?'منقضی':'تمام');html+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:8px;margin-bottom:4px;align-items:center"><span>🆔 '+id+'</span><span style="font-size:12px;color:rgba(255,255,255,0.6)">📅 '+new Date(user.expiryDate).toLocaleDateString('fa-IR')+'</span><span style="font-size:12px;color:rgba(255,255,255,0.6)">📊 '+(Math.round(user.trafficUsed/1024/1024/1024*100)/100)+'/'+(Math.round(user.trafficLimit/1024/1024/1024*100)/100)+' GB</span><span style="padding:2px 10px;border-radius:12px;font-size:11px;'+(a?'background:rgba(0,255,136,0.15);color:#00ff88':'background:rgba(255,68,68,0.15);color:#ff4444')+'">'+t+'</span><button onclick="deleteUser(\''+id+'\')" style="background:rgba(255,68,68,0.2);border:none;border-radius:4px;padding:2px 10px;color:#ff4444;cursor:pointer">🗑️</button></div>'}const tp=Math.ceil(e.length/pageSize);if(tp>1){html+='<div style="display:flex;justify-content:center;gap:6px;margin-top:10px">';for(let i=1;i<=tp;i++){html+='<button onclick="currentPage='+i+';filterUsers()" style="padding:4px 12px;background:'+(i===currentPage?'var(--primary)':'rgba(255,255,255,0.05)')+';border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#fff;cursor:pointer">'+i+'</button>'}html+='</div>'}div.innerHTML=html}
+function renderUserList(users){
+  const div=document.getElementById('userList');
+  const e=Object.entries(users);
+  if(e.length===0){
+    div.innerHTML='<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">هیچ کاربری یافت نشد</div>';
+    return;
+  }
+  const s=(currentPage-1)*pageSize,page=e.slice(s,s+pageSize);
+  let html='';
+  for(const[id,user]of page){
+    const a=user.isActive&&new Date(user.expiryDate)>new Date()&&user.trafficUsed<user.trafficLimit;
+    const status=a?'فعال':(new Date(user.expiryDate)<=new Date()?'منقضی':'تمام');
+    html+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:8px;margin-bottom:4px;align-items:center;flex-wrap:wrap;gap:6px">';
+    html+='<span>🆔 '+id+'</span>';
+    html+='<span style="font-size:12px;color:rgba(255,255,255,0.6)">📅 '+new Date(user.expiryDate).toLocaleDateString('fa-IR')+'</span>';
+    html+='<span style="font-size:12px;color:rgba(255,255,255,0.6)">📊 '+(Math.round(user.trafficUsed/1024/1024/1024*100)/100)+'/'+(Math.round(user.trafficLimit/1024/1024/1024*100)/100)+' GB</span>';
+    html+='<span style="padding:2px 10px;border-radius:12px;font-size:11px;'+(a?'background:rgba(0,255,136,0.15);color:#00ff88':'background:rgba(255,68,68,0.15);color:#ff4444')+'">'+status+'</span>';
+    html+='<button onclick="deleteUser(\\''+id+'\\')" style="background:rgba(255,68,68,0.2);border:none;border-radius:4px;padding:2px 10px;color:#ff4444;cursor:pointer">🗑️</button>';
+    html+='</div>';
+  }
+  const tp=Math.ceil(e.length/pageSize);
+  if(tp>1){
+    html+='<div style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap">';
+    for(let i=1;i<=tp;i++){
+      html+='<button onclick="currentPage='+i+';filterUsers()" style="padding:4px 12px;background:'+(i===currentPage?'var(--primary)':'rgba(255,255,255,0.05)')+';border:1px solid var(--border);border-radius:6px;color:#fff;cursor:pointer">'+i+'</button>';
+    }
+    html+='</div>';
+  }
+  div.innerHTML=html;
+}
 
-function renderStats(users){const t=Object.keys(users).length;let a=0,tr=0;for(const id in users){const u=users[id];if(u.isActive&&new Date(u.expiryDate)>new Date()&&u.trafficUsed<u.trafficLimit)a++;tr+=(u.trafficLimit-u.trafficUsed)}document.getElementById('statTotal').textContent=t;document.getElementById('statActive').textContent=a;document.getElementById('statTraffic').textContent=(Math.round(tr/1024/1024/1024*100)/100)+' GB'}
+function renderStats(users){
+  const t=Object.keys(users).length;
+  let a=0,tr=0;
+  for(const id in users){
+    const u=users[id];
+    if(u.isActive&&new Date(u.expiryDate)>new Date()&&u.trafficUsed<u.trafficLimit)a++;
+    tr+=(u.trafficLimit-u.trafficUsed);
+  }
+  document.getElementById('statTotal').textContent=t;
+  document.getElementById('statActive').textContent=a;
+  document.getElementById('statTraffic').textContent=(Math.round(tr/1024/1024/1024*100)/100)+' GB';
+}
 
-async function deleteUser(id){if(!confirm('حذف کاربر '+id+'؟'))return;try{const r=await fetch('/api/admin/delete',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('adminToken')||'')},body:JSON.stringify({userId:id})});const d=await r.json();if(d.success){showToast('✅ حذف شد','success');loadAdminData()}else{showToast('❌ '+d.error,'error')}}catch(e){showToast('❌ خطا','error')}}
+async function deleteUser(id){
+  if(!confirm('حذف کاربر '+id+'؟'))return;
+  try{
+    const token=localStorage.getItem('adminToken')||'';
+    const r=await fetch('/api/admin/delete',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({userId:id})
+    });
+    const d=await r.json();
+    if(d.success){
+      showToast('✅ حذف شد','success');
+      loadAdminData();
+    }else{
+      showToast('❌ '+d.error,'error');
+    }
+  }catch(e){showToast('❌ خطا','error');}
+}
 
-async function addUser(){const u=document.getElementById('newUserId').value.trim(),ed=parseInt(document.getElementById('newExpiryDays').value),tg=parseInt(document.getElementById('newTrafficGB').value);if(!u){showToast('❌ آیدی را وارد کنید','error');return}try{const r=await fetch('/api/admin/add',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+(localStorage.getItem('adminToken')||'')},body:JSON.stringify({userId:u,expiryDays:ed,trafficGB:tg})});const d=await r.json();if(d.success){showToast('✅ کاربر اضافه شد','success');loadAdminData();document.getElementById('newUserId').value=''}else{showToast('❌ '+d.error,'error')}}catch(e){showToast('❌ خطا','error')}}
+async function addUser(){
+  const u=document.getElementById('newUserId').value.trim();
+  const ed=parseInt(document.getElementById('newExpiryDays').value);
+  const tg=parseInt(document.getElementById('newTrafficGB').value);
+  if(!u){showToast('❌ آیدی را وارد کنید','error');return;}
+  try{
+    const token=localStorage.getItem('adminToken')||'';
+    const r=await fetch('/api/admin/add',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({userId:u,expiryDays:ed,trafficGB:tg})
+    });
+    const d=await r.json();
+    if(d.success){
+      showToast('✅ کاربر اضافه شد','success');
+      loadAdminData();
+      document.getElementById('newUserId').value='';
+    }else{
+      showToast('❌ '+d.error,'error');
+    }
+  }catch(e){showToast('❌ خطا','error');}
+}
 
-setInterval(()=>{if(document.getElementById('adminPanel').style.display!=='none')loadAdminData()},30000);
-document.addEventListener('DOMContentLoaded',function(){if(localStorage.getItem('adminToken')==='Tentacion'){document.getElementById('loginSection').style.display='none';document.getElementById('adminPanel').style.display='block';loadAdminData()}});
+// چک کردن خودکار لاگین
+document.addEventListener('DOMContentLoaded',function(){
+  const token=localStorage.getItem('adminToken');
+  if(token){
+    document.getElementById('loginSection').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    loadAdminData();
+  }
+});
+
+// به‌روزرسانی خودکار هر ۳۰ ثانیه
+setInterval(()=>{
+  if(document.getElementById('adminPanel').style.display!=='none')loadAdminData();
+},30000);
 </script>
 </body></html>`;
+// ============================================================
+// TAAKAA-XI v6.5 – بخش ۴: Worker اصلی
+// ============================================================
 
-// ============================================================
-// ===== WORKER اصلی =====
-// ============================================================
 export default {
   async fetch(request, env, ctx) {
     try {
@@ -699,3 +897,8 @@ export default {
     }
   }
 };
+
+
+
+
+
