@@ -3006,3 +3006,99 @@ const _cidrListCache = new Map(),
             mO = { c: '*lLT', f: '8Ys%', g: 0x7d4, h: 'b)3q', i: 0x19b6, j: 'wCGK', k: 'yxI7', l: 0x1179, m: 'oeP*', n: 0x631, o: '#sM9', p: 0x13de, q: 'dZbH', r: 0x1787, s: '$p[^', t: 0xc16, u: '8Ys%', v: 'jODS', w: 0x1104, x: '9rQu', y: 0x16e1, z: 'dbGg', A: 0xcae, B: '[]Y1', C: 'GzjL', D: 'dn8p', E: '6UCx', F: 0xbe5, G: 'dbGg', H: 0x2db, I: 'M5Ii', J: 0xa37, K: 0x97e, L: '[p9(', M: '5M6D', N: 0x19db, O: 'Pt3!', P: 0x67f, Q: 'w3Tt', R: 0x1ab0, S: 0x58f, T: 0x5da, U: 'Mmsl', V: 0x11cc, W: 'zs!c', X: 'zs!c', Y: 0x1bc1, Z: 0x6c8, a0: 0x1c3a, a1: '89Hn', a2: 'CeJW', a3: 0x9f1, a4: 0x19ae, a5: 0x204, a6: 0xdfa, a7: 'dZbH', a8: 0x947, a9: 0x1a38, aa: 0x1651, ab: 0x1d8e, ac: 0x179f, ad: 0x1a2c, ae: 0x11a1, af: 'dn8p' },
             mN = { c: 0x11d6 },
             g4 = fX;
+            try {
+    wrapKVWithD1(g);
+    if (!_kvMigratedFlag && g[g4(0x5a4, 'yxI7')] && h && typeof h[g4(mS.c, mS.f)] === g4(mS.g, 'jODS'))
+        h[g4(mS.h, '6UCx')](migrateKvToD1(g));
+    let j = f[g4(0x79a, mS.i)][g4(0x3b7, '[]Y1')](/%5[Cc]/g, '')[g4(mS.j, 'wCGK')](/\\/g, '');
+    const l = j[g4(0x11a0, 'rsIZ')]('#'),
+        o = l === -0x1 ? j : j[g4(mS.k, 'w3Tt')](0x0, l);
+    if (!o[g4(0x1daa, mS.l)]('?') && /%3f/i[g4(0xac9, mS.m)](o)) {
+        const H = l === -0x1 ? '' : j[g4(mS.n, 'NxG1')](l);
+        j = o[g4(mS.o, '*lLT')](/%3f/i, '?') + H;
+    }
+    const p = new URL(j),
+        q = f[g4(0x1a13, mS.p)][g4(mS.q, 'mRB^')](g4(mS.r, mS.s)) || g4(mS.t, mS.u),
+        s = (f[g4(0x812, '5M6D')][g4(mS.v, mS.w)](g4(0x1e7e, 'V#kN')) || '')[g4(0x449, '[]Y1')](),
+        t = (f[g4(mS.x, 'w(Wr')][g4(mS.y, mS.z)](g4(0x1c54, 'egod')) || '')[g4(mS.A, mS.B)](),
+        w = g[g4(0x1076, '60r9')] || g[g4(mS.C, '$p[^')] || g[g4(mS.D, 'NxG1')] || g[g4(mS.E, 'dn8p')] || g[g4(mS.F, 'dn8p')] || g[g4(0xeb8, mS.f)] || g[g4(mS.G, mS.H)] || g[g4(mS.I, mS.J)] || g[g4(mS.K, mS.J)];
+    let x = w,
+        z = g[g4(0x8d6, mS.L)];
+    if (!z && cachedAutoKey) z = cachedAutoKey;
+    if (!z && g['KV'] && typeof g['KV'][g4(mS.M, mS.N)] === g4(0x56b, mS.O))
+        try {
+            z = await g['KV'][g4(mS.P, 'V#kN')](g4(mS.Q, 'V#kN'));
+            !z && (z = Array[g4(0x1a1, mS.R)](crypto[g4(0x5e5, mS.S)](new Uint8Array(0x18)), I => g4(0xcba, 'PYt$')[I % 0x24])[g4(mS.T, mS.U)](''), await g['KV'][g4(0x1e73, '*lLT')](g4(0x1c71, 'CeJW'), z));
+            cachedAutoKey = z;
+        } catch (I) {}
+    if (!z) z = g4(mS.V, '%oj0');
+    if (g['KV'] && typeof g['KV'][g4(0x1402, mS.W)] === g4(mS.X, mS.Y)) {
+        if (cachedAdminPass !== null && Date[g4(0x1b51, mS.Z)]() - cachedAdminPassAt < 0xea60) {
+            if (cachedAdminPass) x = cachedAdminPass;
+        } else
+            try {
+                const J = await g['KV'][g4(mS.a0, 'CeJW')](g4(mS.a1, 'mRB^'));
+                J ? (x = J, cachedAdminPass = J, cachedAdminPassAt = Date[g4(mS.a2, mS.a3)]()) : (cachedAdminPass = '', cachedAdminPassAt = Date[g4(mS.a4, 'Gn7Q')]() - 0xd6d8);
+            } catch (K) {}
+    }
+    const A = g[g4(mS.a5, 'w(Wr')] || g[g4(0x15d0, '5M6D')];
+    let B;
+    if (A && uuidRegex[g4(0x161, '6UCx')](A)) B = A[g4(0x10bb, '$p[^')]();
+    else {
+        const L = w || x,
+            M = await MD5MD5(L + z),
+            N = [M[g4(mS.a6, 'C2T0')](0x0, 0x8), M[g4(0x164, 'V#kN')](0x8, 0xc), '4' + M[g4(mS.a7, mS.a8)](0xd, 0x10), '8' + M[g4(mS.a9, mS.u)](0x11, 0x14), M[g4(mS.aa, '#sM9')](0x14)][g4(0x14bf, 'ZgMu')]('-');
+        let O = null;
+        if (g['KV'] && typeof g['KV'][g4(mS.ab, 'NMJQ')] === g4(mS.ac, mS.a3)) {
+            if (cachedWorkerUUID !== null && Date[g4(0x1bb8, 'w3Tt')]() - cachedWorkerUUIDAt < 0x927c0) O = cachedWorkerUUID || null;
+            else
+                try {
+                    let P = await g['KV'][g4(0x539, mS.ad)](g4(0x1725, mS.ae));
+                    if (!P) { P = N; try { await g['KV'][g4(0x93f, '2#Qk')](g4(mS.af, '60r9'), P); } catch (Q) {} }
+                    cachedWorkerUUID = P || '', cachedWorkerUUIDAt = Date[g4(mS.ag, 'dn8p')](), O = P || null;
+                } catch (R) {}
+        }
+        B = O && uuidRegex[g4(0x1549, 'PSkb')](O) ? O[g4(0x10bb, '$p[^')]() : N;
+    }
+    const C = g[g4(0x15ca, '#sM9')] ? (await sortIntoArray(g[g4(0x114c, mS.ah)]))[g4(mS.ai, mS.aj)](S => S[g4(0xca9, 'w(Wr')]()[g4(0x1091, '9rQu')](/^https?:\/\//,'')[g4(0x5b4, 'XITC')]('/')[0x0][g4(0xecb, 'rsIZ')](':')[0x0]) : [p[g4(0xd44, mS.l)]],
+        D = C[0x0],
+        E = p[g4(0x9d4, '%oj0')][g4(0x1521, '[]Y1')](0x1)[g4(0x10f9, mS.ak)]();
+    debugLogPrint = ['1', g4(mS.al, mS.am)][g4(mS.an, '#sM9')](g[g4(mS.ao, mS.ap)]) || debugLogPrint;
+    if (g[g4(0x1b74, mS.aq)] || g[g4(mS.ar, mS.as)]) PagesstaticPages = String(g[g4(mS.at, 'yxI7')] || g[g4(mS.au, mS.aj)])[g4(0xa39, '7NO9')](/\/+$/, '') + '/';
+    if (g[g4(mS.av, 'vel(')]) {
+        const S = await sortIntoArray(g[g4(0x1eeb, mS.aw)]);
+        proxyIP = S[Math[g4(0x159, 'Mmsl')](Math[g4(mS.ax, mS.ay)]() * S[g4(mS.az, 'Pt3!')])], enableProxyFallback = ![];
+    } else proxyIP = (f['cf'][g4(0x390, mS.as)] + g4(0x130d, 'oeP*'))[g4(mS.aA, mS.aB)]();
+    nat64Config = g[g4(mS.aC, mS.aD)] || g[g4(mS.aE, 'egod')] || '';
+    const F = f[g4(0x67c, '[p9(')][g4(0xf99, mS.aF)](g4(0x2eb, mS.ak)) || f[g4(0x1ce3, 'dZbH')][g4(mS.aG, mS.aH)](g4(0x1985, mS.aF)) || f[g4(mS.aI, 'd%lH')][g4(0x1cfa, 'PYt$')](g4(mS.aJ, 'NxG1')) || f[g4(0x3a3, 'M5Ii')][g4(mS.y, 'Pt3!')](g4(mS.aK, '[p9(')) || f[g4(0xa09, mS.aL)][g4(mS.aM, mS.aN)](g4(mS.aO, mS.aP)) || f[g4(mS.aQ, '9rQu')][g4(0x1d56, 'yxI7')](g4(mS.aR, mS.aS)) || f[g4(mS.aT, 'w3Tt')][g4(0x1d7, '%oj0')](g4(0x1e28, 'Pt3!')) || g4(mS.aU, 'NxG1');
+    try {
+        if (g['KV'] && typeof g['KV'][g4(0x515, '89Hn')] === g4(mS.aV, mS.m)) {
+            if (cachedNetworkSettings && Date[g4(mS.aW, '2#Qk')]() - cachedNetworkSettingsAt < 0x7530) networkSettings = cachedNetworkSettings;
+            else {
+                const T = await g['KV'][g4(0x4cb, '*lLT')](g4(mS.aX, mS.aY));
+                networkSettings = T ? JSON[g4(mS.aZ, 'rsIZ')](T) : { 'enableRouting': !![], 'enableGeoIP': !![], 'enableGeoSite': !![], 'enableAdBlock': !![], 'enablePornBlock': ![], 'enableDomesticBypass': !![], 'enableDoH': !![], 'dohProvider': g4(0x1411, mS.H), 'enableLocalDNS': ![], 'localDNSIP': g4(mS.b0, '%oj0'), 'localDNSPort': '53', 'enableAntiSanctionDNS': ![], 'antiSanctionDNSProvider': g4(mS.b1, mS.b2), 'antiSanctionCustomDNS': '', 'enableFakeDNS': ![], 'fakeDNSIP': g4(0x91e, mS.b3), 'enableIPv6': !![], 'allowLAN': ![], 'logLevel': g4(mS.b4, mS.b5), 'enableWarp': ![], 'warpMode': g4(mS.b6, mS.aq), 'warpEndpoint': '', 'warpAmnezia': ![], 'customRules': '', 'bypassCountries': [], 'blockCategories': [], 'warpNoise': { 'mode': '', 'count': '', 'size': '', 'delay': '' } };
+                cachedNetworkSettings = networkSettings;
+                cachedNetworkSettingsAt = Date[g4(mS.b7, mS.J)]();
+            }
+        } else networkSettings = { 'enablePornBlock': ![], 'enableDomesticBypass': !![], 'enableAdBlock': !![] };
+    } catch (U) {
+        networkSettings = { 'enablePornBlock': ![], 'enableDomesticBypass': !![], 'enableAdBlock': !![] };
+    }
+    if (cachedSocks5Whitelist === null) {
+        if (g[g4(mS.b8, 'CeJW')]) SOCKS5whitelist = [...new Set(SOCKS5whitelist[g4(mS.b9, mS.ba)](await sortIntoArray(g[g4(mS.bb, mS.bc)])))];
+        cachedSocks5Whitelist = SOCKS5whitelist;
+    } else SOCKS5whitelist = cachedSocks5Whitelist;
+    if (networkSettings && networkSettings[g4(mS.bd, mS.be)] && g['KV'] && typeof g['KV'][g4(mS.bf, mS.bg)] === g4(mS.bh, mS.ba)) await refreshUserUsageIfStale(g);
+    {
+        const V = s === g4(mS.bi, mS.bj) || !E[g4(mS.bk, mS.bl)](g4(0x1fb, mS.bm)) && E !== g4(mS.bn, '0Ua@') && E !== g4(mS.bo, mS.bp) && f[g4(mS.bq, 'C2T0')] === g4(mS.br, mS.aq),
+            W = E === g4(0x174, 'b)3q') || E[g4(mS.bs, mS.s)](g4(mS.bt, 'Gn7Q'));
+        if (V || W) {
+            let X = config_JSON && config_JSON[g4(0x1946, '%oj0')] === !![];
+            if (!X)
+                try {
+                    const Y = await getConfigRaw(g);
+                    if (Y && /"paused"\s*:\s*true/[g4(mS.bu, 'Mmsl')](Y)) X = !![];
+                } catch (Z) {}
+            if (X) return new Response(g4(mS.bv, mS.W), { 'status': 0x1f7, 'headers': { 'Content-Type': g4(mS.bw, 'jODS'), 'Cache-Control': g4(mS.bx, 'V#kN') } });
+        }
+                                                                                                                                                                                                       }
