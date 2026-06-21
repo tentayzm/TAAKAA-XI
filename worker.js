@@ -407,7 +407,7 @@ class ConfigGenerator {
       isActive: trafficRemaining > 0 && new Date(expiry) > new Date()
     };
   }
-}
+  }
 // ============================================================
 // TAAKAA-XI v6.4 – بخش دوم (HTML_PANEL + Worker اصلی)
 // ============================================================
@@ -699,4 +699,3 @@ export default {
     }
   }
 };
-
