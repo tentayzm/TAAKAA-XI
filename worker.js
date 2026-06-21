@@ -938,7 +938,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 </body>
 </html>`;
 // ============================================================
-// TaaKaa-XI v1.0 - بخش ۷: Dashboard Body + Users + Logs UI
+// TaaKaa-XI v1.0 - بخش ۷: Dashboard Body + Users + Logs UI (FIXED)
 // ============================================================
 
 const DASHBOARD_BODY = `
@@ -947,12 +947,12 @@ const DASHBOARD_BODY = `
     <h2>⚡ TaaKaa-XI</h2>
     <p>${BUILDER_TAG}</p>
   </div>
-  <div class="nav-item active" onclick="showSection('dashboard')"><span>📊</span> داشبورد</div>
-  <div class="nav-item" onclick="showSection('users')"><span>👥</span> کاربران</div>
-  <div class="nav-item" onclick="showSection('addUser')"><span>➕</span> افزودن کاربر</div>
-  <div class="nav-item" onclick="showSection('logs')"><span>📜</span> لاگ‌ها</div>
-  <div class="nav-item" onclick="showSection('backup')"><span>💾</span> پشتیبان‌گیری</div>
-  <div class="nav-item" onclick="showSection('settings')"><span>⚙️</span> تنظیمات</div>
+  <div class="nav-item active" onclick="showSection('dashboard')"><span>📊</span> <span class="nav-text">داشبورد</span></div>
+  <div class="nav-item" onclick="showSection('users')"><span>👥</span> <span class="nav-text">کاربران</span></div>
+  <div class="nav-item" onclick="showSection('addUser')"><span>➕</span> <span class="nav-text">افزودن کاربر</span></div>
+  <div class="nav-item" onclick="showSection('logs')"><span>📜</span> <span class="nav-text">لاگ‌ها</span></div>
+  <div class="nav-item" onclick="showSection('backup')"><span>💾</span> <span class="nav-text">پشتیبان‌گیری</span></div>
+  <div class="nav-item" onclick="showSection('settings')"><span>⚙️</span> <span class="nav-text">تنظیمات</span></div>
 </div>
 
 <div class="main">
@@ -964,6 +964,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== DASHBOARD ====== -->
   <div id="dashboard" class="content-section active">
     <div class="stats-grid" id="statsGrid">
       <div class="stat-card">
@@ -1005,6 +1006,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== USERS ====== -->
   <div id="users" class="content-section">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
       <h2 style="color:#ff6b1a;">لیست کاربران</h2>
@@ -1026,6 +1028,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== ADD USER ====== -->
   <div id="addUser" class="content-section">
     <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;max-width:600px;">
       <h2 style="color:#ff6b1a;margin-bottom:20px;">➕ افزودن کاربر جدید</h2>
@@ -1097,6 +1100,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== LOGS ====== -->
   <div id="logs" class="content-section">
     <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
       <h2 style="color:#ff6b1a;margin-bottom:20px;">📜 لاگ‌ها</h2>
@@ -1104,6 +1108,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== BACKUP ====== -->
   <div id="backup" class="content-section">
     <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
       <h2 style="color:#ff6b1a;margin-bottom:20px;">💾 پشتیبان‌گیری</h2>
@@ -1112,6 +1117,7 @@ const DASHBOARD_BODY = `
     </div>
   </div>
 
+  <!-- ====== SETTINGS ====== -->
   <div id="settings" class="content-section">
     <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
       <h2 style="color:#ff6b1a;margin-bottom:20px;">⚙️ تنظیمات</h2>
@@ -1358,29 +1364,33 @@ async function loadStats() {
   } catch (e) {}
 }
 
+// ====== LOAD USERS (FIXED) ======
 async function loadUsers() {
   try {
     const data = await apiFetch('/api/users');
-    if (data.success) {
-      const tbody = document.getElementById('usersBody');
-      const users = data.users || {};
-      const entries = Object.entries(users);
+    const users = data.users || {};
+    const entries = Object.entries(users);
+    
+    const body = document.getElementById('usersBody');
+    if (!body) return;
+    
+    if (entries.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:30px;">هیچ کاربری ثبت نشده است</td></tr>';
+      return;
+    }
+    
+    const now = new Date();
+    body.innerHTML = entries.map(([id, user]) => {
+      const expiry = new Date(user.expiryDate);
+      const isActive = expiry > now && (user.trafficUsed || 0) < (user.trafficLimit || 0);
+      const statusClass = isActive ? 'active' : 'expired';
+      const statusText = isActive ? 'فعال' : 'منقضی';
+      const usedGB = parseGB(user.trafficUsed || 0);
+      const limitGB = parseGB(user.trafficLimit || 10737418240);
+      const flag = getFlag(user.country || 'DE');
       
-      if (entries.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:30px;">هیچ کاربری ثبت نشده است</td></tr>';
-        return;
-      }
-      
-      const now = new Date();
-      tbody.innerHTML = entries.map(([id, user]) => {
-        const expiry = new Date(user.expiryDate);
-        const isActive = expiry > now && (user.trafficUsed || 0) < (user.trafficLimit || 0);
-        const statusClass = isActive ? 'active' : 'expired';
-        const statusText = isActive ? 'فعال' : 'منقضی';
-        const usedGB = parseGB(user.trafficUsed || 0);
-        const limitGB = parseGB(user.trafficLimit || 10737418240);
-        const flag = getFlag(user.country || 'DE');
-        return `<tr>
+      return `
+        <tr>
           <td><strong>${id}</strong></td>
           <td>${flag} ${user.country || 'DE'}</td>
           <td>${expiry.toLocaleDateString('fa-IR')}</td>
@@ -1390,10 +1400,12 @@ async function loadUsers() {
             <button class="btn-sm danger" onclick="deleteUser('${id}')">🗑️</button>
             <button class="btn-sm success" onclick="renewUser('${id}')">🔄</button>
           </td>
-        </tr>`;
-      }).join('');
-    }
-  } catch (e) {}
+        </tr>
+      `;
+    }).join('');
+  } catch (e) {
+    console.error('loadUsers error:', e);
+  }
 }
 
 function filterUsers() {
