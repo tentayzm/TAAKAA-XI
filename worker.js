@@ -7676,4 +7676,1917 @@ function taakaaXiBlockPage(c) {
 </body>
 </html>`;
 }
-    
+    async function handleDoHRequest(c) {
+    const pa = { c: 0xc0b, f: 'M5Ii', g: 0x80d, h: 0x11ed, i: 0x1669, j: 'CeJW', k: 'rsIZ', l: 0xe3f, m: 'jODS', n: 0x11c2, o: 0xcf4, p: 'T3Fv', q: 'dn8p', r: 0x152a, s: '$p[^', t: 0x4a0, u: 0x12d8, v: '$BSl', w: 'ZgMu', x: 0x17dd, y: '9rQu', z: 0x113, A: 'zs!c', B: '#sM9', C: 'jODS', D: 0x13b8, E: '60r9', F: 'Pt3!', G: '%oj0', H: 0x1181, I: 0x1687, J: 0xa7a, K: '6UCx', L: 'w(Wr', M: 0xb04, N: 0x401, O: 'NMJQ', P: 'jODS', Q: '2#Qk', R: 0xf1d, S: 'n7E3', T: 0x18c4, U: 0x1e98, V: 0x1713, W: 'GzjL', X: 0x1adf, Y: 0x11e1, Z: 'dn8p', a0: 'b)3q', a1: 0x595, a2: 0x1cc9, a3: 'T3Fv', a4: '1qbp', a5: 0xe7e, a6: 'dZbH', a7: 'oeP*', a8: 0x1c7d, a9: 0x1ecc, aa: 0x1970, ab: 0x1e10, ac: 0x7db, ad: '$p[^', ae: 0xff9, af: 'PSkb', ag: 0x13cf, ah: 'vel(', ai: 0x168b, aj: 0x8f7, ak: '0Ua@', al: 'dbGg', am: 'Mmsl', an: '1qbp', ao: 'wCGK', ap: 0x1e40, aq: '60r9', ar: 0x7a9, as: 'w3Tt', at: 0x8c6, au: 0x1856, av: 0x1e55, aw: '89Hn', ax: 0x16a2, ay: 0xfa6, az: 0x1336, aA: 'egod', aB: 0x1ecf, aC: 0xb9c, aD: 0x1d9a, aE: '7NO9', aF: 0x1d62, aG: 0x11d2, aH: 0xfdc, aI: 0x10e9, aJ: 0xa58, aK: 0x112a },
+        ia = fX,
+        f = new URL(c[ia(pa.c, pa.f)]);
+    if (c[ia(pa.g, '[]Y1')] === ia(0xfa2, 'dbGg')) return new Response(null, { 'status': 0xcc, 'headers': { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': ia(pa.h, 'IcEg'), 'Access-Control-Allow-Headers': ia(pa.i, pa.j), 'Access-Control-Max-Age': ia(0x1f2, pa.k) } });
+    if (![ia(0x354, 'M5Ii'), ia(0x4c2, 'egod')][ia(0x1508, 'ZgMu')](c[ia(0x11e6, '9rQu')])) return new Response(ia(pa.l, pa.m), { 'status': 0x195 });
+    if (c[ia(pa.n, 'GzjL')] === ia(pa.o, pa.p) && !f[ia(0x154b, pa.q)][ia(pa.r, pa.s)](ia(pa.t, 'yxI7')) && !f[ia(0x1935, 'V#kN')][ia(pa.u, 'Pt3!')](ia(0x172d, pa.v))) {
+        const j = f[ia(0xafe, pa.w)] + '//' + f[ia(0xfe0, pa.s)] + f[ia(pa.x, pa.y)],
+            k = ia(0x53e, '2#Qk') + j + ia(pa.z, pa.A);
+        return new Response(k, { 'status': 0xc8, 'headers': { 'Content-Type': ia(0xc55, 'XITC'), 'Cache-Control': ia(0x1783, pa.k) } });
+    }
+    if (c[ia(0x1c38, pa.B)] === ia(0x1cc0, pa.C) && f[ia(pa.D, pa.E)][ia(0x12d8, pa.F)](ia(0x1b60, pa.w))) {
+        const l = [ia(0x1938, pa.m), ia(0x1424, 'vel('), ia(0x16aa, pa.G)];
+        for (const m of l) {
+            try {
+                const n = await fetch(m + f[ia(pa.H, 'M5Ii')], { 'headers': { 'Accept': ia(0x1cf6, '%oj0'), 'User-Agent': ia(pa.I, '8Ys%') }, 'redirect': ia(0x32f, 'w3Tt') });
+                if (!n['ok']) continue;
+                const o = await n[ia(pa.J, pa.K)]();
+                return new Response(o, { 'status': 0xc8, 'headers': { 'Content-Type': ia(0x1cc8, pa.L), 'Access-Control-Allow-Origin': '*', 'Cache-Control': ia(pa.M, pa.F) } });
+            } catch (p) {}
+        }
+        return new Response(JSON[ia(pa.N, pa.O)]({ 'Status': 0x2, 'error': ia(0xe50, pa.P) }), { 'status': 0x1f6, 'headers': { 'Content-Type': ia(0xd49, '$p[^'), 'Access-Control-Allow-Origin': '*' } });
+    }
+    const g = [{ 'name': ia(0x7ad, '6UCx'), 'url': ia(0x83a, '9rQu') }, { 'name': ia(0x183f, pa.Q), 'url': ia(pa.R, pa.S) }, { 'name': ia(pa.T, 'vel('), 'url': ia(pa.U, 'dZbH') }, { 'name': ia(pa.V, pa.W), 'url': ia(pa.X, 'w(Wr') }, { 'name': ia(pa.Y, '7NO9'), 'url': ia(0x192f, pa.Z) }, { 'name': ia(0xf55, '$BSl'), 'url': ia(0xe2b, pa.a0) }, { 'name': ia(0x1b88, '2#Qk'), 'url': ia(pa.a1, 'NxG1') }],
+        h = c[ia(pa.a2, pa.a3)] === ia(0x1461, pa.a4) ? await c[ia(pa.a5, 'rsIZ')]()[ia(0xf5e, pa.a6)](() => null) : null;
+    let i = '';
+    for (const q of g) {
+        try {
+            const s = new Headers();
+            s[ia(0x17a5, pa.a7)](ia(pa.a8, '[]Y1'), ia(pa.a9, '7NO9')), s[ia(pa.aa, 'vel(')](ia(0x13f, '*lLT'), ia(pa.ab, 'yxI7'));
+            if (c[ia(pa.ac, 'PYt$')] === ia(0x1d9e, 'NxG1')) s[ia(0x1970, 'vel(')](ia(0x10d8, pa.ad), ia(pa.ae, pa.af));
+            const t = new Request(q[ia(pa.ag, pa.ah)] + f[ia(pa.ai, 'n7E3')], { 'method': c[ia(pa.aj, pa.ak)], 'headers': s, 'body': h, 'redirect': ia(0xafb, pa.al) }),
+                u = await fetch(t);
+            if (!u['ok']) { i = q[ia(0x9ef, pa.am)] + ia(0xd0a, pa.an) + u[ia(0x13d4, pa.ao)]; continue; }
+            const v = await u[ia(pa.ap, pa.aq)]();
+            if (!v || v[ia(pa.ar, pa.as)] === 0x0) { i = q[ia(pa.at, 'dbGg')] + ia(pa.au, pa.v); continue; }
+            const w = new Headers();
+            return w[ia(pa.av, 'V#kN')](ia(0xaa7, pa.aw), ia(pa.ax, pa.ao)), w[ia(pa.ay, 'GzjL')](ia(pa.az, 'PSkb'), '*'), w[ia(0xf9d, pa.aA)](ia(0xfaa, '9rQu'), ia(pa.aB, '7NO9')), w[ia(pa.aC, '$p[^')](ia(pa.aD, '9rQu'), ia(0xb60, pa.aE)), w[ia(pa.aF, pa.v)](ia(pa.aG, 'dn8p'), ia(pa.aH, pa.k)), new Response(v, { 'status': 0xc8, 'headers': w });
+        } catch (x) { i = q[ia(pa.aI, pa.P)] + ':\x20' + (x && x[ia(0x73a, 'M5Ii')] ? x[ia(0x6aa, pa.a0)] : String(x)); }
+    }
+    return new Response(ia(pa.aJ, 'M5Ii') + i + ')', { 'status': 0x1f6, 'headers': { 'Content-Type': ia(pa.aK, 'zs!c'), 'Access-Control-Allow-Origin': '*' } });
+}
+
+function getDateKey(c) {
+    const pb = { c: 'oeP*', f: 0x544, g: 0x177, h: 0x1d98 },
+        ib = fX,
+        f = c || new Date();
+    return f[ib(0x704, pb.c)]() + '-' + String(f[ib(0x100c, 'jODS')]() + 0x1)[ib(pb.f, 'wCGK')](0x2, '0') + '-' + String(f[ib(pb.g, 'PYt$')]())[ib(pb.h, 'n7E3')](0x2, '0');
+}
+
+function getMonthKey(c) {
+    const pc = { c: 0x142c, f: '6UCx', g: 0x1676, h: 'mRB^', i: 0x1762 },
+        ic = fX,
+        f = c || new Date();
+    return f[ic(pc.c, pc.f)]() + '-' + String(f[ic(pc.g, pc.h)]() + 0x1)[ic(pc.i, 'dn8p')](0x2, '0');
+}
+
+let connUserId = null,
+    connRejectReason = null,
+    userUsageCache = {},
+    userUsageCacheAt = 0x0,
+    userDayUsageCache = {},
+    userDayUsageCacheDay = '';
+
+async function refreshUserUsageIfStale(c) {
+    const pe = { c: 'dZbH', f: '#sM9', g: 'vel(', h: '0Ua@' },
+        pd = { c: 0x1020, f: 'wCGK', g: 'd%lH', h: '%oj0' },
+        id = fX;
+    if (Date[id(0x1016, pe.c)]() - userUsageCacheAt < 0xea60) return;
+    userUsageCacheAt = Date[id(0x7ec, '0Ua@')]();
+    const f = getDateKey(new Date());
+    userDayUsageCacheDay !== f && (userDayUsageCache = {}, userDayUsageCacheDay = f);
+    try {
+        const g = networkSettings && Array[id(0x16da, 'd%lH')](networkSettings[id(0xa3d, 'T3Fv')]) ? networkSettings[id(0x941, pe.f)] : [],
+            h = {},
+            i = getDateKey(new Date()),
+            j = {};
+        await Promise[id(0x62a, pe.g)](g[id(0x271, pe.h)](async k => {
+            const ie = id;
+            if (!k || !k['id']) return;
+            try {
+                const l = await usageGet(c, ie(pd.c, 'rsIZ') + k['id']);
+                h[k['id']] = l && l[ie(0x552, pd.f)] || 0x0;
+            } catch (m) { h[k['id']] = userUsageCache[k['id']] || 0x0; }
+            try {
+                const n = await usageGet(c, ie(0xf46, pd.g) + k['id'] + ':' + i);
+                j[k['id']] = n && n[ie(0x61b, pd.h)] || 0x0;
+            } catch (o) { j[k['id']] = userDayUsageCache[k['id']] || 0x0; }
+        })), userUsageCache = h, userDayUsageCache = j, userDayUsageCacheDay = i;
+    } catch (k) {}
+}
+
+function resolveConnUser(c) {
+    const pf = { c: 0x1826, f: '%oj0', g: '1qbp', h: 0x8f3, i: '6UCx', j: 'PYt$', k: 'mRB^', l: 0xc35, m: 0x7c3, n: 'T3Fv', o: 0x15a9, p: '*lLT', q: 0x182e, r: 0x1cdb, s: 0x14b3, t: 'PSkb', u: 0x1708, v: 'b)3q', w: 0xf2e },
+        ig = fX;
+    connUserId = null, connRejectReason = null;
+    if (!networkSettings || !Array[ig(0x105d, 'NMJQ')](networkSettings[ig(pf.c, pf.f)])) return;
+    const f = c[ig(0x1446, pf.g)][ig(0x511, 'Gn7Q')]('u');
+    if (!f) return;
+    const g = networkSettings[ig(pf.h, pf.i)][ig(0x1ce8, pf.j)](h => h && h[ig(0x135e, '*lLT')] === f);
+    if (!g) { connRejectReason = ig(0x1e4d, 'yxI7'); return; }
+    if (g[ig(0x158, 'PSkb')] === ![]) { connRejectReason = ig(0x214, pf.k); return; }
+    if (g[ig(0xc9c, 'PYt$')]) {
+        const h = Date[ig(pf.l, 'n7E3')](g[ig(pf.m, 'PSkb')]);
+        if (!isNaN(h) && Date[ig(0x6eb, pf.n)]() > h) { connRejectReason = ig(pf.o, pf.p); return; }
+    }
+    if (g[ig(pf.q, '[p9(')]) {
+        const i = userUsageCache[g['id']] || 0x0;
+        if (i >= g[ig(pf.r, 'egod')]) { connRejectReason = ig(pf.s, pf.t); return; }
+    }
+    if (g[ig(pf.u, pf.v)]) {
+        const j = userDayUsageCache[g['id']] || 0x0;
+        if (j >= g[ig(0x1193, '[p9(')]) { connRejectReason = ig(pf.w, '$BSl'); return; }
+    }
+    connUserId = g['id'];
+}
+
+let _d1Ready = ![],
+    _logIns = 0x0;
+
+function hasD1(c) {
+    const ih = fX;
+    return !!(c && c['DB'] && typeof c['DB'][ih(0x20b, '#sM9')] === ih(0x1ee6, 'dbGg'));
+}
+
+async function d1Init(c) {
+    const ph = { c: 0x1532, f: 'V#kN', g: 0x1e41, h: '89Hn', i: 0x18a2, j: '$BSl', k: 'zs!c', l: 0xe91, m: 0x4e1, n: 'Mmsl' },
+        ii = fX;
+    if (_d1Ready || !hasD1(c)) return _d1Ready;
+    try {
+        await c['DB'][ii(ph.c, ph.f)]([c['DB'][ii(0x14a2, 'IcEg')](ii(0x139c, 'vel(')), c['DB'][ii(ph.g, ph.h)](ii(ph.i, ph.j)), c['DB'][ii(0x172b, ph.k)](ii(ph.l, 'NMJQ'))]), _d1Ready = !![];
+    } catch (f) { console[ii(0x6a8, '89Hn')](ii(0x11ba, '89Hn') + (f && f[ii(ph.m, ph.n)] || f)); }
+    return _d1Ready;
+}
+
+function wrapKVWithD1(c) {
+    const po = { c: 0x58c, f: 'XITC', g: 0x5bb, h: 'PYt$', i: 'NxG1', j: 0x184c, k: 'V#kN' },
+        pn = { c: 0x168, f: '8Ys%', g: '0Ua@', h: 0x65e, i: 'M5Ii', j: 0x1196 },
+        pm = { c: 0x1ff, f: 0xdd1, g: '89Hn', h: 0x15b6, i: 'CeJW', j: 0x1aaa },
+        pk = { c: '%oj0', f: 'M5Ii', g: 0x1367, h: 0x1c76, i: 'oeP*', j: 0x9d0, k: 'dZbH', l: 0xf5e },
+        pi = { c: 0x1836, f: 0xda8, g: '$BSl', h: 0x49b, i: 0xf92, j: 0x196c, k: 0x16c6, l: '8Ys%', m: 0x1903, n: 'PSkb', o: 0x1c76, p: 'oeP*', q: 0x4cb },
+        ij = fX;
+    if (!c || c[ij(po.c, '2#Qk')] || !hasD1(c)) return;
+    const f = c['KV'] && typeof c['KV'][ij(0x67a, po.f)] === ij(0x1ee6, 'dbGg') ? c['KV'] : null;
+    c[ij(po.g, po.h)] = f, c[ij(0xd63, po.i)] = !!f, c['KV'] = {
+        '__real': f,
+        'get': async(g, h) => {
+            const ik = ij;
+            if (h && f) return f[ik(0x8c0, '#sM9')](g, h);
+            try {
+                if (await d1Init(c)) {
+                    const i = await c['DB'][ik(pi.c, 'b)3q')](ik(pi.f, pi.g))[ik(pi.h, 'PYt$')](g)[ik(0x84b, 'vel(')]();
+                    if (i && i['v'] != null) return i['v'];
+                    if (f) {
+                        const j = await f[ik(pi.i, '8Ys%')](g);
+                        if (j != null)
+                            try { await c['DB'][ik(pi.j, 'w(Wr')](ik(pi.k, pi.l))[ik(pi.m, pi.n)](g, j, Date[ik(pi.o, pi.p)]())[ik(0x9d0, 'NMJQ')](); } catch (l) {}
+                        return j;
+                    }
+                    return null;
+                }
+            } catch (m) {}
+            return f ? f[ik(pi.q, '*lLT')](g, h) : null;
+        },
+        'put': async(g, h, i) => {
+            const il = ij;
+            try {
+                if (typeof h === il(0x123d, pk.c) && await d1Init(c)) await c['DB'][il(0x10ae, 'd%lH')](il(0x1998, pk.f))[il(pk.g, 'Pt3!')](g, h, Date[il(pk.h, pk.i)]())[il(pk.j, 'NMJQ')]();
+            } catch (j) {}
+            if (f)
+                try { f[il(0x1dd0, pk.k)](g, h, i)[il(pk.l, pk.k)](() => {}); } catch (l) {}
+        },
+        'delete': async g => {
+            const im = ij;
+            try {
+                if (await d1Init(c)) await c['DB'][im(pm.c, '2#Qk')](im(pm.f, pm.g))[im(0x6f7, '2#Qk')](g)[im(pm.h, pm.i)]();
+            } catch (h) {}
+            if (f)
+                try { f[im(0x1782, 'yxI7')](g)[im(pm.j, 'PSkb')](() => {}); } catch (i) {}
+        },
+        'list': async g => {
+            const io = ij;
+            g = g || {};
+            try {
+                if (await d1Init(c)) {
+                    const h = await c['DB'][io(0x1a4f, 'GzjL')](io(0x7f5, 'dn8p'))[io(pn.c, pn.f)]((g[io(0x4cd, pn.g)] || '') + '%')[io(pn.h, pn.g)]();
+                    return { 'keys': (h[io(0x9b1, pn.i)] || [])[io(pn.j, 'Mmsl')](i => ({ 'name': i['k'] })), 'list_complete': !![], 'cursor': null };
+                }
+            } catch (i) {}
+            return f ? f[io(0xe81, 'vel(')](g) : { 'keys': [], 'list_complete': !![], 'cursor': null };
+        }
+    }, c[ij(po.j, po.k)] = !![];
+}
+
+async function migrateKvToD1(c) {
+    const pp = { c: 0x10de, f: 'T3Fv', g: '1qbp', h: 0x1333, i: 0x13d3, j: 0x12a2, k: 'C2T0', l: 0x11ac, m: 0x2ae, n: 0x2cf, o: 0x1c46, p: 'oeP*', q: 0x1027, r: 'Pt3!', s: 0x4cb, t: '*lLT', u: 0x1c6e, v: 'n7E3', w: 0x2af, x: '$p[^', y: 0xace, z: 0x856, A: 'NMJQ', B: 0xf4e, C: '8Ys%', D: 0x16f9, E: '%oj0', F: 0x1e97, G: 'M5Ii', H: 0x492, I: 'mRB^', J: 0x680, K: 0xf45, L: '0Ua@', M: 'w(Wr', N: 0xaa2 },
+        ip = fX;
+    try {
+        if (!hasD1(c) || !c[ip(pp.c, pp.f)]) return;
+        if (!await d1Init(c)) return;
+        const f = await c['DB'][ip(0xbf6, pp.g)](ip(pp.h, '[p9('))[ip(pp.i, '#sM9')](ip(pp.j, pp.k))[ip(pp.l, 'oeP*')]();
+        if (f && f['v']) { _kvMigratedFlag = !![];
+            return; }
+        let g, h = 0x0;
+        do {
+            const i = await c[ip(pp.m, '1qbp')][ip(pp.n, 'dZbH')]({ 'cursor': g });
+            for (const j of i[ip(pp.o, pp.p)] || []) {
+                try {
+                    const k = await c[ip(pp.q, pp.r)][ip(pp.s, pp.t)](j[ip(pp.u, pp.v)]);
+                    k != null && (await c['DB'][ip(0xbf6, pp.g)](ip(pp.w, 'd%lH'))[ip(0x6d4, 'w3Tt')](j[ip(0x1073, pp.x)], k, Date[ip(0x7b8, '$BSl')]())[ip(pp.y, 'oeP*')](), h++);
+                } catch (l) {}
+            }
+            g = i[ip(pp.z, pp.A)] ? null : i[ip(pp.B, '%oj0')];
+        } while (g);
+        await c['DB'][ip(0x187e, pp.C)](ip(pp.D, pp.E))[ip(0x38f, '6UCx')](ip(pp.F, pp.G), String(Date[ip(pp.H, '2#Qk')]()), Date[ip(0xa35, pp.I)]())[ip(pp.J, '$p[^')](), _kvMigratedFlag = !![], console[ip(0x1c89, pp.A)](ip(pp.K, pp.L) + h + ip(0x1257, pp.M));
+    } catch (m) { console[ip(pp.N, 'd%lH')](ip(0x1507, 'GzjL') + (m && m[ip(0xf66, 'ZgMu')] || m)); }
+                                                                                                                                                                                                              }
+    async function usageGet(c, f) {
+    const pq = { c: 'zs!c', f: 0xeab, g: 'NMJQ', h: 0x10ca, i: '[p9(', j: 0x536, k: 0x511, l: 'Gn7Q' },
+        iq = fX;
+    if (hasD1(c) && await d1Init(c))
+        try {
+            const g = await c['DB'][iq(0x172b, pq.c)](iq(0x99a, 'T3Fv'))[iq(pq.f, pq.g)](f)[iq(0x17fb, '[p9(')]();
+            return g ? { 'up': g['up'] || 0x0, 'down': g[iq(0x101e, 'dn8p')] || 0x0, 'total': g[iq(pq.h, pq.i)] || 0x0 } : null;
+        } catch (h) { console[iq(pq.j, 'egod')](iq(0x180f, 'NMJQ') + h); }
+    try { return JSON[iq(0x8fa, 'yxI7')](await c['KV'][iq(pq.k, pq.l)](f) || iq(0xa66, pq.i)); } catch (i) { return null; }
+}
+
+async function usageAdd(c, f, g, h) {
+    const pr = { c: 0x104f, f: '5M6D', g: '*lLT', h: 0x1b6d, i: '1qbp', j: 0x591, k: 'ZgMu', l: 0x1def, m: 'w(Wr', n: 'NMJQ', o: 0x17fc, p: 'vel(', q: 'b)3q', r: 'GzjL', s: '[p9(', t: 0x64e, u: 'CeJW' },
+        ir = fX;
+    g = g || 0x0, h = h || 0x0;
+    if (hasD1(c) && await d1Init(c))
+        try {
+            const j = await c['DB'][ir(pr.c, pr.f)](ir(0xa10, '$BSl'))[ir(0x12b1, pr.g)](f, g, h, g + h, g, h, g + h)[ir(0x1c82, 'C2T0')]();
+            return j && j[ir(0x4dd, 'GzjL')] || 0x0;
+        } catch (l) { console[ir(pr.h, 'yxI7')](ir(0xabe, '[p9(') + l); }
+    let i;
+    try { i = JSON[ir(0xec8, pr.i)](await c['KV'][ir(pr.j, pr.k)](f) || ir(pr.l, pr.m)); } catch (m) { i = null; }
+    if (!i || typeof i !== ir(0x12b4, pr.n)) i = { 'up': 0x0, 'down': 0x0, 'total': 0x0 };
+    return i['up'] = (i['up'] || 0x0) + g, i[ir(0x1706, 'zs!c')] = (i[ir(pr.o, pr.p)] || 0x0) + h, i[ir(0x11d6, pr.q)] = (i[ir(0x4dd, pr.r)] || 0x0) + g + h, await c['KV'][ir(0x1543, pr.s)](f, JSON[ir(pr.t, pr.u)](i)), i[ir(0xf32, 'Gn7Q')];
+}
+
+async function usageReset(c, f) {
+    const ps = { c: 'w(Wr', f: 0x8f2, g: 'yxI7', h: '0Ua@', i: '9rQu' },
+        is = fX;
+    if (hasD1(c) && await d1Init(c))
+        try { return await c['DB'][is(0x196c, ps.c)](is(0x60f, '0Ua@'))[is(ps.f, ps.g)](f, 0x0, 0x0, 0x0)[is(0x131, '[]Y1')](), !![]; } catch (g) { console[is(0x34e, ps.h)](is(0x1fd, ps.c) + g); }
+    try { await c['KV'][is(0x1aa9, 'yxI7')](f, JSON[is(0x48f, ps.i)]({ 'up': 0x0, 'down': 0x0, 'total': 0x0 })); } catch (h) {}
+    return !![];
+}
+
+async function usageListMonths(f) {
+    const pt = { c: 0xf61, f: 0x1870, g: 0x477, h: '[]Y1', i: 'Gn7Q', j: 0x37f, k: 'NMJQ', l: 0x38c, m: 'M5Ii', n: 0x179c, o: 0x15b7, p: '2#Qk', q: 0x178a, r: 'egod', s: 0x99f, t: 'dbGg', u: 'PSkb', v: 0x1730, w: 'PYt$', x: 0x101e, y: 'dn8p', z: '6UCx', A: 0x1a5a, B: 'NxG1' },
+        it = fX;
+    if (hasD1(f) && await d1Init(f))
+        try {
+            const i = await f['DB'][it(pt.c, 'C2T0')](it(pt.f, 'CeJW'))[it(0x17c0, 'd%lH')]();
+            return (i[it(pt.g, pt.h)] || [])[it(0x1dc, pt.i)](j => ({ 'name': j['k'], 'up': j['up'] || 0x0, 'down': j[it(0x3c2, '0Ua@')] || 0x0, 'total': j[it(0x921, 'PYt$')] || 0x0 }));
+        } catch (j) { console[it(pt.j, pt.k)](it(pt.l, pt.m) + j); }
+    const g = [];
+    let h;
+    do {
+        const k = await f['KV'][it(pt.n, 'XITC')]({ 'prefix': it(pt.o, pt.p), 'cursor': h });
+        for (const m of k[it(pt.q, pt.r)]) {
+            try {
+                const n = JSON[it(0xc10, 'ZgMu')](await f['KV'][it(pt.s, pt.t)](m[it(0x14d8, 'GzjL')]) || it(0x1d40, pt.u));
+                if (n) g[it(pt.v, pt.w)]({ 'name': m[it(0x47c, 'b)3q')], 'up': n['up'] || 0x0, 'down': n[it(pt.x, pt.y)] || 0x0, 'total': n[it(0x382, pt.z)] || 0x0 });
+            } catch (o) {}
+        }
+        h = k[it(pt.A, pt.B)] ? null : k[it(0x881, pt.w)];
+    } while (h);
+    return g;
+}
+
+async function logReadAll(c) {
+    const pu = { c: 0xe3e, f: 'jODS', g: 'PSkb', h: 0xdf8, i: 'NMJQ', j: 'egod', k: '5M6D', l: 0x69d },
+        iu = fX;
+    if (hasD1(c) && await d1Init(c))
+        try {
+            const f = await c['DB'][iu(0x1527, '7NO9')](iu(pu.c, pu.f))[iu(0x1422, 'C2T0')]();
+            return f[iu(0xe3a, 'Mmsl')] || [];
+        } catch (g) { console[iu(0x1480, pu.g)](iu(pu.h, pu.i) + g); }
+    try { return JSON[iu(0xe78, pu.j)](await c['KV'][iu(0xd31, pu.k)](iu(pu.l, 'T3Fv')) || '[]'); } catch (h) { return []; }
+}
+
+async function logWriteD1(c, f, g, h, i, j) {
+    const pv = { c: 0xb10, f: 'wCGK', g: 0x1836, h: 'b)3q', i: 0xc7f, j: 'dbGg', k: 0x1b5b, l: 0x1b6e, m: '#sM9', n: '9rQu', o: 0x340, p: 'NxG1', q: 0x1903, r: 0x105, s: '8Ys%', t: 0x1369, u: 0xa40, v: 'dbGg', w: 0x549, x: '5M6D', y: 0x196c, z: 'w(Wr', A: 0x1810, B: 0x11a5 },
+        iv = fX;
+    if (!(hasD1(c) && await d1Init(c))) return ![];
+    try {
+        if (h !== iv(pv.c, pv.f)) {
+            const k = j[iv(0x1a88, '0Ua@')]() - 0x1e * 0x3c * 0x3e8,
+                l = await c['DB'][iv(pv.g, pv.h)](iv(0x1720, 'egod'))[iv(pv.i, pv.j)](f, g[iv(pv.k, 'dZbH')], i['UA'], k)[iv(pv.l, pv.m)]();
+            if (l) return !![];
+        }
+        await c['DB'][iv(0x1be5, pv.n)](iv(pv.o, pv.p))[iv(pv.q, 'PSkb')](i[iv(pv.r, 'dbGg')], i['IP'], i[iv(0x236, pv.s)], i['CC'], i[iv(pv.t, 'V#kN')], i['UA'], i[iv(pv.u, pv.v)])[iv(pv.w, pv.x)](), _logIns = (_logIns + 0x1) % 0xc8;
+        if (_logIns === 0x0)
+            try { await c['DB'][iv(pv.y, pv.z)](iv(pv.A, '8Ys%'))[iv(0xf1c, 'rsIZ')](); } catch (m) {}
+        return !![];
+    } catch (n) { return console[iv(0x455, '6UCx')](iv(pv.B, pv.x) + n), ![]; }
+}
+
+let _uusagePending = {},
+    _uusageLastFlush = 0x0,
+    _uusageFlushing = ![];
+const USAGE_FLUSH_MS = 0x5 * 0x3c * 0x3e8,
+    USAGE_FLUSH_BYTES = 0xc8 * 0x400 * 0x400;
+
+async function flushUserUsage(c) {
+    const pw = { c: 'd%lH', f: 0xad0, g: 0xf27, h: 'XITC', i: '0Ua@', j: 'yxI7', k: 0x170b, l: 'w3Tt' },
+        iw = fX;
+    if (_uusageFlushing) return;
+    _uusageFlushing = !![];
+    try {
+        const f = _uusagePending;
+        _uusagePending = {};
+        for (const g of Object[iw(0x1485, pw.c)](f)) {
+            const h = f[g]['up'],
+                i = f[g][iw(pw.f, '[]Y1')];
+            if (h + i <= 0x0) continue;
+            try {
+                userUsageCache[g] = await usageAdd(c, iw(pw.g, pw.h) + g, h, i);
+                const j = getDateKey(new Date()),
+                    k = await usageAdd(c, iw(0x533, pw.i) + g + ':' + j, h, i);
+                userDayUsageCacheDay !== j && (userDayUsageCache = {}, userDayUsageCacheDay = j), userDayUsageCache[g] = k && k[iw(0x15f8, pw.j)] || (userDayUsageCache[g] || 0x0) + h + i;
+            } catch (l) {
+                if (!_uusagePending[g]) _uusagePending[g] = { 'up': 0x0, 'down': 0x0 };
+                _uusagePending[g]['up'] += h, _uusagePending[g][iw(pw.k, pw.l)] += i;
+            }
+        }
+    } finally { _uusageFlushing = ![]; }
+}
+
+function recordUserUsage(c, f, g, h, i) {
+    const py = { c: 0x1bf2, f: 0xf41, g: '%oj0', h: '$BSl', i: 0x9c6 },
+        ix = fX;
+    if (!f) return;
+    if (!_uusagePending[f]) _uusagePending[f] = { 'up': 0x0, 'down': 0x0 };
+    _uusagePending[f]['up'] += g || 0x0, _uusagePending[f][ix(0x15c8, 'V#kN')] += h || 0x0, userUsageCache[f] = (userUsageCache[f] || 0x0) + (g || 0x0) + (h || 0x0);
+    {
+        const k = getDateKey(new Date());
+        userDayUsageCacheDay !== k && (userDayUsageCache = {}, userDayUsageCacheDay = k), userDayUsageCache[f] = (userDayUsageCache[f] || 0x0) + (g || 0x0) + (h || 0x0);
+    }
+    const j = Date[ix(py.c, 'w(Wr')]();
+    if (j - _uusageLastFlush < USAGE_FLUSH_MS) return;
+    _uusageLastFlush = j;
+    if (i && i[ix(py.f, py.g)]) i[ix(0x1bd, py.h)](flushUserUsage(c));
+    else flushUserUsage(c)[ix(py.i, 'yxI7')](() => {});
+}
+
+let usagePending = { 'up': 0x0, 'down': 0x0 },
+    usageLastFlush = 0x0,
+    usageFlushing = ![];
+
+async function flushUsage(c) {
+    const pz = { c: 0xfdf, f: 'd%lH', g: 0xecc, h: 0xb4c, i: '%oj0', j: 0x536, k: 'egod', l: 0x1282, m: 'V#kN', n: 'zs!c' },
+        iy = fX;
+    if (usageFlushing) return;
+    const f = usagePending['up'],
+        g = usagePending[iy(0xb4c, '%oj0')];
+    if (f + g <= 0x0) return;
+    usageFlushing = !![], usagePending = { 'up': 0x0, 'down': 0x0 };
+    try {
+        const h = new Date();
+        await usageAdd(c, iy(pz.c, pz.f) + getDateKey(h), f, g), await usageAdd(c, iy(pz.g, 'NMJQ') + getMonthKey(h), f, g);
+    } catch (i) { usagePending['up'] += f, usagePending[iy(pz.h, pz.i)] += g, console[iy(pz.j, pz.k)](iy(pz.l, pz.m) + (i[iy(0x7a5, pz.n)] || i)); } finally { usageFlushing = ![]; }
+}
+
+function recordUsage(c, f, g, h) {
+    const pB = { c: 0x1bf2, f: 'w(Wr', g: 0x823, h: 'V#kN', i: 0xb9e, j: 'PYt$', k: 0x1aaa, l: 'PSkb' },
+        iz = fX;
+    usagePending['up'] += f || 0x0, usagePending[iz(0x1900, 'mRB^')] += g || 0x0;
+    const i = usagePending['up'] + usagePending[iz(0x15c8, 'V#kN')];
+    if (i <= 0x0) return;
+    const j = Date[iz(pB.c, pB.f)]();
+    if (j - usageLastFlush < USAGE_FLUSH_MS && i < USAGE_FLUSH_BYTES) return;
+    usageLastFlush = j;
+    if (h && h[iz(pB.g, pB.h)]) h[iz(pB.i, pB.j)](flushUsage(c));
+    else flushUsage(c)[iz(pB.k, pB.l)](() => {});
+                }
+    async function bestIP(c, f, g = fX(0x9f0, '$p[^')) {
+    const pK = { c: 'ZgMu', f: 0x1d17, g: 'w3Tt', h: 'mRB^', i: 0x2fe, j: '$BSl', k: 0x8a8, l: '$p[^', m: 0x72f, n: 'd%lH', o: '$BSl', p: 0x1ecb, q: 0x1b29, r: 0x2c6, s: 'PYt$', t: 'dZbH', u: '*lLT', v: 0x1aaf, w: 'C2T0', x: 0x213, y: 'yxI7', z: 0x569, A: 0xd83, B: '1qbp', C: 0x1a69, D: 'NMJQ', E: '#sM9', F: 0xb63, G: 'C2T0', H: 'T3Fv', I: 0x1c78, J: 'mRB^', K: '7NO9', L: 0x158e, M: 0xedb, N: '0Ua@', O: 0x1176, P: 0xe83, Q: 0x12b9, R: 'zs!c', S: 'Gn7Q', T: 0x1387, U: 'C2T0', V: 0x12d0, W: 'PSkb', X: 0xe77, Y: 'V#kN', Z: 0x11e4, a0: '2#Qk', a1: 0x48f, a2: 'b)3q', a3: 0x83f, a4: 'PYt$', a5: 0x292, a6: 'IcEg', a7: 0x1189, a8: 0x4c0, a9: 0x1d2d, aa: 'M5Ii', ab: 'vel(', ac: 0x1547, ad: 0xe0e, ae: 'PSkb', af: 0x12d7, ag: 0x919, ah: 0x840, ai: 0x1da, aj: 'vel(', ak: 0xbd3, al: '8Ys%', am: 'mRB^', an: 0x1913, ao: 'egod', ap: 0x1681, aq: 0x6ed, ar: 'NxG1', as: 0x993, at: 0x1a64, au: 'jODS', av: 0x11b9, aw: 'Gn7Q', ax: 0xa46, ay: 'T3Fv', az: 0x6e8, aA: 0x1429, aB: 'rsIZ', aC: 'vel(', aD: 0x104d, aE: '0Ua@', aF: 'oeP*', aG: 'Pt3!', aH: 'w3Tt', aI: '89Hn' },
+        pJ = { c: 0x1859, f: 'jODS', g: '%oj0', h: 0x166d, i: 0x1a0a, j: 'NxG1' },
+        pI = { c: 0xa28, f: 'dZbH' },
+        pG = { c: '60r9' },
+        pF = { c: 'dn8p', f: 0x1299, g: 'zs!c', h: 0x8a2, i: 'Pt3!', j: 0x16ee, k: '5M6D', l: 0xcb8, m: 'dn8p', n: 0x18ff, o: '*lLT', p: 0x1940, q: 'rsIZ', r: 0x12e6, s: 'GzjL', t: 0x10e1, u: 0x1ac4, v: 0xb06, w: 0x9f8, x: '#sM9' },
+        pE = { c: 0x1eae, f: 'XITC', g: 0x327, h: 'w(Wr', i: 'd%lH', j: 0x1943, k: 'Pt3!', l: '89Hn', m: 0x1df, n: '*lLT', o: 0x64f, p: '8Ys%', q: 0x17b1, r: '6UCx', s: 0x98d, t: 'mRB^', u: 0x1dcc, v: 0x10fc, w: '9rQu', x: '0Ua@', y: 0x186c, z: 0x37e, A: 'PSkb', B: 0x1a83, C: '5M6D', D: 0x27f, E: 0x142, F: 0x14ae, G: 0x1b6f, H: 0x10cf, I: 'dbGg', J: 0xcfa, K: 'wCGK', L: 0x4ce, M: '%oj0', N: 0x1849, O: 'vel(', P: 0x132b, Q: 0xaca, R: 0x1a81, S: 'Gn7Q', T: 0xc65, U: 'w(Wr', V: 0xcfa, W: 0x11e4, X: 'zs!c', Y: 'IcEg', Z: 0x10b3, a0: 0x201, a1: 0x113c, a2: 'NxG1', a3: 0x74f, a4: 'dn8p', a5: 0xecb, a6: 0x17de, a7: '1qbp', a8: '$p[^', a9: 0x1b40, aa: 'mRB^', ab: 0xb25, ac: 0x1a31, ad: '[p9(', ae: 0x1ba6, af: 'T3Fv', ag: 'Mmsl', ah: '89Hn', ai: '7NO9', aj: '6UCx', ak: 0x6f8, al: 0x1dcd, am: 'yxI7' },
+        pC = { c: 'b)3q', f: 0x19fc, g: '0Ua@', h: 'IcEg', i: 0x1898, j: '6UCx' },
+        iA = fX,
+        h = new URL(c[iA(0x1776, 'b)3q')]);
+    if (c[iA(0x81a, pK.c)] === iA(pK.f, 'mRB^') && !h[iA(0x2c9, pK.g)][iA(0x968, pK.h)](iA(pK.i, pK.j)) && !h[iA(pK.k, pK.l)][iA(pK.m, pK.n)](iA(0x6cc, pK.c))) {
+        const m = await panelFetch(f, iA(0x1b46, pK.o)),
+            n = await m[iA(pK.p, 'rsIZ')]();
+        return new Response(n, { 'status': m[iA(pK.q, '[p9(')], 'headers': { 'Content-Type': iA(pK.r, pK.s) } });
+    }
+    async function i(o = iA(0x16b7, 'dZbH'), p = iA(0xe3d, 'rsIZ')) {
+        const pD = { c: 0xe61, f: 'dn8p', g: '5M6D', h: 'ZgMu', i: '2#Qk', j: 'dbGg', k: 0x1098 },
+            iB = iA;
+        try {
+            let q;
+            if (o && o[iB(pE.c, pE.f)](iB(pE.g, 'mRB^'))) {
+                const x = o[iB(0x159a, pE.h)](0x8)[iB(0x1315, pE.i)]()[iB(0x5f3, 'b)3q')](/[^A-Z]/g, '')[iB(pE.j, pE.k)](0x0, 0x2),
+                    y = await fetch(iB(0x1585, '2#Qk') + x + iB(0x9b4, pE.l)),
+                    z = y['ok'] ? await y[iB(0x12a5, 'C2T0')]() : '',
+                    A = [];
+                for (const C of z[iB(pE.m, pE.n)]('\x0a')) {
+                    const D = C[iB(pE.o, pE.p)]()[iB(0x3b4, 'egod')](/[\s,]+/),
+                        E = (D[0x0] || '')[iB(pE.q, 'w3Tt')]();
+                    if (/^\d{1,3}(\.\d{1,3}){3}$/[iB(0x161, pE.r)](E)) A[iB(0x19cd, 'C2T0')](E + ':' + (D[0x1] && /^\d+$/[iB(pE.s, 'b)3q')](D[0x1]) ? D[0x1] : p));
+                }
+                const B = [...new Set(A)];
+                return B[iB(0x5e1, pE.t)] > 0x200 ? B[iB(0x1740, pE.p)](() => 0.5 - Math[iB(0xf1a, 'dZbH')]())[iB(pE.u, 'CeJW')](0x0, 0x200) : B;
+            } else {
+                if (o === iB(pE.v, pE.w)) q = await fetch(iB(0x144b, pE.x));
+                else {
+                    if (o === iB(pE.y, '[p9(')) q = await fetch(iB(0x40d, 'b)3q'));
+                    else {
+                        if (o === iB(pE.z, '[]Y1')) q = await fetch(iB(0xda3, pE.A));
+                        else {
+                            if (o === iB(pE.B, 'w3Tt')) q = await fetch(iB(0x1b36, pE.C));
+                            else {
+                                if (o === iB(pE.D, '%oj0')) q = await fetch(iB(0x7bb, 'Gn7Q'));
+                                else {
+                                    if (o === 'cm') q = await fetch(iB(pE.E, 'w(Wr'));
+                                    else {
+                                        if (o === iB(pE.F, '6UCx')) {
+                                            q = await fetch(iB(pE.G, 'dn8p'));
+                                            const F = q['ok'] ? await q[iB(pE.H, pE.I)]() : '',
+                                                G = F[iB(pE.J, pE.K)]('\x0a')[iB(pE.L, pE.M)](I => I[iB(0x68a, '$BSl')]())[iB(pE.N, pE.O)](I => I && !I[iB(0x8f9, 'NxG1')]('#')),
+                                                H = [];
+                                            for (const I of G) {
+                                                const J = j(I, p);
+                                                J && H[iB(pE.P, '6UCx')](J);
+                                            }
+                                            if (H[iB(pE.Q, 'ZgMu')] > 0x200) {
+                                                const K = [...H][iB(pE.R, '$BSl')](() => 0.5 - Math[iB(0xe90, 'b)3q')]());
+                                                return K[iB(0xafd, pE.S)](0x0, 0x200);
+                                            } else return H;
+                                        } else {
+                                            if (o === iB(pE.T, 'mRB^')) {
+                                                q = await fetch(iB(0x104b, pE.U));
+                                                const L = q['ok'] ? await q[iB(0xa7a, '6UCx')]() : '',
+                                                    M = L[iB(pE.V, 'wCGK')]('\x0a')[iB(0x1098, 'dn8p')](P => P[iB(0x1d18, 'NMJQ')]())[iB(pE.W, pE.X)](P => P && !P[iB(0x19a2, 'dn8p')]('#')),
+                                                    N = [],
+                                                    O = M[iB(0x19bf, '$p[^')](0x0, 0x28);
+                                                for (let P = 0x0; P < O[iB(0x292, pE.Y)]; P += 0xa) {
+                                                    const Q = await Promise[iB(0x1e25, pE.n)](O[iB(0x159a, pE.h)](P, P + 0xa)[iB(pE.ab, 'oeP*')](async R => {
+                                                        const iC = iB;
+                                                        try {
+                                                            const S = await fetch(iC(0xd58, pC.c) + R + iC(pC.f, '9rQu'), { 'headers': { 'Accept': iC(0x755, 'T3Fv') } });
+                                                            if (S['ok']) {
+                                                                const T = await S[iC(0xdcc, 'dbGg')]();
+                                                                if (T[iC(0x132f, pC.g)]) return T[iC(0xa03, pC.h)][iC(pC.i, pC.j)](U => U[iC(0x82b, 'wCGK')] === 0x1)[iC(0x76e, 'n7E3')](U => U[iC(0x10da, 'dbGg')] + ':' + p);
+                                                            }
+                                                        } catch (U) {}
+                                                        return [];
+                                                    }));
+                                                    for (const R of Q)
+                                                        for (const S of R) N[iB(0x15bb, pE.p)](S);
+                                                }
+                                                if (N[iB(pE.a1, pE.h)] > 0x200) return N[iB(0x1a49, pE.a2)](0x0, 0x200);
+                                                return N;
+                                            } else {
+                                                if (o === iB(0xd51, pE.S)) {
+                                                    q = await fetch(iB(pE.a3, pE.a4));
+                                                    const T = q['ok'] ? await q[iB(0x1528, 'NxG1')]() : '',
+                                                        U = T[iB(pE.a5, 'rsIZ')]('\x0a')[iB(pE.a6, pE.a7)](X => X[iB(0x1d18, 'NMJQ')]())[iB(0x1db, pE.a8)](X => X && !X[iB(0x14c0, 'jODS')]('#')),
+                                                        V = [],
+                                                        W = U[iB(pE.a9, 'rsIZ')](0x0, 0x28);
+                                                    for (let X = 0x0; X < W[iB(pE.a1, 'w(Wr')]; X += 0xa) {
+                                                        const Y = await Promise[iB(0x1e25, pE.n)](W[iB(0x13f2, pE.aa)](X, X + 0xa)[iB(pE.ab, 'oeP*')](async Z => {
+                                                            const iD = iB;
+                                                            try {
+                                                                const a0 = await fetch(iD(pD.c, pD.f) + Z + iD(0x1798, 'zs!c'), { 'headers': { 'Accept': iD(0x13ad, pD.g) } });
+                                                                if (a0['ok']) {
+                                                                    const a1 = await a0[iD(0x574, 'b)3q')]();
+                                                                    if (a1[iD(0x4b3, pD.h)]) return a1[iD(0x1a7, pD.i)][iD(0xcdd, pD.j)](a2 => a2[iD(0x12cd, 'jODS')] === 0x1)[iD(pD.k, 'dn8p')](a2 => a2[iD(0x12fb, '60r9')] + ':' + p);
+                                                                }
+                                                            } catch (a2) {}
+                                                            return [];
+                                                        }));
+                                                        for (const Z of Y)
+                                                            for (const a0 of Z) V[iB(0x120e, '#sM9')](a0);
+                                                    }
+                                                    if (V[iB(pE.ac, 'b)3q')] > 0x200) return V[iB(0x115b, pE.ad)](0x0, 0x200);
+                                                    return V;
+                                                } else q = await fetch(iB(pE.ae, 'n7E3'));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            const s = q['ok'] ? await q[iB(0x1b09, pE.n)]() : iB(0x1e15, 'C2T0'),
+                t = s[iB(0x5f7, pE.af)]('\x0a')[iB(0x4b1, pE.ag)](a1 => a1[iB(0xa8b, 'vel(')]() && !a1[iB(0x190d, 'NMJQ')]('#')),
+                u = new Set(),
+                v = 0x200;
+            let w = 0x1;
+            while (u[iB(0x1a3a, pE.ah)] < v) {
+                for (const a1 of t) {
+                    if (u[iB(0x807, pE.ai)] >= v) break;
+                    const a2 = l(a1[iB(0x1d18, 'NMJQ')](), w);
+                    a2[iB(0x269, pE.aj)](a3 => u[iB(0x602, 'IcEg')](a3));
+                }
+                w++;
+                if (w > 0x64) break;
+            }
+            return Array[iB(pE.ak, 'V#kN')](u)[iB(pE.al, pE.am)](0x0, v);
+        } catch (a3) { return []; }
+    }
+
+    function j(o, p) {
+        const iE = iA;
+        try {
+            o = o[iE(0xdb7, pF.c)]();
+            if (!o) return null;
+            let q = '',
+                r = '',
+                s = '';
+            if (o[iE(0x16b9, '%oj0')]('#')) {
+                const u = o[iE(pF.f, pF.g)]('#'),
+                    v = u[0x0][iE(pF.h, pF.i)]();
+                s = u[0x1][iE(pF.j, pF.k)]();
+                if (v[iE(pF.l, 'vel(')](':')) {
+                    const w = v[iE(0x3f7, pF.m)](':');
+                    if (w[iE(pF.n, pF.o)] === 0x2) q = w[0x0][iE(0x20a, 'NxG1')](), r = w[0x1][iE(pF.p, pF.q)]();
+                    else return null;
+                } else q = v, r = iE(0x1b41, '8Ys%');
+            } else {
+                if (o[iE(0x1dcf, 'NMJQ')](':')) {
+                    const x = o[iE(pF.r, pF.s)](':');
+                    if (x[iE(pF.t, 'w3Tt')] === 0x2) q = x[0x0][iE(pF.u, '9rQu')](), r = x[0x1][iE(pF.v, 'Mmsl')]();
+                    else return null;
+                } else q = o, r = iE(pF.w, pF.x);
+            }
+            if (!k(q)) return null;
+            const t = parseInt(r);
+            if (isNaN(t) || t < 0x1 || t > 0xffff) return null;
+            if (r !== p) return null;
+            return s ? q + ':' + r + '#' + s : q + ':' + r;
+        } catch (y) { return null; }
+    }
+
+    function k(o) {
+        const iF = iA,
+            p = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/,
+            q = o[iF(0x6e7, pG.c)](p);
+        if (!q) return ![];
+        for (let r = 0x1; r <= 0x4; r++) {
+            const s = parseInt(q[r]);
+            if (s < 0x0 || s > 0xff) return ![];
+        }
+        return !![];
+    }
+
+    function l(o, p = 0x1) {
+        const pH = { c: 0xcfa },
+            iG = iA,
+            [q, r] = o[iG(pJ.c, 'dbGg')]('/'),
+            s = parseInt(r),
+            t = D => {
+                const iH = iG;
+                return D[iH(pH.c, 'wCGK')]('.')[iH(0x1218, '*lLT')]((E, F) => (E << 0x8) + parseInt(F), 0x0) >>> 0x0;
+            },
+            u = D => {
+                const iI = iG;
+                return [D >>> 0x18 & 0xff, D >>> 0x10 & 0xff, D >>> 0x8 & 0xff, D & 0xff][iI(pI.c, pI.f)]('.');
+            },
+            v = t(q),
+            w = 0x20 - s,
+            x = Math[iG(0x1b4, 'V#kN')](0x2, w),
+            y = x - 0x2,
+            z = Math[iG(0x18bc, pJ.f)](p, y),
+            A = new Set();
+        if (y <= 0x0) return [];
+        let B = 0x0;
+        const C = z * 0xa;
+        while (A[iG(0x290, pJ.g)] < z && B < C) {
+            const D = Math[iG(pJ.h, '%oj0')](Math[iG(pJ.i, 'NxG1')]() * y) + 0x1,
+                E = u(v + D);
+            A[iG(0x877, 'n7E3')](E), B++;
+        }
+        return Array[iG(0x814, pJ.j)](A);
+    }
+    if (c[iA(0x12d3, pK.t)] === iA(0xc25, pK.u)) {
+        if (!f['KV']) return new Response(iA(pK.v, pK.w), { 'status': 0x190 });
+        try {
+            const o = c[iA(pK.x, pK.y)][iA(pK.z, 'wCGK')](iA(pK.A, 'CeJW'));
+            if (o && o[iA(0x13c8, pK.B)](iA(pK.C, pK.D))) {
+                const p = await c[iA(0x1b85, pK.E)](),
+                    q = h[iA(pK.F, pK.G)][iA(0x75e, pK.t)](iA(0x2b7, pK.H)) || iA(pK.I, pK.J);
+                if (!p[iA(0x1188, pK.K)] || !Array[iA(pK.L, pK.E)](p[iA(0x1b7f, '89Hn')])) return new Response(JSON[iA(0x13f9, 'M5Ii')]({ 'error': iA(pK.M, pK.N) }), { 'status': 0x190, 'headers': { 'Content-Type': iA(pK.O, 'w(Wr') } });
+                if (q === iA(pK.P, pK.g)) {
+                    const r = await f['KV'][iA(pK.Q, pK.R)](g) || '',
+                        s = p[iA(0x811, '[p9(')][iA(0xb92, pK.R)]('\x0a'),
+                        t = r ? r[iA(0xddc, pK.S)]('\x0a')[iA(0x1ca, 'T3Fv')](B => B[iA(0x1445, 'CeJW')]())[iA(pK.T, pK.U)](B => B) : [],
+                        u = s[iA(pK.V, pK.W)]('\x0a')[iA(pK.X, pK.Y)](B => B[iA(0x109a, '1qbp')]())[iA(pK.Z, 'zs!c')](B => B),
+                        v = [...t, ...u],
+                        w = [...new Set(v)],
+                        x = w[iA(0x946, pK.l)]('\x0a');
+                    if (x[iA(0x1edb, pK.a0)] > 0x18 * 0x400 * 0x400) return new Response(JSON[iA(pK.a1, '9rQu')]({ 'error': iA(0xc61, pK.a2) }), { 'status': 0x190, 'headers': { 'Content-Type': iA(pK.a3, 'wCGK') } });
+                    await f['KV'][iA(0xce1, pK.a4)](g, x);
+                    const y = w[iA(pK.a5, pK.a6)] - t[iA(pK.a7, '0Ua@')],
+                        z = u[iA(0x1523, 'rsIZ')] - y;
+                    let A = y + iA(pK.a8, 'd%lH') + w[iA(pK.a9, pK.aa)] + ')';
+                    if (z > 0x0) A += ',\x20' + z + iA(0x1754, pK.ab);
+                    return new Response(JSON[iA(0x1ede, 'dn8p')]({ 'success': !![], 'message': A }), { 'headers': { 'Content-Type': iA(pK.ac, 'dbGg') } });
+                } else {
+                    const B = p[iA(pK.ad, pK.ae)][iA(pK.af, '5M6D')]('\x0a');
+                    if (B[iA(pK.ag, pK.G)] > 0x18 * 0x400 * 0x400) return new Response(JSON[iA(pK.ah, pK.u)]({ 'error': iA(pK.ai, pK.aj) }), { 'status': 0x190, 'headers': { 'Content-Type': iA(pK.ak, pK.u) } });
+                    return await f['KV'][iA(0x1eda, pK.al)](g, B), new Response(JSON[iA(0x180e, pK.al)]({ 'success': !![], 'message': p[iA(0x1ca0, pK.am)][iA(pK.an, pK.ao)] + iA(pK.ap, pK.a2) }), { 'headers': { 'Content-Type': iA(pK.aq, pK.ar) } });
+                }
+            } else {
+                const C = await c[iA(pK.as, 'zs!c')]();
+                return await f['KV'][iA(pK.at, pK.au)](g, C), new Response(iA(pK.av, 'b)3q'));
+            }
+        } catch (D) { return new Response(JSON[iA(0x910, pK.aw)]({ 'error': D[iA(pK.ax, pK.ay)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': iA(pK.az, 'GzjL') } }); }
+    }
+    if (h[iA(pK.aA, pK.aB)][iA(0x854, pK.aC)](iA(pK.aD, pK.aE))) {
+        const E = h[iA(0x1ef7, 'd%lH')][iA(0xcab, pK.aF)](iA(0x278, pK.aG)),
+            F = h[iA(0x1dad, 'zs!c')][iA(pK.z, 'wCGK')](iA(0x777, pK.aH)) || iA(0x12d5, '0Ua@'),
+            G = await i(E, F);
+        return new Response(JSON[iA(0x9d5, 'zs!c')]({ 'ips': G }), { 'headers': { 'Content-Type': iA(0xc0e, pK.aI) } });
+    }
+    return new Response(iA(0x140e, pK.N), { 'status': 0x194 });
+}
+
+async function socks5Connect(c, f, g, h) {
+    const pL = { c: 0x1439, f: '89Hn', g: 0x51b, h: 'PSkb', i: '6UCx', j: 0xdb6, k: 'vel(', l: 'M5Ii', m: 0x3fb, n: 0x1264, o: 'w(Wr', p: 0x1438, q: '$p[^', r: '2#Qk', s: 'egod', t: 'Pt3!', u: 0xd5f, v: '7NO9', w: 0x1550, x: '[]Y1', y: 'C2T0', z: 'PYt$', A: '8Ys%', B: '$p[^', C: 0x1812, D: 'jODS', E: 0x12a1, F: 'dZbH', G: 0x1a32, H: '[p9(', I: 'dn8p', J: 'Gn7Q', K: 0xaad, L: '#sM9', M: 0x15b4, N: 0x102, O: 0x73e, P: 'egod' },
+        iJ = fX, { username: i, password: j, hostname: k, port: l } = parsedSocks5Address,
+        m = h({ 'hostname': k, 'port': l }),
+        n = m[iJ(0x1587, 'PSkb')][iJ(pL.c, pL.f)](),
+        o = m[iJ(pL.g, 'w(Wr')][iJ(0x15ee, pL.h)]();
+    try {
+        const p = i && j ? new Uint8Array([0x5, 0x2, 0x0, 0x2]) : new Uint8Array([0x5, 0x1, 0x0]);
+        await n[iJ(0x1d9, pL.i)](p);
+        let q = await o[iJ(0x1ef, '6UCx')]();
+        if (q[iJ(0x583, '8Ys%')] || q[iJ(pL.j, pL.k)][iJ(0x1aca, pL.l)] < 0x2) throw new Error(iJ(pL.m, pL.f));
+        const r = new Uint8Array(q[iJ(pL.n, pL.o)])[0x1];
+        if (r === 0x2) {
+            if (!i || !j) throw new Error(iJ(pL.p, pL.q));
+            const u = new TextEncoder()[iJ(0x1709, pL.r)](i),
+                v = new TextEncoder()[iJ(0x43d, pL.s)](j),
+                w = new Uint8Array([0x1, u[iJ(0xa1f, pL.t)], ...u, v[iJ(pL.u, pL.v)], ...v]);
+            await n[iJ(pL.w, pL.x)](w), q = await o[iJ(0x6ef, 'Gn7Q')]();
+            if (q[iJ(0x143d, '%oj0')] || new Uint8Array(q[iJ(0x142a, pL.y)])[0x1] !== 0x0) throw new Error(iJ(0x1646, pL.z));
+        } else {
+            if (r !== 0x0) throw new Error(iJ(0x14f0, pL.A) + r);
+        }
+        const s = new TextEncoder()[iJ(0xf30, pL.B)](c),
+            t = new Uint8Array([0x5, 0x1, 0x0, 0x3, s[iJ(pL.C, pL.D)], ...s, f >> 0x8, f & 0xff]);
+        await n[iJ(pL.E, 'yxI7')](t), q = await o[iJ(0x1b62, pL.F)]();
+        if (q[iJ(pL.G, pL.H)] || new Uint8Array(q[iJ(0x100a, pL.I)])[0x1] !== 0x0) throw new Error(iJ(0x1ed5, pL.J));
+        if (validDataLength(g) > 0x0) await n[iJ(pL.K, pL.L)](g);
+        return n[iJ(pL.M, '6UCx')](), o[iJ(pL.N, '1qbp')](), m;
+    } catch (x) {
+        try { n[iJ(pL.O, pL.P)](); } catch (y) {}
+        try { o[iJ(0x1a73, pL.F)](); } catch (z) {}
+        try { m[iJ(0x8fc, '5M6D')](); } catch (A) {}
+        throw x;
+    }
+}
+
+async function httpConnect(c, f, g, h = ![], i) {
+    const pN = { c: 'CeJW', f: 'V#kN', g: 'zs!c', h: 0x19bc, i: 'rsIZ', j: 0x76a, k: 0x1c99, l: 'yxI7', m: 0x60a, n: 0x794, o: 0x1a3b, p: 'T3Fv', q: '60r9', r: 'w3Tt', s: 0x1d47, t: 0x19bf, u: '$p[^', v: 'n7E3', w: 'vel(', x: 0x2bc, y: 0x1a10, z: '%oj0', A: 0x16de, B: 0xb13, C: '*lLT', D: 0x1738, E: 0x1da8, F: '#sM9', G: 0x118e, H: 0x11eb, I: 0x16b8, J: 'IcEg' },
+        iK = fX, { username: j, password: k, hostname: l, port: m } = parsedSocks5Address,
+        n = h ? i({ 'hostname': l, 'port': m }, { 'secureTransport': 'on', 'allowHalfOpen': ![] }) : i({ 'hostname': l, 'port': m }),
+        o = n[iK(0x14ac, pN.c)][iK(0x470, pN.f)](),
+        p = n[iK(0x1f5, 'b)3q')][iK(0x1899, pN.g)](),
+        q = new TextEncoder(),
+        r = new TextDecoder();
+    try {
+        if (h) await n[iK(pN.h, pN.i)];
+        const s = j && k ? iK(pN.j, 'jODS') + btoa(j + ':' + k) + '\x0d\x0a' : '',
+            t = iK(0xa0e, 'dn8p') + c + ':' + f + iK(pN.k, pN.l) + c + ':' + f + '\x0d\x0a' + s + iK(pN.m, 'dn8p');
+        await o[iK(pN.n, 'w(Wr')](q[iK(pN.o, pN.p)](t)), o[iK(0x1075, pN.q)]();
+        let u = new Uint8Array(0x0),
+            v = -0x1,
+            w = 0x0;
+        while (v === -0x1 && w < 0x2000) {
+            const { done: z, value: A } = await p[iK(0x24d, '60r9')]();
+            if (z || !A) throw new Error((h ? iK(0x1b8f, pN.r) : iK(pN.s, '60r9')) + iK(0x1178, 'w(Wr'));
+            u = new Uint8Array([...u, ...A]), w = u[iK(0x9a0, pN.f)];
+            const B = u[iK(0xcaa, 'yxI7')]((C, D) => D < u[iK(0xb28, 'PSkb')] - 0x3 && u[D] === 0xd && u[D + 0x1] === 0xa && u[D + 0x2] === 0xd && u[D + 0x3] === 0xa);
+            if (B !== -0x1) v = B + 0x4;
+        }
+        if (v === -0x1) throw new Error(iK(0x1aed, 'M5Ii'));
+        const x = r[iK(0xaf1, 'yxI7')](u[iK(pN.t, pN.u)](0x0, v))[iK(0x1b72, 'n7E3')]('\x0d\x0a')[0x0][iK(0x641, pN.v)](/HTTP\/\d\.\d\s+(\d+)/),
+            y = x ? parseInt(x[0x1], 0xa) : NaN;
+        if (!Number[iK(0xf00, 'zs!c')](y) || y < 0xc8 || y >= 0x12c) throw new Error(iK(0xbeb, pN.w) + y);
+        p[iK(pN.x, 'IcEg')]();
+        if (validDataLength(g) > 0x0) {
+            const C = n[iK(0x1de4, 'Mmsl')][iK(pN.y, pN.z)]();
+            await C[iK(pN.A, '60r9')](g), C[iK(0x1e79, 'd%lH')]();
+        }
+        if (w > v) {
+            const { readable: D, writable: E } = new TransformStream(),
+                F = E[iK(pN.B, 'mRB^')]();
+            return await F[iK(0x7a8, 'egod')](u[iK(0x815, 'rsIZ')](v, w)), F[iK(0x43e, pN.C)](), n[iK(pN.D, 'CeJW')][iK(0x896, 'n7E3')](E)[iK(pN.E, pN.F)](() => {}), { 'readable': D, 'writable': n[iK(0xcc5, 'NMJQ')], 'closed': n[iK(pN.G, 'Mmsl')], 'close': () => n[iK(0x5be, 'Pt3!')]() };
+        }
+        return n;
+    } catch (G) {
+        try { o[iK(pN.H, '[]Y1')](); } catch (H) {}
+        try { p[iK(pN.I, pN.w)](); } catch (I) {}
+        try { n[iK(0x410, pN.J)](); } catch (J) {}
+        throw G;
+    }
+}
+
+async function httpsConnect(c, f, g, h) {
+    const pW = { c: 0xab4, f: '*lLT', g: 'dZbH', h: '#sM9', i: 0x209, j: 'XITC', k: 0x1e4b, l: 0x661, m: 'V#kN', n: 0x16c5, o: 0x1b9c, p: 0x1427, q: '8Ys%', r: 0xab9, s: '%oj0', t: 0xb1a, u: 0xb1e, v: '1qbp', w: 0x1ea6, x: 0x1ab2, y: 0x19a9, z: 0xcfd, A: 0xb87, B: 'dbGg', C: 0xc30, D: 'mRB^', E: 0xdc8, F: 'V#kN' },
+        pU = { c: 0x757, f: '7NO9' },
+        pS = { c: 0x6e5, f: '5M6D', g: 0x1ed8, h: 'n7E3', i: 0x17f4, j: 0x10f2, k: 'M5Ii', l: 0x673 },
+        pR = { c: 0x5be, f: 'Pt3!' },
+        pO = { c: 0x68c, f: 'IcEg', g: 'NxG1', h: 0xd71, i: 'GzjL', j: 0xc4c, k: 0x11d, l: 'wCGK', m: 0x14e6, n: 0x858, o: 0x12eb, p: 0x103b, q: 'ZgMu' },
+        iM = fX, { username: i, password: j, hostname: k, port: l } = parsedSocks5Address,
+        m = new TextEncoder(),
+        n = new TextDecoder();
+    let o = null;
+    const p = isIPHostname(k) ? '' : stripIPv6Brackets(k),
+        q = async(r = ![]) => {
+            const iL = b,
+                s = h({ 'hostname': k, 'port': l });
+            try {
+                await s[iL(pO.c, '#sM9')];
+                const t = new TlsClient(s, { 'serverName': p, 'insecure': !![], 'allowChacha': r });
+                return await t[iL(0x1321, pO.f)](), log(iL(0x18d8, pO.g) + (t[iL(0x15a5, '0Ua@')] ? iL(pO.h, pO.i) : iL(pO.j, 'w3Tt')) + iL(pO.k, pO.l) + t[iL(0x81b, 'CeJW')][iL(pO.m, '8Ys%')](0x10) + (t[iL(0x162a, '*lLT')]?.[iL(pO.n, '#sM9')] ? iL(0x13b1, 'XITC') : iL(pO.o, 'IcEg'))), t;
+            } catch (u) { try { s[iL(pO.p, pO.q)](); } catch (v) {} throw u; }
+        };
+    try {
+        try { o = await q(![]); } catch (H) {
+            if (!/cipher|handshake|TLS Alert|ServerHello|Finished|Unsupported|Missing TLS/i[iM(pW.c, pW.f)](H?.[iM(0xecd, pW.g)] || '' + (H || ''))) throw H;
+            log(iM(0x4be, pW.h) + (H?.[iM(0x73a, 'M5Ii')] || H)), o = await q(!![]);
+        }
+        const r = i && j ? iM(pW.i, pW.j) + btoa(i + ':' + j) + '\x0d\x0a' : '',
+            s = iM(pW.k, '[]Y1') + c + ':' + f + iM(pW.l, 'GzjL') + c + ':' + f + '\x0d\x0a' + r + iM(0x11f1, '%oj0');
+        await o[iM(pW.m, pW.m)](m[iM(pW.n, '9rQu')](s));
+        let t = new Uint8Array(0x0),
+            u = -0x1,
+            v = 0x0;
+        while (u === -0x1 && v < 0x2000) {
+            const I = await o[iM(pW.o, 'NxG1')]();
+            if (!I) throw new Error(iM(pW.p, pW.q));
+            t = concatByteData(t, I), v = t[iM(pW.r, pW.s)];
+            const J = t[iM(pW.t, 'vel(')]((K, L) => L < t[iM(0x113c, 'w(Wr')] - 0x3 && t[L] === 0xd && t[L + 0x1] === 0xa && t[L + 0x2] === 0xd && t[L + 0x3] === 0xa);
+            if (J !== -0x1) u = J + 0x4;
+        }
+        if (u === -0x1) throw new Error(iM(pW.u, pW.v));
+        const w = n[iM(pW.w, '6UCx')](t[iM(pW.x, 'dn8p')](0x0, u))[iM(pW.y, 'NxG1')]('\x0d\x0a')[0x0][iM(pW.z, 'zs!c')](/HTTP\/\d\.\d\s+(\d+)/),
+            x = w ? parseInt(w[0x1], 0xa) : NaN;
+        if (!Number[iM(pW.A, pW.B)](x) || x < 0xc8 || x >= 0x12c) throw new Error(iM(0x1304, '#sM9') + x);
+        if (validDataLength(g) > 0x0) await o[iM(pW.C, pW.D)](dataToUint8Array(g));
+        const y = v > u ? t[iM(pW.E, pW.m)](u, v) : null;
+        let z = ![],
+            A, B;
+        const C = (K, L) => { !z && (z = !![], K(L)); },
+            D = new Promise((K, L) => { A = K, B = L; }),
+            E = () => {
+                const iN = iM;
+                try { o[iN(pR.c, pR.f)](); } catch (K) {}
+                C(A);
+            },
+            F = new ReadableStream({
+                async 'start'(K) {
+                    const iO = iM;
+                    try {
+                        if (validDataLength(y) > 0x0) K[iO(pS.c, pS.f)](y);
+                        while (!![]) {
+                            const L = await o[iO(pS.g, pS.h)]();
+                            if (!L) break;
+                            if (L[iO(0x3ec, '6UCx')] > 0x0) K[iO(pS.i, 'IcEg')](L);
+                        }
+                        try { K[iO(pS.j, pS.k)](); } catch (M) {}
+                        C(A);
+                    } catch (N) { try { K[iO(pS.l, 'dn8p')](N); } catch (O) {} C(B, N); }
+                },
+                'cancel'() { E(); }
+            }),
+            G = new WritableStream({
+                async 'write'(K) { const iP = iM; await o[iP(pU.c, pU.f)](dataToUint8Array(K)); },
+                'close': E,
+                'abort'(K) { E(); if (K) C(B, K); }
+            });
+        return { 'readable': F, 'writable': G, 'closed': D, 'close': E };
+    } catch (K) { try { o?.[iM(0x1e85, pW.F)](); } catch (L) {} throw K; }
+}
+
+function createRequestTcpConnector(c) {
+    const pX = { c: 'd%lH', f: 'dZbH', g: 0xbb3, h: '$p[^', i: 0x1386 },
+        iQ = fX,
+        f = c,
+        g = f?.[iQ(0x1bc6, pX.c)];
+    if (g && typeof g[iQ(0x1d3c, 'IcEg')] === iQ(0x195f, pX.f)) return (h, i) => i === undefined ? g[iQ(0xb01, '60r9')](h) : g[iQ(0x1b10, 'wCGK')](h, i);
+    if (typeof cfSocketConnect === iQ(pX.g, pX.h)) return (h, i) => i === undefined ? cfSocketConnect(h) : cfSocketConnect(h, i);
+    throw new Error(iQ(pX.i, '6UCx'));
+}
+
+const TLS_VERSION_10 = 0x301,
+    TLS_VERSION_12 = 0x303,
+    TLS_VERSION_13 = 0x304,
+    CONTENT_TYPE_CHANGE_CIPHER_SPEC = 0x14,
+    CONTENT_TYPE_ALERT = 0x15,
+    CONTENT_TYPE_HANDSHAKE = 0x16,
+    CONTENT_TYPE_APPLICATION_DATA = 0x17,
+    HANDSHAKE_TYPE_CLIENT_HELLO = 0x1,
+    HANDSHAKE_TYPE_SERVER_HELLO = 0x2,
+    HANDSHAKE_TYPE_NEW_SESSION_TICKET = 0x4,
+    HANDSHAKE_TYPE_ENCRYPTED_EXTENSIONS = 0x8,
+    HANDSHAKE_TYPE_CERTIFICATE = 0xb,
+    HANDSHAKE_TYPE_SERVER_KEY_EXCHANGE = 0xc,
+    HANDSHAKE_TYPE_CERTIFICATE_REQUEST = 0xd,
+    HANDSHAKE_TYPE_SERVER_HELLO_DONE = 0xe,
+    HANDSHAKE_TYPE_CERTIFICATE_VERIFY = 0xf,
+    HANDSHAKE_TYPE_CLIENT_KEY_EXCHANGE = 0x10,
+    HANDSHAKE_TYPE_FINISHED = 0x14,
+    HANDSHAKE_TYPE_KEY_UPDATE = 0x18,
+    EXT_SERVER_NAME = 0x0,
+    EXT_SUPPORTED_GROUPS = 0xa,
+    EXT_EC_POINT_FORMATS = 0xb,
+    EXT_SIGNATURE_ALGORITHMS = 0xd,
+    EXT_APPLICATION_LAYER_PROTOCOL_NEGOTIATION = 0x10,
+    EXT_SUPPORTED_VERSIONS = 0x2b,
+    EXT_PSK_KEY_EXCHANGE_MODES = 0x2d,
+    EXT_KEY_SHARE = 0x33,
+    ALERT_CLOSE_NOTIFY = 0x0,
+    ALERT_LEVEL_WARNING = 0x1,
+    ALERT_UNRECOGNIZED_NAME = 0x70,
+    shouldIgnoreTlsAlert = c => c?.[0x0] === ALERT_LEVEL_WARNING && c?.[0x1] === ALERT_UNRECOGNIZED_NAME,
+    textEncoder = new TextEncoder(),
+    textDecoder = new TextDecoder(),
+    EMPTY_BYTES = new Uint8Array(0x0),
+    CIPHER_SUITES_BY_ID = new Map([
+        [0x1301, { 'id': 0x1301, 'keyLen': 0x10, 'ivLen': 0xc, 'hash': fX(0x19f2, '5M6D'), 'tls13': !0x0 }],
+        [0x1302, { 'id': 0x1302, 'keyLen': 0x20, 'ivLen': 0xc, 'hash': fX(0x1566, 'wCGK'), 'tls13': !0x0 }],
+        [0x1303, { 'id': 0x1303, 'keyLen': 0x20, 'ivLen': 0xc, 'hash': fX(0x1933, 'yxI7'), 'tls13': !0x0, 'chacha': !0x0 }],
+        [0xc02f, { 'id': 0xc02f, 'keyLen': 0x10, 'ivLen': 0x4, 'hash': fX(0xece, '2#Qk'), 'kex': fX(0x126c, 'Pt3!') }],
+        [0xc030, { 'id': 0xc030, 'keyLen': 0x20, 'ivLen': 0x4, 'hash': fX(0x1082, 'V#kN'), 'kex': fX(0x1d82, 'C2T0') }],
+        [0xcca8, { 'id': 0xcca8, 'keyLen': 0x20, 'ivLen': 0xc, 'hash': fX(0xbe0, 'dbGg'), 'kex': fX(0x126c, 'Pt3!'), 'chacha': !0x0 }],
+        [0xc02b, { 'id': 0xc02b, 'keyLen': 0x10, 'ivLen': 0x4, 'hash': fX(0x19f2, '5M6D'), 'kex': fX(0x6f2, 'oeP*') }],
+        [0xc02c, { 'id': 0xc02c, 'keyLen': 0x20, 'ivLen': 0x4, 'hash': fX(0x111, 'XITC'), 'kex': fX(0xebe, 'Mmsl') }],
+        [0xcca9, { 'id': 0xcca9, 'keyLen': 0x20, 'ivLen': 0xc, 'hash': fX(0x1220, 'vel('), 'kex': fX(0xf98, '0Ua@'), 'chacha': !0x0 }]
+    ]),
+    GROUPS_BY_ID = new Map([
+        [0x1d, fX(0x1b54, 'vel(')],
+        [0x17, fX(0x1b3d, 'NMJQ')]
+    ]),
+    SUPPORTED_SIGNATURE_ALGORITHMS = [0x804, 0x805, 0x806, 0x401, 0x501, 0x601, 0x403, 0x503, 0x603];
+    const tlsBytes = (...c) => {
+    const iR = fX,
+        f = g => g[iR(0x172e, '*lLT')](h => h instanceof Uint8Array ? [...h] : Array[iR(0x1e3f, '7NO9')](h) ? f(h) : iR(0x17f, '[p9(') == typeof h ? [h] : []);
+    return new Uint8Array(f(c));
+},
+uint16be = c => [c >> 0x8 & 0xff, 0xff & c],
+readUint16 = (c, f) => c[f] << 0x8 | c[f + 0x1],
+readUint24 = (c, f) => c[f] << 0x10 | c[f + 0x1] << 0x8 | c[f + 0x2],
+concatBytes = (...c) => {
+    const pZ = { c: 0x10d9, f: '60r9', g: 0x18ef, h: 'zs!c', i: 'NxG1', j: 0x331 },
+        iS = fX,
+        f = c[iS(pZ.c, pZ.f)](j => j && j[iS(0x1c85, '6UCx')] > 0x0),
+        g = f[iS(pZ.g, pZ.h)]((j, k) => j + k[iS(0xaca, 'ZgMu')], 0x0),
+        h = new Uint8Array(g);
+    let i = 0x0;
+    for (const j of f) h[iS(0x291, pZ.i)](j, i), i += j[iS(pZ.j, 'T3Fv')];
+    return h;
+},
+randomBytes = c => crypto[fX(0x5e5, 'PSkb')](new Uint8Array(c)),
+constantTimeEqual = (c, f) => {
+    const q0 = { c: 0xc3f, f: 'Gn7Q', g: 'w(Wr' },
+        iT = fX;
+    if (!c || !f || c[iT(q0.c, q0.f)] !== f[iT(0x1bdc, 'zs!c')]) return !0x1;
+    let g = 0x0;
+    for (let h = 0x0; h < c[iT(0x113c, q0.g)]; h++) g |= c[h] ^ f[h];
+    return 0x0 === g;
+},
+hashByteLength = c => fX(0xc76, 'GzjL') === c ? 0x40 : fX(0x199d, 'M5Ii') === c ? 0x30 : 0x20;
+
+async function hmac(c, f, g) {
+    const q1 = { c: 0x1a06, f: '7NO9', g: 0x1e16, h: '$p[^', i: '$BSl', j: 'b)3q', k: 'PYt$', l: 0x7d1, m: 'rsIZ' },
+        iU = fX,
+        h = await crypto[iU(q1.c, q1.f)][iU(q1.g, 'dbGg')](iU(0x42b, q1.h), f, { 'name': iU(0xc42, 'mRB^'), 'hash': c }, !0x1, [iU(0x992, q1.i)]);
+    return new Uint8Array(await crypto[iU(0x14f5, q1.j)][iU(q1.k, q1.l)](iU(q1.m, q1.m), h, g));
+}
+
+async function digestBytes(c, f) {
+    const q2 = { c: 0x193f },
+        iV = fX;
+    return new Uint8Array(await crypto[iV(0xfc, '$p[^')][iV(q2.c, '6UCx')](c, f));
+}
+
+async function tls12Prf(c, f, g, h, i = fX(0x145b, '1qbp')) {
+    const q3 = { c: 0x1464, f: 0x772, g: 'CeJW' },
+        iW = fX,
+        j = concatBytes(textEncoder[iW(q3.c, 'V#kN')](f), g);
+    let k = new Uint8Array(0x0),
+        l = j;
+    for (; k[iW(q3.f, '$p[^')] < h;) {
+        l = await hmac(i, c, l);
+        const m = await hmac(i, c, concatBytes(l, j));
+        k = concatBytes(k, m);
+    }
+    return k[iW(0x1dcc, q3.g)](0x0, h);
+}
+
+async function hkdfExtract(c, f, g) {
+    const q4 = { c: 0x1261 },
+        iX = fX;
+    return f && f[iX(q4.c, 'GzjL')] || (f = new Uint8Array(hashByteLength(c))), hmac(c, f, g);
+}
+
+async function hkdfExpandLabel(c, f, g, h, i) {
+    const q6 = { c: 0x924, f: 'dZbH', g: 0xf5c, h: '[]Y1', i: 0x131a, j: 'n7E3', k: 0xd77 },
+        q5 = { c: 0x10e, f: 'PYt$', g: 'Gn7Q' },
+        iY = fX,
+        j = textEncoder[iY(q6.c, q6.f)](iY(q6.g, q6.h) + g);
+    return async function(k, l, m, n) {
+        const iZ = iY,
+            o = hashByteLength(k),
+            p = Math[iZ(q5.c, q5.f)](n / o);
+        let q = new Uint8Array(0x0),
+            r = new Uint8Array(0x0);
+        for (let s = 0x1; s <= p; s++) {
+            r = await hmac(k, l, concatBytes(r, m, [s]));
+            q = concatBytes(q, r);
+        }
+        return q[iZ(0xafd, q5.g)](0x0, n);
+    }(c, f, tlsBytes(uint16be(i), j[iY(q6.i, q6.j)], j, h[iY(q6.k, 'dbGg')], h), i);
+}
+
+async function generateKeyShare(c = fX(0x16e0, 'GzjL')) {
+    const q7 = { c: 0x556, f: 'C2T0', g: 0x105c, h: 0x1a9c, i: 'mRB^', j: 0x125f, k: 'oeP*', l: 0x787, m: 0x116a, n: 'PYt$', o: 0x1316, p: 0x1d3b, q: '5M6D' },
+        j0 = fX,
+        f = j0(q7.c, q7.f) === c ? { 'name': j0(q7.g, '9rQu') } : { 'name': j0(q7.h, 'IcEg'), 'namedCurve': c },
+        g = await crypto[j0(0x1598, 'wCGK')][j0(0x54a, q7.i)](f, !0x0, [j0(q7.j, q7.k)]),
+        h = await crypto[j0(q7.l, 'yxI7')][j0(q7.m, q7.n)](j0(q7.o, '9rQu'), g[j0(q7.p, q7.q)]);
+    return { 'keyPair': g, 'publicKeyRaw': new Uint8Array(h) };
+}
+
+async function deriveSharedSecret(c, f, g = fX(0x1b99, '*lLT')) {
+    const q8 = { c: '60r9', f: 0x1ee5, g: 'dbGg', h: 0xd4e, i: 'vel(', j: 0x182f, k: 'XITC', l: '2#Qk', m: 0x181c, n: '[]Y1', o: 'Pt3!', p: 0x274, q: '89Hn', r: 'PSkb' },
+        j1 = fX,
+        h = j1(0x19a7, q8.c) === g ? { 'name': j1(q8.f, q8.g) } : { 'name': j1(q8.h, q8.i), 'namedCurve': g },
+        i = await crypto[j1(q8.j, q8.k)][j1(0x430, 'Gn7Q')](j1(0x5de, 'wCGK'), f, h, !0x1, []),
+        j = j1(0x1ad5, q8.l) === g ? 0x180 : j1(q8.m, q8.n) === g ? 0x210 : 0x100;
+    return new Uint8Array(await crypto[j1(0xc52, q8.o)][j1(q8.p, q8.q)]({ 'name': h[j1(0x5c3, q8.r)], 'public': i }, c, j));
+}
+
+async function importAesGcmKey(c, f) {
+    const q9 = { c: '5M6D', f: 0x175d, g: '#sM9', h: 0x10eb, i: 0x126b },
+        j2 = fX;
+    return crypto[j2(0x5f8, q9.c)][j2(q9.f, q9.g)](j2(q9.h, 'jODS'), c, { 'name': j2(q9.i, 'wCGK') }, !0x1, f);
+}
+
+async function aesGcmEncryptWithKey(c, f, g, h) {
+    const qa = { c: 0x1a9d, f: '60r9', g: '6UCx' },
+        j3 = fX;
+    return new Uint8Array(await crypto[j3(qa.c, qa.f)][j3(0x17ad, 'dn8p')]({ 'name': j3(0x7ea, qa.g), 'iv': f, 'additionalData': h, 'tagLength': 0x80 }, c, g));
+}
+
+async function aesGcmDecryptWithKey(c, f, g, h) {
+    const qb = { c: 0xed9, f: 0xf90, g: 'PSkb' },
+        j4 = fX;
+    return new Uint8Array(await crypto[j4(0xcf9, '89Hn')][j4(qb.c, 'w3Tt')]({ 'name': j4(qb.f, qb.g), 'iv': f, 'additionalData': h, 'tagLength': 0x80 }, c, g));
+}
+
+function rotateLeft32(c, f) { return (c << f | c >>> 0x20 - f) >>> 0x0; }
+
+function chachaQuarterRound(c, f, g, h, i) {
+    c[f] = c[f] + c[g] >>> 0x0, c[i] = rotateLeft32(c[i] ^ c[f], 0x10), c[h] = c[h] + c[i] >>> 0x0, c[g] = rotateLeft32(c[g] ^ c[h], 0xc), c[f] = c[f] + c[g] >>> 0x0, c[i] = rotateLeft32(c[i] ^ c[f], 0x8), c[h] = c[h] + c[i] >>> 0x0, c[g] = rotateLeft32(c[g] ^ c[h], 0x7);
+}
+
+function chacha20Block(c, f, g) {
+    const qe = { c: 'wCGK', f: 0x19c4, g: 0x521, h: '[]Y1', i: 0x1786, j: 'Gn7Q', k: 0x161b, l: 'egod', m: 'CeJW', n: 0x93d, o: 0x834, p: '$BSl' },
+        j5 = fX,
+        h = new Uint32Array(0x10);
+    h[0x0] = 0x61707865, h[0x1] = 0x3320646e, h[0x2] = 0x79622d32, h[0x3] = 0x6b206574;
+    const i = new DataView(c[j5(0xaa0, qe.c)], c[j5(qe.f, '[p9(')], c[j5(qe.g, qe.h)]);
+    for (let l = 0x0; l < 0x8; l++) h[0x4 + l] = i[j5(0x1c4c, 'NMJQ')](0x4 * l, !0x0);
+    h[0xc] = f;
+    const j = new DataView(g[j5(0xaa0, 'wCGK')], g[j5(0x1d2b, 'egod')], g[j5(qe.i, qe.j)]);
+    h[0xd] = j[j5(qe.k, '*lLT')](0x0, !0x0), h[0xe] = j[j5(0x1a70, qe.l)](0x4, !0x0), h[0xf] = j[j5(0xe6c, qe.m)](0x8, !0x0);
+    const k = new Uint32Array(h);
+    for (let m = 0x0; m < 0xa; m++) {
+        chachaQuarterRound(k, 0x0, 0x4, 0x8, 0xc), chachaQuarterRound(k, 0x1, 0x5, 0x9, 0xd), chachaQuarterRound(k, 0x2, 0x6, 0xa, 0xe), chachaQuarterRound(k, 0x3, 0x7, 0xb, 0xf), chachaQuarterRound(k, 0x0, 0x5, 0xa, 0xf), chachaQuarterRound(k, 0x1, 0x6, 0xb, 0xc), chachaQuarterRound(k, 0x2, 0x7, 0x8, 0xd), chachaQuarterRound(k, 0x3, 0x4, 0x9, 0xe);
+    }
+    for (let n = 0x0; n < 0x10; n++) k[n] = k[n] + h[n] >>> 0x0;
+    return new Uint8Array(k[j5(qe.n, '7NO9')][j5(qe.o, qe.p)](0x0));
+}
+
+function chacha20Xor(c, f, g) {
+    const qf = { c: 'NMJQ', f: 0x4e5 },
+        j6 = fX,
+        h = new Uint8Array(g[j6(0x10e6, qf.c)]);
+    let i = 0x1;
+    for (let j = 0x0; j < g[j6(0x1c85, '6UCx')]; j += 0x40) {
+        const k = chacha20Block(c, i++, f),
+            l = Math[j6(qf.f, 'yxI7')](0x40, g[j6(0x919, 'C2T0')] - j);
+        for (let m = 0x0; m < l; m++) h[j + m] = g[j + m] ^ k[m];
+    }
+    return h;
+}
+
+function poly1305Mac(c, f) {
+    const qh = { c: 0x19bf, f: 0x1c22, g: 0x834, h: 0xfa6, i: 'GzjL', j: 0xb28, k: 'PSkb' },
+        j7 = fX,
+        g = function(m) {
+            const n = new Uint8Array(m);
+            return n[0x3] &= 0xf, n[0x7] &= 0xf, n[0xb] &= 0xf, n[0xf] &= 0xf, n[0x4] &= 0xfc, n[0x8] &= 0xfc, n[0xc] &= 0xfc, n;
+        }(c[j7(qh.c, '$p[^')](0x0, 0x10)),
+        h = c[j7(qh.f, 'M5Ii')](0x10, 0x20);
+    let i = [0x0n, 0x0n, 0x0n, 0x0n, 0x0n];
+    const j = [
+        0x3ffffffn & BigInt(g[0x0] | g[0x1] << 0x8 | g[0x2] << 0x10 | g[0x3] << 0x18),
+        0x3ffffffn & BigInt(g[0x3] >> 0x2 | g[0x4] << 0x6 | g[0x5] << 0xe | g[0x6] << 0x16),
+        0x3ffffffn & BigInt(g[0x6] >> 0x4 | g[0x7] << 0x4 | g[0x8] << 0xc | g[0x9] << 0x14),
+        0x3ffffffn & BigInt(g[0x9] >> 0x6 | g[0xa] << 0x2 | g[0xb] << 0xa | g[0xc] << 0x12),
+        0x3ffffffn & BigInt(g[0xd] | g[0xe] << 0x8 | g[0xf] << 0x10)
+    ];
+    for (let m = 0x0; m < f[j7(0xd77, 'dbGg')]; m += 0x10) {
+        const n = f[j7(qh.g, '$BSl')](m, m + 0x10),
+            o = new Uint8Array(0x11);
+        o[j7(qh.h, qh.i)](n), o[n[j7(qh.j, qh.k)]] = 0x1;
+        i[0x0] += BigInt(o[0x0] | o[0x1] << 0x8 | o[0x2] << 0x10 | (0x3 & o[0x3]) << 0x18);
+        i[0x1] += BigInt(o[0x3] >> 0x2 | o[0x4] << 0x6 | o[0x5] << 0xe | (0xf & o[0x6]) << 0x16);
+        i[0x2] += BigInt(o[0x6] >> 0x4 | o[0x7] << 0x4 | o[0x8] << 0xc | (0x3f & o[0x9]) << 0x14);
+        i[0x3] += BigInt(o[0x9] >> 0x6 | o[0xa] << 0x2 | o[0xb] << 0xa | o[0xc] << 0x12);
+        i[0x4] += BigInt(o[0xd] | o[0xe] << 0x8 | o[0xf] << 0x10 | o[0x10] << 0x18);
+        const p = [0x0n, 0x0n, 0x0n, 0x0n, 0x0n];
+        for (let r = 0x0; r < 0x5; r++)
+            for (let s = 0x0; s < 0x5; s++) {
+                const t = r + s;
+                t < 0x5 ? p[t] += i[r] * j[s] : p[t - 0x5] += i[r] * j[s] * 0x5n;
+            }
+        let q = 0x0n;
+        for (let u = 0x0; u < 0x5; u++) p[u] += q, i[u] = 0x3ffffffn & p[u], q = p[u] >> 0x1an;
+        i[0x0] += 0x5n * q, q = i[0x0] >> 0x1an, i[0x0] &= 0x3ffffffn, i[0x1] += q;
+    }
+    let k = i[0x0] | i[0x1] << 0x1an | i[0x2] << 0x34n | i[0x3] << 0x4en | i[0x4] << 0x68n;
+    k = k + h[j7(0x1569, 'Mmsl')]((v, w, x) => v + (BigInt(w) << BigInt(0x8 * x)), 0x0n) & (0x1n << 0x80n) - 0x1n;
+    const l = new Uint8Array(0x10);
+    for (let v = 0x0; v < 0x10; v++) l[v] = Number(k >> BigInt(0x8 * v) & 0xffn);
+    return l;
+}
+
+function chacha20Poly1305Encrypt(c, f, g, h) {
+    const qi = { c: 0x16ad, f: 0x5e1, g: 0x1523, h: 'rsIZ', i: 'zs!c', j: 'oeP*', k: 0xd0c, l: 0x292, m: 'IcEg', n: 0x17a6, o: '$p[^', p: 0x1391, q: 'GzjL', r: 0x11da, s: '[]Y1' },
+        j8 = fX,
+        i = chacha20Block(c, 0x0, f)[j8(qi.c, 'IcEg')](0x0, 0x20),
+        j = chacha20Xor(c, f, g),
+        k = (0x10 - h[j8(qi.f, 'mRB^')] % 0x10) % 0x10,
+        l = (0x10 - j[j8(qi.g, qi.h)] % 0x10) % 0x10,
+        m = new Uint8Array(h[j8(qi.f, 'mRB^')] + k + j[j8(0xc3f, 'Gn7Q')] + l + 0x10);
+    m[j8(0x4bd, 'b)3q')](h, 0x0), m[j8(0x1dec, qi.i)](j, h[j8(0x1796, qi.j)] + k);
+    const n = new DataView(m[j8(0xeb1, '8Ys%')], h[j8(qi.k, 'd%lH')] + k + j[j8(qi.l, qi.m)] + l);
+    n[j8(qi.n, '89Hn')](0x0, BigInt(h[j8(0x772, qi.o)]), !0x0), n[j8(qi.p, qi.q)](0x8, BigInt(j[j8(qi.r, qi.s)]), !0x0);
+    const o = poly1305Mac(i, m);
+    return concatBytes(j, o);
+}
+
+function chacha20Poly1305Decrypt(c, f, g, h) {
+    const qj = { c: '#sM9', f: 0x126f, g: 'd%lH', h: 0x249, i: '0Ua@', j: 0x1d0f, k: 0xd0c, l: 'd%lH', m: 0x10e1, n: 0x18e0, o: '8Ys%', p: 0xa1f, q: 'Pt3!', r: 0xc3f, s: 'Gn7Q', t: '2#Qk', u: 0x1ac7, v: '$BSl', w: 0x1583, x: 'C2T0' },
+        j9 = fX;
+    if (g[j9(0xaae, qj.c)] < 0x10) throw new Error(j9(qj.f, qj.g));
+    const i = g[j9(qj.h, '8Ys%')](-0x10),
+        j = g[j9(0xcc4, qj.i)](0x0, -0x10),
+        k = chacha20Block(c, 0x0, f)[j9(qj.j, '7NO9')](0x0, 0x20),
+        l = (0x10 - h[j9(0x1ac7, '$BSl')] % 0x10) % 0x10,
+        m = (0x10 - j[j9(qj.k, qj.l)] % 0x10) % 0x10,
+        n = new Uint8Array(h[j9(qj.m, 'w3Tt')] + l + j[j9(0x1812, 'jODS')] + m + 0x10);
+    n[j9(0x1083, '[]Y1')](h, 0x0), n[j9(qj.n, qj.o)](j, h[j9(qj.p, qj.q)] + l);
+    const o = new DataView(n[j9(0x92b, '2#Qk')], h[j9(0x111e, '60r9')] + l + j[j9(qj.r, qj.s)] + m);
+    o[j9(qj.t, qj.t)](0x0, BigInt(h[j9(qj.u, qj.v)]), !0x0), o[j9(qj.w, '6UCx')](0x8, BigInt(j[j9(0x919, qj.x)]), !0x0);
+    const p = poly1305Mac(k, n);
+    let q = 0x0;
+    for (let r = 0x0; r < 0x10; r++) q |= i[r] ^ p[r];
+    if (0x0 !== q) throw new Error(j9(0x1524, 'mRB^'));
+    return chacha20Xor(c, f, j);
+}
+
+const TLS_MAX_PLAINTEXT_FRAGMENT = 0x10 * 0x400;
+
+function buildTlsRecord(c, f, g = TLS_VERSION_12) {
+    const qk = { c: 0x7ba, f: '#sM9' },
+        ja = fX,
+        h = dataToUint8Array(f),
+        i = new Uint8Array(0x5 + h[ja(qk.c, 'oeP*')]);
+    return i[0x0] = c, i[0x1] = g >> 0x8 & 0xff, i[0x2] = g & 0xff, i[0x3] = h[ja(0x1a7c, 'rsIZ')] >> 0x8 & 0xff, i[0x4] = h[ja(0x1d5e, qk.f)] & 0xff, i[ja(0x139d, 'Gn7Q')](h, 0x5), i;
+}
+
+function buildHandshakeMessage(c, f) {
+    const ql = { c: '$BSl' },
+        jb = fX;
+    return tlsBytes(c, (g => [g >> 0x10 & 0xff, g >> 0x8 & 0xff, 0xff & g])(f[jb(0x1ac7, ql.c)]), f);
+}
+
+class TlsRecordParser {
+    constructor() { const qm = { c: 0xaa0, f: 'wCGK' },
+        jc = fX;
+        this[jc(qm.c, qm.f)] = new Uint8Array(0x0); }
+    [fX(0x1797, 'zs!c')](c) {
+        const qn = { c: 'd%lH', f: 'vel(', g: 'w3Tt', h: 0x119c },
+            jd = fX,
+            f = dataToUint8Array(c);
+        this[jd(0x1f6, qn.c)] = this[jd(0xaea, qn.f)][jd(0x10e1, qn.g)] ? concatBytes(this[jd(qn.h, 'jODS')], f) : f;
+    }
+    [fX(0x1603, '[p9(')]() {
+        const qo = { c: 0x92b, f: 0x919, g: 'C2T0', h: 0x93d, i: '7NO9', j: 0x1843, k: '*lLT', l: 'rsIZ', m: 0xb09, n: 0x1e6b, o: '[p9(', p: 0x1d42 },
+            je = fX;
+        if (this[je(qo.c, '2#Qk')][je(qo.f, qo.g)] < 0x5) return null;
+        const c = this[je(0x1113, '5M6D')][0x0],
+            f = readUint16(this[je(0x14c8, 'V#kN')], 0x1),
+            g = readUint16(this[je(qo.h, qo.i)], 0x3);
+        if (this[je(qo.j, qo.k)][je(0x1523, qo.l)] < 0x5 + g) return null;
+        const h = this[je(0x1049, 'b)3q')][je(qo.m, 'ZgMu')](0x5, 0x5 + g);
+        return this[je(qo.n, qo.o)] = this[je(0xa4a, 'oeP*')][je(qo.p, '[]Y1')](0x5 + g), { 'type': c, 'version': f, 'length': g, 'fragment': h };
+    }
+}
+
+class TlsHandshakeParser {
+    constructor() { const qp = { c: 0xc48 },
+        jf = fX;
+        this[jf(qp.c, 'n7E3')] = new Uint8Array(0x0); }
+    [fX(0x1e2c, 'GzjL')](c) {
+        const qq = { c: 0xeb5, f: 'PSkb', g: 0x17d5, h: 'dn8p', i: 0x1525 },
+            jg = fX,
+            f = dataToUint8Array(c);
+        this[jg(qq.c, qq.f)] = this[jg(qq.g, '[]Y1')][jg(0x181f, qq.h)] ? concatBytes(this[jg(qq.i, 'M5Ii')], f) : f;
+    }
+    [fX(0x1595, 'GzjL')]() {
+        const qr = { c: 0x1189, f: '0Ua@', g: 0xaa0, h: 0x9a0, i: 0x1b26, j: '89Hn', k: 0x71e, l: 0x1adc, m: 0x53b, n: 0xe4a, o: 0xc48, p: 'n7E3' },
+            jh = fX;
+        if (this[jh(0x6c2, 'T3Fv')][jh(qr.c, qr.f)] < 0x4) return null;
+        const c = this[jh(0x1a96, 'C2T0')][0x0],
+            f = readUint24(this[jh(qr.g, 'wCGK')], 0x1);
+        if (this[jh(0x18b3, 'dbGg')][jh(qr.h, 'V#kN')] < 0x4 + f) return null;
+        const g = this[jh(qr.i, qr.j)][jh(qr.k, 'NMJQ')](0x4, 0x4 + f),
+            h = this[jh(qr.l, '#sM9')][jh(qr.m, 'n7E3')](0x0, 0x4 + f);
+        return this[jh(qr.n, 'CeJW')] = this[jh(qr.o, qr.p)][jh(0x23b, 'wCGK')](0x4 + f), { 'type': c, 'length': f, 'body': g, 'raw': h };
+    }
+            }
+    function parseServerHello(c) {
+    const qs = { c: 'd%lH', f: 0x19bf, g: '$p[^', h: '60r9', i: 'V#kN', j: 0x249, k: 'dn8p' },
+        ji = fX;
+    let f = 0x0;
+    const g = readUint16(c, f);
+    f += 0x2;
+    const h = c[ji(0x16be, qs.c)](f, f + 0x20);
+    f += 0x20;
+    const i = c[f++],
+        j = c[ji(qs.f, qs.g)](f, f + i);
+    f += i;
+    const k = readUint16(c, f);
+    f += 0x2;
+    const l = c[f++];
+    let m = g,
+        n = null,
+        o = null;
+    if (f < c[ji(0x111e, qs.h)]) {
+        const q = readUint16(c, f);
+        f += 0x2;
+        const r = f + q;
+        for (; f + 0x4 <= r;) {
+            const s = readUint16(c, f);
+            f += 0x2;
+            const t = readUint16(c, f);
+            f += 0x2;
+            const u = c[ji(0x164, qs.i)](f, f + t);
+            if (f += t, s === EXT_SUPPORTED_VERSIONS && t >= 0x2) m = readUint16(u, 0x0);
+            else {
+                if (s === EXT_KEY_SHARE && t >= 0x4) {
+                    const v = readUint16(u, 0x0),
+                        w = readUint16(u, 0x2);
+                    n = { 'group': v, 'key': u[ji(qs.j, '8Ys%')](0x4, 0x4 + w) };
+                } else s === EXT_APPLICATION_LAYER_PROTOCOL_NEGOTIATION && t >= 0x3 && (o = textDecoder[ji(0xd2c, qs.c)](u[ji(0x1ab2, qs.k)](0x3, 0x3 + u[0x2])));
+            }
+        }
+    }
+    const p = new Uint8Array([0xcf, 0x21, 0xad, 0x74, 0xe5, 0x9a, 0x61, 0x11, 0xbe, 0x1d, 0x8c, 0x2, 0x1e, 0x65, 0xb8, 0x91, 0xc2, 0xa2, 0x11, 0x16, 0x7a, 0xbb, 0x8c, 0x5e, 0x7, 0x9e, 0x9, 0xe2, 0xc8, 0xa8, 0x33, 0x9c]);
+    return { 'version': g, 'serverRandom': h, 'sessionId': j, 'cipherSuite': k, 'compression': l, 'selectedVersion': m, 'keyShare': n, 'alpn': o, 'isHRR': constantTimeEqual(h, p), 'isTls13': m === TLS_VERSION_13 };
+}
+
+function parseServerKeyExchange(c) {
+    const qt = { c: 'V#kN' },
+        jj = fX;
+    let f = 0x1;
+    const g = readUint16(c, f);
+    f += 0x2;
+    const h = c[f++];
+    return { 'namedCurve': g, 'serverPublicKey': c[jj(0x164, qt.c)](f, f + h) };
+}
+
+function extractLeafCertificate(c, f = 0x0) {
+    const qu = { c: '8Ys%', f: 0x17d6 },
+        jk = fX;
+    let g = 0x0;
+    if (f) {
+        const j = c[g++];
+        g += j;
+    }
+    if (g + 0x3 > c[jk(0x7c1, qu.c)]) return null;
+    const h = readUint24(c, g);
+    if (g += 0x3, !h || g + 0x3 > c[jk(qu.f, '[p9(')]) return null;
+    const i = readUint24(c, g);
+    return g += 0x3, i ? c[jk(0x159a, 'w(Wr')](g, g + i) : null;
+}
+
+function parseEncryptedExtensions(c) {
+    const qv = { c: 0x1bb4, f: '9rQu' },
+        jl = fX,
+        f = { 'alpn': null };
+    let g = 0x2;
+    const h = 0x2 + readUint16(c, 0x0);
+    for (; g + 0x4 <= h;) {
+        const i = readUint16(c, g);
+        g += 0x2;
+        const j = readUint16(c, g);
+        if (g += 0x2, i === EXT_APPLICATION_LAYER_PROTOCOL_NEGOTIATION && j >= 0x3) {
+            const k = c[g + 0x2];
+            k > 0x0 && g + 0x3 + k <= g + j && (f[jl(0x300, '1qbp')] = textDecoder[jl(qv.c, qv.f)](c[jl(0x1794, 'oeP*')](g + 0x3, g + 0x3 + k)));
+        }
+        g += j;
+    }
+    return f;
+}
+
+function buildClientHello(c, f, g, { tls13: h = !0x0, tls12: i = !0x0, alpn: alpn = null, chacha: chacha = !0x0 } = {}) {
+    const qx = { c: 0x1d57, f: 'dZbH', g: 0x18cd, h: 'C2T0', i: 0x1c52, j: 0xcfc, k: 'M5Ii', l: 0xaca, m: 0x1601, n: 'dn8p', o: 0x1730, p: 0x925, q: '[p9(', r: '0Ua@', s: 0x7c1, t: 0x18ed, u: 0x1d2d, v: 0xcfc, w: 'PYt$', x: 0xf37, y: 'Gn7Q', z: '#sM9', A: '%oj0', B: 0x1323, C: 'GzjL', D: 0xfa4, E: 'vel(', F: 'IcEg', G: 0x1266, H: 'V#kN', I: 0x1357, J: 0x131a, K: 'n7E3', L: 0x19e4, M: 'jODS', N: '60r9', O: 'w(Wr', P: 0x1bd9, Q: 'd%lH', R: 0x292, S: 'CeJW' },
+        qw = { c: 0x1e7a, f: 'wCGK' },
+        jm = fX,
+        j = [];
+    h && j[jm(qx.c, qx.f)](0x1301, 0x1302, ...chacha ? [0x1303] : []), i && j[jm(qx.g, 'yxI7')](0xc02f, 0xc030, 0xc02b, 0xc02c, ...chacha ? [0xcca8, 0xcca9] : []);
+    const k = tlsBytes(...j[jm(0x1a48, qx.h)](uint16be)),
+        l = [tlsBytes(0xff, 0x1, 0x0, 0x1, 0x0)];
+    if (f) {
+        const p = textEncoder[jm(qx.i, 'mRB^')](f),
+            q = tlsBytes(0x0, uint16be(p[jm(qx.j, 'PYt$')]), p);
+        l[jm(0x1ec6, qx.k)](tlsBytes(uint16be(EXT_SERVER_NAME), uint16be(q[jm(0x88c, 'yxI7')] + 0x2), uint16be(q[jm(qx.l, 'ZgMu')]), q));
+    }
+    l[jm(0x169f, '$p[^')](tlsBytes(uint16be(EXT_EC_POINT_FORMATS), 0x0, 0x2, 0x1, 0x0)), l[jm(0x78f, 'Mmsl')](tlsBytes(uint16be(EXT_SUPPORTED_GROUPS), 0x0, 0x6, 0x0, 0x4, 0x0, 0x1d, 0x0, 0x17));
+    const m = tlsBytes(...SUPPORTED_SIGNATURE_ALGORITHMS[jm(qx.m, qx.n)](uint16be));
+    l[jm(qx.o, 'PYt$')](tlsBytes(uint16be(EXT_SIGNATURE_ALGORITHMS), uint16be(m[jm(0x1c85, '6UCx')] + 0x2), uint16be(m[jm(qx.p, '89Hn')]), m));
+    const n = Array[jm(0x1c45, qx.q)](alpn) ? alpn[jm(0x86e, qx.r)](Boolean) : alpn ? [alpn] : [];
+    if (n[jm(qx.s, '8Ys%')]) {
+        const r = concatBytes(...n[jm(0x14de, '9rQu')](s => {
+            const jn = jm,
+                t = textEncoder[jn(0x5b5, 'yxI7')](s);
+            return tlsBytes(t[jn(qw.c, qw.f)], t);
+        }));
+        l[jm(qx.t, 'Pt3!')](tlsBytes(uint16be(EXT_APPLICATION_LAYER_PROTOCOL_NEGOTIATION), uint16be(r[jm(qx.u, 'M5Ii')] + 0x2), uint16be(r[jm(qx.v, qx.w)]), r));
+    }
+    if (h && g) {
+        let s;
+        if (l[jm(qx.x, qx.y)](i ? tlsBytes(uint16be(EXT_SUPPORTED_VERSIONS), 0x0, 0x5, 0x4, 0x3, 0x4, 0x3, 0x3) : tlsBytes(uint16be(EXT_SUPPORTED_VERSIONS), 0x0, 0x3, 0x2, 0x3, 0x4)), l[jm(0x120e, qx.z)](tlsBytes(uint16be(EXT_PSK_KEY_EXCHANGE_MODES), 0x0, 0x2, 0x1, 0x1)), g?.[jm(0x1abb, qx.A)] && g?.[jm(qx.B, qx.C)]) s = concatBytes(tlsBytes(0x0, 0x1d, uint16be(g[jm(0x1e86, 'd%lH')][jm(0x17d6, '[p9(')]), g[jm(qx.D, '$BSl')]), tlsBytes(0x0, 0x17, uint16be(g[jm(0xc56, qx.E)][jm(0x1106, '9rQu')]), g[jm(0xcb9, qx.F)]));
+        else {
+            if (g?.[jm(qx.G, qx.H)]) s = tlsBytes(0x0, 0x1d, uint16be(g[jm(qx.I, qx.k)][jm(qx.J, qx.K)]), g[jm(0x9b7, '$p[^')]);
+            else {
+                if (g?.[jm(qx.L, 'mRB^')]) s = tlsBytes(0x0, 0x17, uint16be(g[jm(0x197e, qx.M)][jm(0x919, qx.h)]), g[jm(0x75d, qx.N)]);
+                else {
+                    if (!(g instanceof Uint8Array)) throw new Error(jm(0x23a, '8Ys%'));
+                    s = tlsBytes(0x0, 0x17, uint16be(g[jm(0x113c, qx.O)]), g);
+                }
+            }
+        }
+        l[jm(qx.P, 'dbGg')](tlsBytes(uint16be(EXT_KEY_SHARE), uint16be(s[jm(0xd0c, qx.Q)] + 0x2), uint16be(s[jm(qx.R, 'IcEg')]), s));
+    }
+    const o = concatBytes(...l);
+    return buildHandshakeMessage(HANDSHAKE_TYPE_CLIENT_HELLO, tlsBytes(uint16be(TLS_VERSION_12), c, 0x0, uint16be(k[jm(0x1c75, qx.S)]), k, 0x1, 0x0, uint16be(o[jm(0x1913, 'egod')]), o));
+}
+
+const uint64be = c => {
+    const qy = { c: 0x105e, f: 'dn8p' },
+        jo = fX,
+        f = new Uint8Array(0x8);
+    return new DataView(f[jo(0x14d2, '1qbp')])[jo(qy.c, qy.f)](0x0, c, !0x1), f;
+},
+xorSequenceIntoIv = (c, f) => {
+    const qz = { c: 'Pt3!', f: 0x1913, g: 'egod' },
+        jp = fX,
+        g = c[jp(0x1943, qz.c)](),
+        h = uint64be(f);
+    for (let i = 0x0; i < 0x8; i++) g[g[jp(qz.f, qz.g)] - 0x8 + i] ^= h[i];
+    return g;
+},
+deriveTrafficKeys = (c, f, g, h) => Promise[fX(0x3c9, '%oj0')]([hkdfExpandLabel(c, f, fX(0x5c0, 'IcEg'), EMPTY_BYTES, g), hkdfExpandLabel(c, f, 'iv', EMPTY_BYTES, h)]);
+
+class TlsClient {
+    constructor(c, f = {}) {
+        const qA = { c: 0x1792, f: 'oeP*', g: 0xb45, h: 0xe45, i: 'oeP*', j: 0x1db5, k: 'yxI7', l: 0x123e, m: 'Mmsl', n: 0x16da, o: 0xdf0, p: 'dn8p', q: 0x106e, r: 0x1c59, s: 'NMJQ', t: 0x176c, u: '6UCx', v: 0x106, w: 'jODS', x: '9rQu', y: 0x27e, z: 0x186e, A: 0x1662, B: 0x1383, C: 0x1e5a, D: 0x166a, E: 0x46a, F: 'zs!c', G: 0x3a1, H: 0xbfb, I: 0xaed, J: 0x1a1b, K: 0x1d74, L: '1qbp', M: '[]Y1', N: 0x1958, O: 'w3Tt', P: '$p[^', Q: 0x14c4, R: 0x75c, S: 0x802, T: 0xe92, U: 0x1b64, V: 0x771, W: 'C2T0' },
+            jq = fX;
+        if (this[jq(qA.c, '%oj0')] = c, this[jq(0x9be, qA.f)] = f[jq(qA.g, 'ZgMu')] || '', this[jq(0xd8e, 'w3Tt')] = !0x1 !== f[jq(0x1876, '*lLT')], this[jq(0x604, 'V#kN')] = !0x1 !== f[jq(qA.h, qA.i)], !this[jq(0x1761, '9rQu')] && !this[jq(qA.j, qA.k)]) throw new Error(jq(qA.l, qA.m));
+        this[jq(0x16df, '[]Y1')] = Array[jq(qA.n, 'd%lH')](f[jq(qA.o, 'vel(')]) ? f[jq(0x1b86, qA.p)] : f[jq(0x1c1f, 'wCGK')] ? [f[jq(qA.q, qA.f)]] : null, this[jq(qA.r, qA.s)] = f[jq(0x1efc, 'd%lH')] !== ![], this[jq(0x1eee, '7NO9')] = f[jq(qA.t, '5M6D')] ?? 0x7530, this[jq(0x195b, qA.u)] = randomBytes(0x20), this[jq(0x397, '%oj0')] = null, this[jq(qA.v, 'dZbH')] = [], this[jq(0x8e4, qA.w)] = !0x1, this[jq(0x1e8f, qA.x)] = null, this[jq(0xe87, qA.w)] = null, this[jq(qA.y, 'Pt3!')] = null, this[jq(qA.z, 'jODS')] = !0x1, this[jq(qA.A, 'C2T0')] = null, this[jq(qA.B, 'NMJQ')] = null, this[jq(qA.C, 'Pt3!')] = null, this[jq(qA.D, 'dn8p')] = null, this[jq(qA.E, qA.F)] = null, this[jq(qA.G, 'Gn7Q')] = null, this[jq(0x1bbc, 'C2T0')] = null, this[jq(0x1190, 'jODS')] = null, this[jq(0xf72, qA.k)] = null, this[jq(qA.H, 'XITC')] = null, this[jq(qA.I, 'Mmsl')] = null, this[jq(qA.J, '9rQu')] = null, this[jq(qA.K, qA.L)] = null, this[jq(0xe98, qA.M)] = null, this[jq(0x1ab7, 'vel(')] = null, this[jq(0x13ba, '$p[^')] = null, this[jq(qA.N, qA.O)] = null, this[jq(0x165a, qA.P)] = null, this[jq(qA.Q, 'yxI7')] = null, this[jq(qA.R, 'n7E3')] = null, this[jq(qA.S, 'n7E3')] = 0x0n, this[jq(qA.T, 'ZgMu')] = 0x0n, this[jq(qA.U, 'GzjL')] = new TlsRecordParser(), this[jq(0x146b, '8Ys%')] = new TlsHandshakeParser(), this[jq(0x116f, 'mRB^')] = new Map(), this[jq(qA.V, 'PSkb')] = null, this[jq(0x1da3, qA.W)] = !0x1;
+    }
+    [fX(0x1af0, 'yxI7')](c) { const qB = { c: 0x147b, f: '[]Y1' },
+        jr = fX;
+        this[jr(0x1852, '#sM9')][jr(qB.c, qB.f)](c); }
+    [fX(0x1621, 'XITC')]() {
+        const qC = { c: 'zs!c', f: 0x925, g: '89Hn', h: 0x9c8, i: 'Pt3!', j: 0x2b0, k: 'dbGg' },
+            js = fX;
+        return 0x1 === this[js(0x1114, qC.c)][js(qC.f, qC.g)] ? this[js(qC.h, qC.i)][0x0] : concatBytes(...this[js(qC.j, qC.k)]);
+    }
+    [fX(0x1079, 'vel(')](c) { const qD = { c: 'b)3q' },
+        jt = fX;
+        return CIPHER_SUITES_BY_ID[jt(0x5cd, qD.c)](c) || null; }
+    async [fX(0x143, 'egod')](c) {
+        const qE = { c: 0xb5f, f: '8Ys%', g: 0xa2a },
+            ju = fX;
+        return this[ju(0x1440, 'ZgMu')] ? Promise[ju(qE.c, qE.f)]([c[ju(qE.g, '89Hn')](), new Promise((f, g) => setTimeout(() => g(new Error(ju(0x6c0, '8Ys%'))), this[ju(0x71c, 'oeP*')]))]) : c[ju(0x1286, '8Ys%')]();
+    }
+    async [fX(0x13df, '60r9')](c, f, g) {
+        const qF = { c: '[p9(', f: 0xd95, g: 'jODS', h: 'n7E3' },
+            jv = fX;
+        for (;;) {
+            let h;
+            for (; h = this[jv(0xe64, '[]Y1')][jv(0x1603, qF.c)]();)
+                if (await f(h)) return;
+            const { value: i, done: j } = await this[jv(qF.f, qF.g)](c);
+            if (j) throw new Error(g);
+            this[jv(0xf57, qF.h)][jv(0x129d, 'dbGg')](i);
+        }
+    }
+    async [fX(0x1cb4, '%oj0')](c, f, g) {
+        const qH = { c: 0x15d7, f: '#sM9' },
+            qG = { c: 0x2a7, f: 'wCGK', g: 0x1930, h: 'oeP*', i: 0xb19, j: 'ZgMu', k: 'mRB^', l: 0xa77, m: 'w(Wr' },
+            jw = fX;
+        for (let h; h = this[jw(0xf54, 'Pt3!')][jw(qH.c, qH.f)]();)
+            if (await f(h)) return;
+        return this[jw(0x1199, '[p9(')](c, async i => {
+            const jx = jw;
+            if (i[jx(0x1c97, 'rsIZ')] === CONTENT_TYPE_ALERT) {
+                if (shouldIgnoreTlsAlert(i[jx(qG.c, qG.f)])) return;
+                throw new Error(jx(qG.g, qG.h) + i[jx(0x148, 'XITC')][0x1]);
+            }
+            if (i[jx(qG.i, qG.j)] === CONTENT_TYPE_HANDSHAKE) {
+                this[jx(0xb97, qG.j)][jx(0x1f1b, qG.k)](i[jx(qG.l, qG.m)]);
+                for (let j; j = this[jx(0x1a95, 'dn8p')][jx(0x1804, '6UCx')]();)
+                    if (await f(j)) return 0x1;
+            }
+        }, g);
+    }
+    async [fX(0x1cb6, 'M5Ii')](c) {
+        const qI = { c: 'ZgMu', f: '$p[^' },
+            jy = fX;
+        if (!c?.[jy(0xaca, qI.c)]) throw new Error(jy(0xc6b, qI.f));
+        this[jy(0xd2e, 'wCGK')] = !0x0;
+    }
+        }
+    async [fX(0x1294, '[p9(')]() {
+    const qJ = { c: 'PSkb', f: 0x1374, g: 0xeb2, h: 'T3Fv', i: 0xf97, j: 'CeJW', k: 0x8d9, l: '7NO9', m: 'vel(', n: 0x1a8a, o: 0xec4, p: '*lLT', q: 0x18f7, r: '%oj0', s: 0x1a65, t: 0xe1d, u: '60r9', v: 0x428, w: 'b)3q', x: 0xd32, y: 0xd8a, z: '*lLT', A: '8Ys%', B: 'M5Ii', C: 0xc73, D: 0x1e78, E: 'Pt3!', F: 'IcEg', G: 0xe5c, H: 0x9df, I: 0x124a, J: '2#Qk', K: 'd%lH', L: 0x580, M: 0x1564, N: '$p[^', O: 0xbca, P: 0x1b9a, Q: 0x1b34 },
+        jz = fX,
+        [c, f] = await Promise[jz(0xc4d, qJ.c)]([generateKeyShare(jz(qJ.f, '6UCx')), generateKeyShare(jz(qJ.g, qJ.h))]);
+    this[jz(qJ.i, qJ.j)] = new Map([
+        [0x17, c],
+        [0x1d, f]
+    ]), this[jz(qJ.k, 'dbGg')] = c[jz(0x17c8, qJ.l)];
+    const g = this[jz(0x1144, qJ.m)][jz(qJ.n, '[p9(')][jz(0x1ee, 'egod')](),
+        h = this[jz(0x589, 'w(Wr')][jz(qJ.o, qJ.p)][jz(qJ.q, 'NMJQ')]();
+    try {
+        const i = buildClientHello(this[jz(0x1000, qJ.r)], this[jz(qJ.s, '[p9(')], { 'x25519': f[jz(0x11b, 'jODS')], 'p256': c[jz(qJ.t, qJ.u)] }, { 'tls13': this[jz(qJ.v, qJ.w)], 'tls12': this[jz(0x1682, 'n7E3')], 'alpn': this[jz(0x1db7, 'dZbH')], 'chacha': this[jz(0x1721, 'dn8p')] });
+        this[jz(qJ.x, 'dZbH')](i), await h[jz(qJ.y, qJ.z)](buildTlsRecord(CONTENT_TYPE_HANDSHAKE, i, TLS_VERSION_10));
+        const j = await this[jz(0x1e4c, qJ.A)](g);
+        if (j[jz(0xe51, qJ.B)]) throw new Error(jz(qJ.C, '$BSl'));
+        if (j[jz(0x2be, 'dZbH')]?.[jz(qJ.D, qJ.E)] && this[jz(0x465, qJ.F)][jz(qJ.G, 'jODS')](j[jz(0x1ae0, '$p[^')][jz(0x43a, 'Gn7Q')])) {
+            const k = this[jz(0x1555, 'n7E3')][jz(qJ.H, 'dn8p')](j[jz(qJ.I, qJ.J)][jz(0x1004, qJ.m)]);
+            this[jz(0x1d01, '8Ys%')] = k[jz(0x1925, qJ.K)];
+        }
+        j[jz(qJ.L, 'ZgMu')] ? await this[jz(0x8a5, qJ.c)](g, h, j) : await this[jz(qJ.M, qJ.N)](g, h), this[jz(qJ.O, '0Ua@')] = !0x0;
+    } finally { g[jz(qJ.P, qJ.J)](), h[jz(qJ.Q, '$p[^')](); }
+}
+async [fX(0x19e9, 'C2T0')](c) {
+    const qK = { c: 0x19c7, f: '$p[^', g: '6UCx', h: '60r9', i: 'ZgMu', j: 0x2b3, k: '*lLT', l: 0x42a, m: '#sM9', n: 0x25c, o: 'PYt$', p: 'wCGK', q: 0xd85, r: 0xa77, s: 0x1d5a, t: 0xc2a, u: '[p9(', v: 0x7cd, w: 'V#kN', x: 0x995, y: 'M5Ii', z: '$BSl', A: 0x1dd7, B: 'dn8p', C: 0x1a6, D: 'CeJW', E: 0x34c, F: 0x708, G: 0x38b, H: 0x164d, I: 'dZbH', J: 0x186e, K: 'jODS', L: 'T3Fv', M: 0xf2c, N: 'mRB^' },
+        jA = fX;
+    for (;;) {
+        const { value: f, done: g } = await this[jA(qK.c, qK.f)](c);
+        if (g) throw new Error(jA(0x1928, qK.g));
+        let h;
+        for (this[jA(0x1c5f, 'V#kN')][jA(qK.h, qK.i)](f); h = this[jA(0x1e18, qK.i)][jA(qK.j, '$p[^')]();) {
+            if (h[jA(0x18c9, qK.k)] === CONTENT_TYPE_ALERT) {
+                if (shouldIgnoreTlsAlert(h[jA(qK.l, qK.m)])) continue;
+                throw new Error(jA(qK.n, qK.o) + h[jA(0x2a7, qK.p)][0x0] + jA(qK.q, qK.f) + h[jA(qK.r, 'w(Wr')][0x1]);
+            }
+            if (h[jA(qK.s, '89Hn')] !== CONTENT_TYPE_HANDSHAKE) continue;
+            let i;
+            for (this[jA(qK.t, qK.u)][jA(qK.v, 'V#kN')](h[jA(0x1e68, qK.w)]); i = this[jA(qK.x, qK.y)][jA(qK.j, qK.z)]();) {
+                if (i[jA(qK.A, qK.B)] !== HANDSHAKE_TYPE_SERVER_HELLO) continue;
+                this[jA(0x13bc, 'zs!c')](i[jA(qK.C, qK.D)]);
+                const j = parseServerHello(i[jA(0xa02, 'dbGg')]);
+                if (this[jA(qK.E, qK.f)] = j[jA(qK.F, 'M5Ii')], this[jA(qK.G, 'V#kN')] = j[jA(0x6e0, '6UCx')], this[jA(qK.H, qK.I)] = this[jA(0x1caa, '89Hn')](j[jA(0x761, 'Mmsl')]), this[jA(qK.J, qK.K)] = j[jA(0xf12, '2#Qk')], this[jA(0x679, '[]Y1')] = j[jA(0xed3, qK.L)] || null, !this[jA(qK.M, 'dbGg')]) throw new Error(jA(0x1977, qK.I) + j[jA(0x81b, qK.D)][jA(0x21c, qK.N)](0x10));
+                return j;
+            }
+        }
+    }
+}
+async [fX(0x1564, '$p[^')](c, f) {
+    const qN = { c: 'rsIZ', f: 0x1577, g: 0x1cd2, h: '9rQu', i: 0x1b2a, j: 'vel(', k: 0xf8d, l: 'Gn7Q', m: 'GzjL', n: 0x1244, o: 0xe6f, p: 'V#kN', q: 0x1141, r: 'egod', s: 0x1a68, t: 0x277, u: 0x1005, v: '89Hn', w: 0x10e5, x: 0x30f, y: '$p[^', z: 0xd67, A: 'M5Ii', B: '5M6D', C: 0x795, D: '60r9', E: 0x2ba, F: '$BSl', G: 0xf07, H: 0x96c, I: 'yxI7', J: 0x7ff, K: 0x1dd3, L: 0x10e7, M: 0xa85, N: 0x1980, O: 0x11cd, P: '*lLT', Q: 'Gn7Q', R: 'C2T0', S: 0x982, T: 0x1a59, U: 0x1705, V: '2#Qk', W: 0xb0c, X: 0x387, Y: 'dbGg', Z: 0x165b, a0: 0x1481, a1: 'dn8p', a2: 0x47e, a3: 0x19f8, a4: 'mRB^', a5: 0x1a08, a6: '#sM9', a7: 'vel(', a8: 'w3Tt' },
+        qM = { c: 0x965, f: 'b)3q', g: 0xa77, h: 'w(Wr', i: 0x86d, j: 0x707, k: 'PSkb', l: 0x1164, m: 0x1300, n: 'C2T0', o: 0x10e7, p: 'M5Ii' },
+        qL = { c: 'GzjL', f: 0x2a5, g: 0x84f, h: 0x13ee, i: 0x1414, j: 'n7E3', k: 0x1180, l: 0xa73, m: 0xf83, n: 0x330, o: 0xa45, p: 0xc9d, q: 0x5de, r: 'wCGK' },
+        jB = fX;
+    let g = null,
+        h = !0x1;
+    if (await this[jB(0xdff, qN.c)](c, async u => {
+            const jC = jB;
+            switch (u[jC(0x370, qL.c)]) {
+                case HANDSHAKE_TYPE_CERTIFICATE: {
+                    this[jC(qL.f, 'M5Ii')](u[jC(qL.g, 'mRB^')]);
+                    const v = extractLeafCertificate(u[jC(qL.h, 'V#kN')], 0x1);
+                    if (!v) throw new Error(jC(qL.i, qL.j));
+                    await this[jC(qL.k, 'IcEg')](v);
+                    break;
+                }
+                case HANDSHAKE_TYPE_SERVER_KEY_EXCHANGE:
+                    this[jC(0x1db8, 'ZgMu')](u[jC(qL.l, '[]Y1')]), g = parseServerKeyExchange(u[jC(0x1eb8, '9rQu')]);
+                    break;
+                case HANDSHAKE_TYPE_SERVER_HELLO_DONE:
+                    return this[jC(qL.m, 'd%lH')](u[jC(qL.n, 'Mmsl')]), h = !0x0, 0x1;
+                case HANDSHAKE_TYPE_CERTIFICATE_REQUEST:
+                    throw new Error(jC(qL.o, 'w(Wr'));
+                default:
+                    this[jC(qL.p, 'jODS')](u[jC(qL.q, qL.r)]);
+            }
+        }, jB(qN.f, '0Ua@')), !this[jB(qN.g, qN.h)]) throw new Error(jB(0x864, 'dn8p'));
+    const i = g;
+    if (!i) throw new Error(jB(qN.i, qN.j));
+    const j = GROUPS_BY_ID[jB(0x764, 'M5Ii')](i[jB(qN.k, qN.l)]);
+    if (!j) throw new Error(jB(0x85a, '0Ua@') + i[jB(0x110c, 'ZgMu')][jB(qN.m, 'mRB^')](0x10));
+    const k = this[jB(qN.n, '89Hn')][jB(qN.o, qN.p)](i[jB(qN.q, qN.r)]);
+    if (!k) throw new Error(jB(qN.s, '89Hn') + i[jB(qN.t, 'M5Ii')][jB(qN.u, 'wCGK')](0x10));
+    const l = await deriveSharedSecret(k[jB(0xb47, qN.v)][jB(qN.w, 'zs!c')], i[jB(qN.x, qN.y)], j),
+        m = buildHandshakeMessage(HANDSHAKE_TYPE_CLIENT_KEY_EXCHANGE, tlsBytes(k[jB(qN.z, qN.A)][jB(0x1106, '9rQu')], k[jB(0xead, qN.B)]));
+    this[jB(qN.C, qN.D)](m);
+    const n = this[jB(qN.E, qN.F)][jB(0xc77, 'dn8p')];
+    this[jB(qN.G, 'PSkb')] = await tls12Prf(l, jB(qN.H, qN.I), concatBytes(this[jB(0x1a3e, 'NMJQ')], this[jB(qN.J, 'XITC')]), 0x30, n);
+    const o = this[jB(0x6f9, '60r9')][jB(0x15dd, 'b)3q')],
+        p = this[jB(qN.K, '9rQu')][jB(0xc59, '7NO9')],
+        q = await tls12Prf(this[jB(qN.L, '[]Y1')], jB(qN.M, 'dZbH'), concatBytes(this[jB(0x507, '$BSl')], this[jB(qN.N, 'egod')]), 0x2 * o + 0x2 * p, n);
+    this[jB(qN.O, qN.P)] = q[jB(0xafd, qN.Q)](0x0, o), this[jB(0x990, qN.R)] = q[jB(qN.S, 'zs!c')](o, 0x2 * o), this[jB(qN.T, qN.c)] = q[jB(0x1ab2, 'dn8p')](0x2 * o, 0x2 * o + p), this[jB(0x490, 'dbGg')] = q[jB(0xcc4, '0Ua@')](0x2 * o + p, 0x2 * o + 0x2 * p);
+    if (!this[jB(0x1147, 'CeJW')][jB(qN.U, qN.V)]) [this[jB(qN.W, 'egod')], this[jB(0x1f24, '2#Qk')]] = await Promise[jB(qN.X, qN.Y)]([importAesGcmKey(this[jB(qN.Z, 'zs!c')], [jB(qN.a0, 'b)3q')]), importAesGcmKey(this[jB(0x1a60, 'NMJQ')], [jB(0x312, qN.a1)])]);
+    await f[jB(qN.a2, 'XITC')](buildTlsRecord(CONTENT_TYPE_HANDSHAKE, m)), await f[jB(0xbec, 'IcEg')](buildTlsRecord(CONTENT_TYPE_CHANGE_CIPHER_SPEC, tlsBytes(0x1)));
+    const r = await tls12Prf(this[jB(qN.a3, qN.a4)], jB(qN.a5, 'Pt3!'), await digestBytes(n, this[jB(0x94e, qN.a6)]()), 0xc, n),
+        s = buildHandshakeMessage(HANDSHAKE_TYPE_FINISHED, r);
+    this[jB(0x9c0, qN.a7)](s), await f[jB(0x294, 'C2T0')](buildTlsRecord(CONTENT_TYPE_HANDSHAKE, await this[jB(0xb1f, qN.a8)](s, CONTENT_TYPE_HANDSHAKE)));
+    let t = !0x1;
+    await this[jB(0x1de3, 'oeP*')](c, async u => {
+        const jD = jB;
+        if (u[jD(qM.c, qM.f)] === CONTENT_TYPE_ALERT) {
+            if (shouldIgnoreTlsAlert(u[jD(qM.g, qM.h)])) return;
+            throw new Error(jD(qM.i, 'PSkb') + u[jD(qM.j, 'dbGg')][0x1]);
+        }
+        if (u[jD(0xb19, 'ZgMu')] === CONTENT_TYPE_CHANGE_CIPHER_SPEC) return void(t = !0x0);
+        if (u[jD(0x9b8, qM.k)] !== CONTENT_TYPE_HANDSHAKE || !t) return;
+        const v = await this[jD(qM.l, 'mRB^')](u[jD(qM.m, 'GzjL')], CONTENT_TYPE_HANDSHAKE);
+        if (v[0x0] !== HANDSHAKE_TYPE_FINISHED) return;
+        const w = readUint24(v, 0x1),
+            x = v[jD(0x6e3, qM.n)](0x4, 0x4 + w),
+            y = await tls12Prf(this[jD(qM.o, '[]Y1')], jD(0x16ca, qM.p), await digestBytes(n, this[jD(0x61e, 'C2T0')]()), 0xc, n);
+        if (!constantTimeEqual(x, y)) throw new Error(jD(0x1039, 'mRB^'));
+        return 0x1;
+    }, jB(0x1bfe, 'wCGK'));
+}
+async [fX(0x275, '89Hn')](c, f, g) {
+    const qQ = { c: 0x75e, f: '2#Qk', g: 0x17f8, h: 0xc3f, i: 0xc39, j: 0x1a58, k: 'wCGK', l: 'rsIZ', m: '2#Qk', n: 0x1cdd, o: 0x41d, p: 'Gn7Q', q: 0x1e22, r: 'wCGK', s: '[p9(', t: '8Ys%', u: 0xaa6, v: 0x17c5, w: '9rQu', x: 'Mmsl', y: 'vel(', z: 0x4bf, A: '0Ua@', B: 0x63c, C: 0x10a3, D: 'GzjL', E: '7NO9', F: 'M5Ii', G: '5M6D', H: 0xb14, I: 0x8ee, J: 0x9ca, K: 0xdf4, L: 'V#kN', M: 0x7e5, N: '0Ua@', O: 'jODS', P: 0x326, Q: 'NxG1', R: 0x168c, S: '60r9', T: 'mRB^', U: 0x164d, V: 0x1702, W: 'XITC', X: 0x1623, Y: 0x7ae, Z: 0x1057, a0: 0xd7e, a1: 0x164b, a2: 0x1621, a3: 'jODS', a4: 0x1846, a5: 'NxG1', a6: 0x1e74, a7: 'Gn7Q', a8: 0x11a4, a9: '60r9' },
+        qP = { c: 0xb19, f: 0x1bc3, g: 'PSkb', h: '2#Qk', i: 0xb97, j: 'ZgMu', k: '2#Qk', l: '%oj0' },
+        qO = { c: 0x1b0, f: 0x117c, g: 0x261, h: '$BSl', i: 'dn8p', j: 0xcad, k: 'PYt$', l: 0x49d, m: 'dZbH', n: 0x167, o: 0x160a, p: 'Pt3!', q: 0x169b, r: 'NMJQ', s: 'vel(', t: '60r9', u: 'dbGg', v: 0x1932, w: '[p9(', x: 'mRB^', y: 0x330 },
+        jE = fX,
+        h = GROUPS_BY_ID[jE(qQ.c, 'dZbH')](g[jE(0x1473, '0Ua@')]?.[jE(0xd1c, qQ.f)]);
+    if (!h || !g[jE(qQ.g, 'V#kN')]?.[jE(0xccc, 'jODS')]?.[jE(qQ.h, 'Gn7Q')]) throw new Error(jE(qQ.i, 'rsIZ'));
+    const i = this[jE(0x1960, '1qbp')][jE(0x110f, '60r9')],
+        j = hashByteLength(i),
+        k = this[jE(qQ.j, qQ.k)][jE(0x4dc, qQ.l)],
+        l = this[jE(0xfcb, qQ.m)][jE(qQ.n, 'mRB^')],
+        m = await deriveSharedSecret(this[jE(qQ.o, qQ.p)][jE(qQ.q, qQ.r)], g[jE(0x130e, 'jODS')][jE(0x1546, 'd%lH')], h),
+        n = await hkdfExtract(i, null, new Uint8Array(j)),
+        o = await hkdfExpandLabel(i, n, jE(0xeb0, qQ.s), await digestBytes(i, EMPTY_BYTES), j);
+    this[jE(0x5bf, '#sM9')] = await hkdfExtract(i, o, m);
+    const p = await digestBytes(i, this[jE(0x1eca, qQ.t)]()),
+        q = await hkdfExpandLabel(i, this[jE(qQ.u, 'zs!c')], jE(0x399, 'dn8p'), p, j),
+        r = await hkdfExpandLabel(i, this[jE(qQ.v, 'mRB^')], jE(0x17df, qQ.w), p, j);
+    [this[jE(0x18e5, 'T3Fv')], this[jE(0xde6, 'egod')]] = await deriveTrafficKeys(i, q, k, l), [this[jE(0x25b, qQ.x)], this[jE(0x875, 'Pt3!')]] = await deriveTrafficKeys(i, r, k, l);
+    if (!this[jE(0x17db, qQ.y)][jE(0x194b, '6UCx')]) [this[jE(qQ.z, qQ.A)], this[jE(qQ.B, '2#Qk')]] = await Promise[jE(qQ.C, qQ.D)]([importAesGcmKey(this[jE(0x1694, '7NO9')], [jE(0xfda, qQ.E)]), importAesGcmKey(this[jE(0x2a9, qQ.F)], [jE(0x1c25, qQ.G)])]);
+    const s = await hkdfExpandLabel(i, r, jE(qQ.H, '#sM9'), EMPTY_BYTES, j);
+    let t = !0x1;
+    const u = async D => {
+        const jF = jE;
+        switch (D[jF(0x1ac8, 'yxI7')]) {
+            case HANDSHAKE_TYPE_ENCRYPTED_EXTENSIONS: {
+                const E = parseEncryptedExtensions(D[jF(0x3ef, 'wCGK')]);
+                E[jF(qO.c, 'b)3q')] && (this[jF(qO.f, '1qbp')] = E[jF(qO.g, qO.h)]), this[jF(0x1228, qO.i)](D[jF(qO.j, qO.k)]);
+                break;
+            }
+            case HANDSHAKE_TYPE_CERTIFICATE: {
+                const F = extractLeafCertificate(D[jF(qO.l, qO.m)]);
+                if (!F) throw new Error(jF(qO.n, 'oeP*'));
+                await this[jF(qO.o, qO.p)](F), this[jF(0x1db8, 'ZgMu')](D[jF(qO.q, qO.r)]);
+                break;
+            }
+            case HANDSHAKE_TYPE_CERTIFICATE_REQUEST:
+                throw new Error(jF(0x6c9, qO.s));
+            case HANDSHAKE_TYPE_CERTIFICATE_VERIFY:
+                this[jF(0x795, qO.t)](D[jF(0x972, qO.u)]);
+                break;
+            case HANDSHAKE_TYPE_FINISHED: {
+                const G = await hmac(i, s, await digestBytes(i, this[jF(0xbdf, 'egod')]()));
+                if (!constantTimeEqual(G, D[jF(0x1d52, qO.i)])) throw new Error(jF(qO.v, qO.w));
+                this[jF(0x10b4, qO.x)](D[jF(0x5b3, 'Pt3!')]), t = !0x0;
+                break;
+            }
+            default:
+                this[jF(0x797, '$p[^')](D[jF(qO.y, 'Mmsl')]);
+        }
+    };
+    await this[jE(qQ.I, 'NMJQ')](c, async D => {
+        const jG = jE;
+        if (D[jG(0xd75, 'NxG1')] === CONTENT_TYPE_CHANGE_CIPHER_SPEC || D[jG(qP.c, 'ZgMu')] === CONTENT_TYPE_HANDSHAKE) return;
+        if (D[jG(0x169d, 'zs!c')] === CONTENT_TYPE_ALERT) {
+            if (shouldIgnoreTlsAlert(D[jG(0x1d73, '9rQu')])) return;
+            throw new Error(jG(0x1405, 'GzjL') + D[jG(0x10a2, 'M5Ii')][0x1]);
+        }
+        if (D[jG(0xb3d, '8Ys%')] !== CONTENT_TYPE_APPLICATION_DATA) return;
+        const E = await this[jG(0x1400, '[]Y1')](D[jG(qP.f, qP.g)]),
+            F = E[E[jG(0x181f, 'dn8p')] - 0x1],
+            G = E[jG(0x17f0, qP.h)](0x0, -0x1);
+        if (F === CONTENT_TYPE_HANDSHAKE) {
+            this[jG(qP.i, qP.j)][jG(0xeba, 'oeP*')](G);
+            for (let H; H = this[jG(0x1e6e, qP.k)][jG(0x1034, qP.l)]();)
+                if (await u(H), t) return 0x1;
+        }
+    }, jE(qQ.J, 'oeP*'));
+    const v = await digestBytes(i, this[jE(qQ.K, qQ.L)]()),
+        w = await hkdfExpandLabel(i, this[jE(qQ.M, 'IcEg')], jE(0x1a77, qQ.N), await digestBytes(i, EMPTY_BYTES), j),
+        x = await hkdfExtract(i, w, new Uint8Array(j)),
+        y = await hkdfExpandLabel(i, x, jE(0x1b95, qQ.O), v, j),
+        z = await hkdfExpandLabel(i, x, jE(qQ.P, qQ.Q), v, j);
+    [this[jE(0xa48, '$p[^')], this[jE(qQ.R, qQ.S)]] = await deriveTrafficKeys(i, y, k, l), [this[jE(0xf7d, '0Ua@')], this[jE(0x1b2, qQ.T)]] = await deriveTrafficKeys(i, z, k, l);
+    if (!this[jE(qQ.U, 'dZbH')][jE(qQ.V, qQ.W)]) [this[jE(0xfeb, 'jODS')], this[jE(0x153e, 'Gn7Q')]] = await Promise[jE(0x10a3, 'GzjL')]([importAesGcmKey(this[jE(qQ.X, 'CeJW')], [jE(qQ.Y, 'GzjL')]), importAesGcmKey(this[jE(qQ.Z, '$BSl')], [jE(qQ.a0, 'XITC')])]);
+    const A = await hkdfExpandLabel(i, q, jE(qQ.a1, 'NMJQ'), EMPTY_BYTES, j),
+        B = await hmac(i, A, await digestBytes(i, this[jE(qQ.a2, qQ.W)]())),
+        C = buildHandshakeMessage(HANDSHAKE_TYPE_FINISHED, B);
+    this[jE(0xc9d, qQ.a3)](C), await f[jE(qQ.a4, qQ.a5)](buildTlsRecord(CONTENT_TYPE_APPLICATION_DATA, await this[jE(qQ.a6, qQ.a7)](concatBytes(C, [CONTENT_TYPE_HANDSHAKE])))), this[jE(qQ.a8, qQ.a9)] = 0x0n, this[jE(0x1093, 'w3Tt')] = 0x0n;
+                                                                                                                                                                                                                                      }
+        async [fX(0x173a, 'M5Ii')](c, f) {
+        const qR = { c: 0xeb, f: '0Ua@', g: 0x11da, h: '[]Y1', i: 0xf2c, j: 'dbGg', k: 0x17b7, l: 0x142b, m: 0x1379, n: 'NxG1', o: 0x166b, p: '$BSl', q: 0x1431, r: 'CeJW', s: 0x1f0c, t: 0x1d13, u: '[p9(', v: 0x12b5 },
+            jH = fX,
+            g = this[jH(qR.c, qR.f)]++,
+            h = uint64be(g),
+            i = concatBytes(h, [f], uint16be(TLS_VERSION_12), uint16be(c[jH(qR.g, qR.h)]));
+        if (this[jH(qR.i, qR.j)][jH(qR.k, 'n7E3')]) {
+            const k = xorSequenceIntoIv(this[jH(qR.l, '60r9')], g);
+            return chacha20Poly1305Encrypt(this[jH(qR.m, qR.n)], k, c, i);
+        }
+        const j = randomBytes(0x8);
+        if (!this[jH(qR.o, qR.p)]) this[jH(0x1696, 'NxG1')] = await importAesGcmKey(this[jH(qR.q, qR.r)], [jH(qR.s, 'dZbH')]);
+        return concatBytes(j, await aesGcmEncryptWithKey(this[jH(qR.t, qR.u)], concatBytes(this[jH(qR.v, 'w3Tt')], j), c, i));
+    }
+    async [fX(0xb9a, 'GzjL')](c, f) {
+        const qS = { c: 0x8d4, f: 0x3fa, g: 'XITC', h: 0x4b8, i: 0x1b4e, j: 0x1535, k: 0x67b, l: '[p9(', m: '9rQu', n: 0x1b5c, o: 'XITC', p: '$p[^', q: 0x134b, r: '89Hn', s: 0x1e54, t: '*lLT' },
+            jI = fX,
+            g = this[jI(qS.c, '1qbp')]++,
+            h = uint64be(g);
+        if (this[jI(qS.f, qS.g)][jI(0x170d, '[]Y1')]) {
+            const k = xorSequenceIntoIv(this[jI(0xb4b, 'C2T0')], g);
+            return chacha20Poly1305Decrypt(this[jI(qS.h, '89Hn')], k, c, concatBytes(h, [f], uint16be(TLS_VERSION_12), uint16be(c[jI(0x1bdc, 'zs!c')] - 0x10)));
+        }
+        const i = c[jI(qS.i, 'oeP*')](0x0, 0x8),
+            j = c[jI(qS.j, 'PYt$')](0x8);
+        if (!this[jI(qS.k, qS.l)]) this[jI(0x1f4, qS.m)] = await importAesGcmKey(this[jI(qS.n, qS.o)], [jI(0x1648, qS.p)]);
+        return aesGcmDecryptWithKey(this[jI(qS.q, qS.r)], concatBytes(this[jI(qS.s, 'V#kN')], i), j, concatBytes(h, [f], uint16be(TLS_VERSION_12), uint16be(j[jI(0x18ff, qS.t)] - 0x10)));
+    }
+    async [fX(0x1559, 'Mmsl')](c) {
+        const qT = { c: 'yxI7', f: 0x1c98, g: 0x4ae, h: 0x1d37, i: 'mRB^', j: 'dn8p', k: 0x17ad, l: '#sM9' },
+            jJ = fX,
+            f = xorSequenceIntoIv(this[jJ(0xf72, qT.c)], this[jJ(qT.f, 'M5Ii')]++),
+            g = tlsBytes(CONTENT_TYPE_APPLICATION_DATA, 0x3, 0x3, uint16be(c[jJ(0x10e1, 'w3Tt')] + 0x10));
+        if (this[jJ(qT.g, 'w3Tt')][jJ(0x9a7, 'V#kN')]) return chacha20Poly1305Encrypt(this[jJ(0x16f8, 'GzjL')], f, c, g);
+        if (!this[jJ(qT.h, '2#Qk')]) this[jJ(0xe33, qT.i)] = await importAesGcmKey(this[jJ(0x185d, qT.j)], [jJ(qT.k, 'dn8p')]);
+        return aesGcmEncryptWithKey(this[jJ(0xcb3, qT.l)], f, c, g);
+    }
+    async [fX(0x12e2, 'T3Fv')](c) {
+        const qU = { c: 0xa9e, f: 'oeP*', g: 0x1e2a, h: 0x10e1, i: 'IcEg', j: 0x1686, k: 'M5Ii', l: 'jODS', m: 0x1482, n: '9rQu', o: 'b)3q', p: 0xbf8, q: '$BSl', r: 0x10b9 },
+            jK = fX,
+            f = xorSequenceIntoIv(this[jK(qU.c, qU.f)], this[jK(qU.g, 'XITC')]++),
+            g = tlsBytes(CONTENT_TYPE_APPLICATION_DATA, 0x3, 0x3, uint16be(c[jK(qU.h, 'w3Tt')])),
+            h = this[jK(0x765, qU.i)][jK(qU.j, qU.k)] ? await chacha20Poly1305Decrypt(this[jK(0x1190, qU.l)], f, c, g) : await aesGcmDecryptWithKey(this[jK(0x4f8, '%oj0')] || (this[jK(qU.m, qU.n)] = await importAesGcmKey(this[jK(0x1909, qU.o)], [jK(qU.p, qU.q)])), f, c, g);
+        let i = h[jK(0xfd3, 'Mmsl')] - 0x1;
+        for (; i >= 0x0 && !h[i];) i--;
+        return i < 0x0 ? EMPTY_BYTES : h[jK(qU.r, 'w3Tt')](0x0, i + 0x1);
+    }
+    async [fX(0x1b98, 'M5Ii')](c) {
+        const qV = { c: 0x10cd, f: 0x45a, g: 'T3Fv', h: 0x19fb, i: '$BSl', j: 0x1419, k: '#sM9', l: 0xfb5, m: '5M6D' },
+            jL = fX,
+            f = concatBytes(c, [CONTENT_TYPE_APPLICATION_DATA]),
+            g = xorSequenceIntoIv(this[jL(qV.c, 'Mmsl')], this[jL(0xb34, 'wCGK')]++),
+            h = tlsBytes(CONTENT_TYPE_APPLICATION_DATA, 0x3, 0x3, uint16be(f[jL(0xa1f, 'Pt3!')] + 0x10));
+        if (this[jL(0x2ba, '$BSl')][jL(0x17b7, 'n7E3')]) return chacha20Poly1305Encrypt(this[jL(qV.f, 'jODS')], g, f, h);
+        if (!this[jL(0xa70, qV.g)]) this[jL(qV.h, qV.i)] = await importAesGcmKey(this[jL(qV.j, qV.k)], [jL(qV.l, qV.m)]);
+        return aesGcmEncryptWithKey(this[jL(0x55a, '8Ys%')], g, f, h);
+    }
+    async [fX(0x18cf, 'n7E3')](c) {
+        const qW = { c: 'd%lH', f: 0xd47, g: '[p9(', h: 0x1ac7, i: '$BSl', j: 0xb42, k: 0x194b, l: '6UCx', m: 0xc8c, n: 0xd37, o: '$p[^', p: 0x1106, q: '9rQu', r: 0x1a49, s: 'NxG1' },
+            jM = fX,
+            f = xorSequenceIntoIv(this[jM(0x1ac3, qW.c)], this[jM(qW.f, qW.g)]++),
+            g = tlsBytes(CONTENT_TYPE_APPLICATION_DATA, 0x3, 0x3, uint16be(c[jM(qW.h, qW.i)])),
+            h = this[jM(qW.j, 'n7E3')][jM(qW.k, qW.l)] ? await chacha20Poly1305Decrypt(this[jM(0x1115, '%oj0')], f, c, g) : await aesGcmDecryptWithKey(this[jM(0xc8c, 'rsIZ')] || (this[jM(qW.m, 'rsIZ')] = await importAesGcmKey(this[jM(qW.n, qW.o)], [jM(0xc0f, 'wCGK')])), f, c, g);
+        let i = h[jM(qW.p, qW.q)] - 0x1;
+        for (; i >= 0x0 && !h[i];) i--;
+        if (i < 0x0) return { 'data': EMPTY_BYTES, 'type': 0x0 };
+        return { 'data': h[jM(qW.r, qW.s)](0x0, i), 'type': h[i] };
+    }
+    async [fX(0x1c14, 'CeJW')](c) {
+        const qX = { c: 0xfa8, f: 0x1f3, g: 'yxI7', h: 0x427, i: 'dZbH', j: 0xdfc, k: '5M6D', l: 'dZbH', m: 0x1239, n: 0x1463, o: 0xea8, p: 0x127b, q: 0xb4f, r: 0x4a6, s: 0x600, t: 0x331, u: 'T3Fv', v: 0x1ade, w: 'NMJQ' },
+            jN = fX;
+        if (!this[jN(0x1cd9, 'M5Ii')]) throw new Error(jN(qX.c, 'b)3q'));
+        const f = dataToUint8Array(c);
+        if (!f[jN(qX.f, 'PSkb')]) return;
+        const g = this[jN(0x35c, qX.g)][jN(qX.h, qX.i)][jN(qX.j, qX.k)]();
+        try {
+            const h = [];
+            for (let i = 0x0; i < f[jN(0x10c8, qX.l)]; i += TLS_MAX_PLAINTEXT_FRAGMENT) {
+                const j = f[jN(qX.m, 'egod')](i, Math[jN(qX.n, 'V#kN')](i + TLS_MAX_PLAINTEXT_FRAGMENT, f[jN(qX.o, 'ZgMu')])),
+                    k = this[jN(qX.p, 'Mmsl')] ? await this[jN(qX.q, 'CeJW')](j) : await this[jN(0x6be, 'GzjL')](j, CONTENT_TYPE_APPLICATION_DATA);
+                h[jN(qX.r, '0Ua@')](buildTlsRecord(CONTENT_TYPE_APPLICATION_DATA, k));
+            }
+            await g[jN(qX.s, 'n7E3')](h[jN(qX.t, qX.u)] === 0x1 ? h[0x0] : concatBytes(...h));
+        } finally { g[jN(qX.v, qX.w)](); }
+    }
+    async [fX(0x15c5, 'zs!c')]() {
+        const qY = { c: 0xe64, f: '[]Y1', g: 'PSkb', h: 'V#kN', i: 0x1c5b, j: '0Ua@', k: 0x452, l: 0x1a24, m: 'Pt3!', n: 'oeP*', o: 'jODS', p: 0x514, q: 0x1e46, r: 0x118c, s: 'IcEg', t: 0xd3f, u: 'Gn7Q', v: 0xce8, w: 0x15bc, x: 'C2T0', y: 0x8df, z: '5M6D', A: 0x10a, B: 'dn8p', C: 0x11eb },
+            jO = fX;
+        for (;;) {
+            let c;
+            for (; c = this[jO(qY.c, qY.f)][jO(0x12f9, qY.g)]();) {
+                if (c[jO(0x96b, qY.h)] === CONTENT_TYPE_ALERT) {
+                    if (c[jO(qY.i, qY.j)][0x1] === ALERT_CLOSE_NOTIFY) return null;
+                    throw new Error(jO(0x298, 'M5Ii') + c[jO(0x7e4, '[p9(')][0x1]);
+                }
+                if (c[jO(qY.k, 'IcEg')] !== CONTENT_TYPE_APPLICATION_DATA) continue;
+                if (!this[jO(qY.l, qY.m)]) return this[jO(0x18f2, qY.n)](c[jO(0x1a8d, 'b)3q')], CONTENT_TYPE_APPLICATION_DATA);
+                const { data: g, type: h } = await this[jO(0x4f3, 'vel(')](c[jO(0xbc6, qY.o)]);
+                if (h === CONTENT_TYPE_APPLICATION_DATA) return g;
+                if (h === CONTENT_TYPE_ALERT) {
+                    if (g[0x1] === ALERT_CLOSE_NOTIFY) return null;
+                    throw new Error(jO(qY.p, 'Pt3!') + g[0x1]);
+                }
+                if (h !== CONTENT_TYPE_HANDSHAKE) continue;
+                let i;
+                for (this[jO(qY.q, 'dbGg')][jO(qY.r, qY.s)](g); i = this[jO(qY.t, qY.u)][jO(0x1a75, qY.u)]();)
+                    if (i[jO(0x1dd7, 'dn8p')] !== HANDSHAKE_TYPE_NEW_SESSION_TICKET && i[jO(0x965, 'b)3q')] === HANDSHAKE_TYPE_KEY_UPDATE) throw new Error(jO(0xa44, '60r9'));
+            }
+            const f = this[jO(qY.v, 'mRB^')][jO(0x658, 'PYt$')][jO(qY.w, qY.x)]();
+            try {
+                const { value: j, done: k } = await this[jO(qY.y, qY.z)](f);
+                if (k) return null;
+                this[jO(0xa6b, '*lLT')][jO(qY.A, qY.B)](j);
+            } finally { f[jO(qY.C, qY.f)](); }
+        }
+    }
+    [fX(0x14e3, '2#Qk')]() { const qZ = { c: 'XITC' },
+        jP = fX;
+        this[jP(0x164f, qZ.c)][jP(0xe9b, 'NxG1')](); }
+}
+
+function stripIPv6Brackets(c = '') {
+    const r0 = { c: 0x1259, f: 0x2de, g: 0x93b },
+        jQ = fX,
+        f = String(c || '')[jQ(r0.c, 'w(Wr')]();
+    return f[jQ(r0.f, 'dZbH')]('[') && f[jQ(r0.g, 'GzjL')](']') ? f[jQ(0x22a, 'egod')](0x1, -0x1) : f;
+}
+
+function isIPHostname(c = '') {
+    const r1 = { c: 'jODS', f: 'rsIZ' },
+        jR = fX,
+        f = stripIPv6Brackets(c),
+        g = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+    if (g[jR(0x143c, r1.c)](f)) return !![];
+    if (!f[jR(0x267, 'Pt3!')](':')) return ![];
+    try { return new URL(jR(0xca1, r1.f) + f + ']/'), !![];
+    } catch (h) { return ![]; }
+                                         }
+const CONNECT_TIMEOUT_MS = 0x270f,
+    TURN_STUN_MAGIC_COOKIE = new Uint8Array([0x21, 0x12, 0xa4, 0x42]),
+    TURN_STUN_TYPE = {
+        'ALLOCATE_REQUEST': 0x3,
+        'ALLOCATE_SUCCESS': 0x103,
+        'ALLOCATE_ERROR': 0x113,
+        'CREATE_PERMISSION_REQUEST': 0x8,
+        'CREATE_PERMISSION_SUCCESS': 0x108,
+        'CONNECT_REQUEST': 0xa,
+        'CONNECT_SUCCESS': 0x10a,
+        'CONNECTION_BIND_REQUEST': 0xb,
+        'CONNECTION_BIND_SUCCESS': 0x10b
+    },
+    TURN_STUN_ATTR = {
+        'USERNAME': 0x6,
+        'MESSAGE_INTEGRITY': 0x8,
+        'ERROR_CODE': 0x9,
+        'XOR_PEER_ADDRESS': 0x12,
+        'REALM': 0x14,
+        'NONCE': 0x15,
+        'REQUESTED_TRANSPORT': 0x19,
+        'CONNECTION_ID': 0x2a
+    };
+
+async function withTimeout(c, f, g) {
+    const r3 = { c: '2#Qk' },
+        jS = fX;
+    let h;
+    try { return await Promise[jS(0x191a, r3.c)]([c, new Promise((i, j) => { h = setTimeout(() => j(new Error(g)), f); })]); } finally { clearTimeout(h); }
+}
+
+function isIPv4(c) {
+    const r4 = { c: 0x293, f: '7NO9', g: 'vel(', h: 0x12f4 },
+        jT = fX,
+        f = String(c || '')[jT(r4.c, r4.f)]('.');
+    return f[jT(0x736, r4.g)] === 0x4 && f[jT(r4.h, 'zs!c')](g => /^\d{1,3}$/[jT(0x98d, 'b)3q')](g) && Number(g) >= 0x0 && Number(g) <= 0xff);
+}
+
+function turnStunPadding(c) { return -c & 0x3; }
+
+function createTurnStunAttribute(c, f) {
+    const r6 = { c: 0x1aca, f: 'M5Ii', g: '8Ys%', h: 0x1666, i: 'GzjL', j: 0xc21, k: 0xdf3, l: 0x23d, m: 'dZbH' },
+        jU = fX,
+        g = dataToUint8Array(f),
+        h = new Uint8Array(0x4 + g[jU(0x1e77, 'IcEg')] + turnStunPadding(g[jU(r6.c, r6.f)])),
+        i = new DataView(h[jU(0xeb1, r6.g)]);
+    return i[jU(r6.h, r6.i)](0x0, c), i[jU(r6.j, 'C2T0')](0x2, g[jU(r6.k, 'wCGK')]), h[jU(r6.l, r6.m)](g, 0x4), h;
+}
+
+function createTurnStunMessage(c, f, g) {
+    const r7 = { c: 0x88a, f: 'PSkb', g: 'zs!c', h: 0x3d4, i: 0x291 },
+        jV = fX,
+        h = concatByteData(...g),
+        i = new Uint8Array(0x14),
+        j = new DataView(i[jV(0x12d6, '6UCx')]);
+    return j[jV(r7.c, 'PYt$')](0x0, c), j[jV(0xae0, r7.f)](0x2, h[jV(0x15f9, r7.g)]), i[jV(r7.h, 'NMJQ')](TURN_STUN_MAGIC_COOKIE, 0x4), i[jV(r7.i, 'NxG1')](f, 0x8), concatByteData(i, h);
+}
+
+function parseTurnErrorCode(c) {
+    const r8 = { c: 0x1d5e, f: '#sM9' },
+        jW = fX;
+    return c?.[jW(r8.c, r8.f)] >= 0x4 ? (c[0x2] & 0x7) * 0x64 + c[0x3] : 0x0;
+}
+
+function randomTurnTransactionId() { const jX = fX; return crypto[jX(0x26c, 'w3Tt')](new Uint8Array(0xc)); }
+
+async function addTurnMessageIntegrity(c, f) {
+    const ra = { c: 0xf53, f: 0x553, g: '1qbp', h: 0x665, i: 0x182f, j: 'XITC', k: 'CeJW', l: 0x1316, m: 0x1dc7, n: 'ZgMu', o: 'V#kN', p: 0xdc4, q: 'dZbH', r: 0x1292, s: 0xc20, t: 'mRB^', u: 0x1e7f, v: 'NxG1' },
+        jY = fX,
+        g = new Uint8Array(c),
+        h = new DataView(g[jY(ra.c, 'NMJQ')]);
+    h[jY(ra.f, ra.g)](0x2, h[jY(ra.h, '$p[^')](0x2) + 0x18);
+    const i = await crypto[jY(ra.i, ra.j)][jY(0x19cc, ra.k)](jY(ra.l, '9rQu'), f, { 'name': jY(ra.m, ra.n), 'hash': jY(0x18d2, ra.o) }, ![], [jY(ra.p, ra.q)]),
+        j = await crypto[jY(ra.r, '%oj0')][jY(ra.s, ra.t)](jY(ra.u, '6UCx'), i, g);
+    return concatByteData(g, createTurnStunAttribute(TURN_STUN_ATTR[jY(0x1ccd, ra.v)], new Uint8Array(j)));
+}
+
+async function readTurnStunMessage(c, f = null, g = fX(0x18aa, 'ZgMu')) {
+    const rc = { c: 0x1eaa, f: 0x594, g: '$BSl', h: 0x10d, i: 0xf53, j: 'NMJQ', k: 0xee1, l: 'd%lH', m: 0x1d27, n: '5M6D', o: 'NxG1', p: 'NMJQ', q: 'zs!c', r: 'd%lH', s: 0xce4, t: 0x1f3, u: 0xd3b, v: 'dbGg' },
+        rb = { c: 0xe13, f: 'yxI7', g: 0x687 },
+        k0 = fX;
+    let h = validDataLength(f) ? dataToUint8Array(f) : new Uint8Array(0x0);
+    const i = async() => {
+        const jZ = b, { done: n, value: o } = await withTimeout(c[jZ(rb.c, rb.f)](), CONNECT_TIMEOUT_MS, g);
+        if (n) throw new Error(jZ(0x15aa, '[p9('));
+        if (o?.[jZ(rb.g, '%oj0')]) h = concatByteData(h, o);
+    };
+    while (h[k0(0x687, '%oj0')] < 0x14) await i();
+    const j = 0x14 + (h[0x2] << 0x8 | h[0x3]);
+    if (j > 0x10013) throw new Error(k0(0x1661, 'jODS'));
+    while (h[k0(rc.c, 'Pt3!')] < j) await i();
+    const k = h[k0(rc.f, rc.g)](0x0, j);
+    if (TURN_STUN_MAGIC_COOKIE[k0(rc.h, '*lLT')]((n, o) => k[0x4 + o] !== n)) throw new Error(k0(0x1962, 'Gn7Q'));
+    const l = new DataView(k[k0(rc.i, rc.j)], k[k0(rc.k, rc.l)], k[k0(rc.m, rc.n)]),
+        m = {};
+    for (let n = 0x14; n + 0x4 <= j;) {
+        const o = l[k0(0xe9d, rc.o)](n),
+            p = l[k0(0x190c, rc.p)](n + 0x2);
+        if (n + 0x4 + p > k[k0(0x15f9, rc.q)]) break;
+        m[o] = k[k0(0x16be, rc.r)](n + 0x4, n + 0x4 + p), n += 0x4 + p + turnStunPadding(p);
+    }
+    return { 'message': { 'type': l[k0(rc.s, 'oeP*')](0x0), 'attributes': m }, 'extraData': h[k0(rc.t, 'PSkb')] > j ? h[k0(rc.u, rc.v)](j) : null };
+}
+
+async function writeTurnBytes(c, f, g) { const rd = { c: 'w(Wr' },
+    k1 = fX;
+    await withTimeout(c[k1(0x794, rd.c)](f), CONNECT_TIMEOUT_MS, g);
+}
+
+async function turnConnect(c, f, g, h) {
+    const rl = { c: 0x78a, f: 0x1cf3, g: '2#Qk', h: '$p[^', i: 0x152b, j: '$p[^', k: '6UCx', l: '%oj0', m: 0xba5, n: 'CeJW', o: '60r9', p: 0x104, q: '[]Y1', r: 0x1dfb, s: 'dZbH', t: 0x160e, u: 'NxG1', v: 0x1ddc, w: 0x297, x: '$BSl', y: 0x342, z: 0x17a2, A: 'NxG1', B: 0x453, C: 'Mmsl', D: 'XITC', E: 0x1605, F: '7NO9', G: 0x1e35, H: 'IcEg', I: 0x90a, J: 0x7e9, K: 'V#kN', L: 0x1e1d, M: 'w3Tt', N: 0xbac, O: 0x17d7, P: '*lLT', Q: '0Ua@', R: 0x1d8d, S: 'M5Ii', T: 0x498, U: 'dbGg', V: 'b)3q', W: 0x924, X: 0xee6, Y: 0xe8a, Z: 'wCGK', a0: 0x548, a1: '[p9(', a2: 'n7E3', a3: 0x11f8, a4: 'dZbH', a5: 'mRB^', a6: 0x1901, a7: 0xb17, a8: 'd%lH', a9: '8Ys%', aa: 0x1106, ab: 0xfc6, ac: 'XITC', ad: 0x1ed1, ae: 0x1ee3, af: 0xaa4, ag: 0x14fe, ah: 'T3Fv', ai: '1qbp', aj: 0xffa, ak: 0xde2, al: 'jODS', am: 0x2f6, an: 'dbGg', ao: 0x2cb, ap: '0Ua@', aq: 0x970, ar: 'NMJQ', as: 0xd10, at: 0x1291, au: 0x1df2, av: 0x8c3, aw: '$p[^', ax: 0x1398, ay: 'PSkb', az: 'T3Fv', aA: 0xc8e, aB: 0x17f1, aC: 0xee4, aD: 0x1050, aE: 'NxG1', aF: 0x1d39, aG: 0x8a3, aH: 'yxI7', aI: 0xc50, aJ: 'zs!c', aK: 0x1ef9, aL: 'vel(', aM: 0x1952, aN: 0x14e0, aO: 0x1206, aP: 0x24c, aQ: 0x1e3d, aR: 'ZgMu', aS: 0x7bf },
+        rk = { c: 0x1209 },
+        rj = { c: 'V#kN', f: 0xb74, g: '1qbp' },
+        rh = { c: 0x1087, f: 'M5Ii' },
+        rf = { c: 0x534, f: '[p9(' },
+        re = { c: 0x1223, f: 'rsIZ' },
+        k2 = fX;
+    c = { ...c, 'username': c[k2(rl.c, 'dZbH')] ?? null, 'password': c[k2(rl.f, rl.g)] ?? null };
+    const i = stripIPv6Brackets(f);
+    let j = isIPv4(i) ? i : null;
+    if (!j) {
+        const u = await DoHquery(i, 'A'),
+            v = u[k2(0x17ea, rl.h)](w => w[k2(0x1291, '%oj0')] === 0x1 && isIPv4(w[k2(0x10da, 'dbGg')]))?.[k2(0xc00, 'V#kN')];
+        j = typeof v === k2(rl.i, 'egod') ? v : null;
+    }
+    if (!j) throw new Error(k2(0xb7a, rl.j) + f + k2(0xe6a, rl.k));
+    const k = stripIPv6Brackets(c[k2(0x1a9a, rl.l)]);
+    let l = null,
+        m = null,
+        n = null,
+        o = null,
+        p = null,
+        q = null,
+        r = ![];
+    const s = () => {
+            const k3 = k2;
+            try { l?.[k3(re.c, re.f)]?.(); } catch (w) {}
+            try { m?.[k3(0x183c, 'PSkb')]?.(); } catch (x) {}
+        },
+        t = () => {
+            const k4 = k2;
+            if (r) return;
+            r = !![];
+            try { q?.[k4(rf.c, rf.f)]?.(); } catch (w) {}
+        };
+    try {
+        l = h({ 'hostname': k, 'port': c[k2(rl.m, rl.n)] }), await withTimeout(l[k2(0x1b67, 'b)3q')], CONNECT_TIMEOUT_MS, k2(0x2bf, rl.o)), n = l[k2(rl.p, 'rsIZ')][k2(0x1260, rl.q)](), o = l[k2(rl.r, rl.s)][k2(rl.t, '9rQu')]();
+        const w = new Uint8Array(0x8);
+        w[0x1] = 0x1, new DataView(w[k2(0x750, rl.u)])[k2(rl.v, 'zs!c')](0x2, g ^ 0x2112), j[k2(rl.w, rl.x)]('.')[k2(rl.y, 'Mmsl')]((H, I) => { w[0x4 + I] = Number(H) ^ TURN_STUN_MAGIC_COOKIE[I]; });
+        const x = createTurnStunAttribute(TURN_STUN_ATTR[k2(rl.z, rl.A)], w),
+            y = new Uint8Array([0x6, 0x0, 0x0, 0x0]);
+        await writeTurnBytes(n, createTurnStunMessage(TURN_STUN_TYPE[k2(rl.B, 'dn8p')], randomTurnTransactionId(), [createTurnStunAttribute(TURN_STUN_ATTR[k2(0x13c2, rl.C)], y)]), k2(0x21f, 'mRB^'));
+        let z = await readTurnStunMessage(o, null, k2(0xbc4, rl.D)),
+            A = z[k2(rl.E, rl.F)],
+            B = z[k2(0xac6, '[p9(')],
+            C = null,
+            D = [];
+        const E = H => C ? addTurnMessageIntegrity(H, C) : Promise[k2(0x1ccb, 'zs!c')](H);
+        if (A[k2(0x2b5, '[p9(')] === TURN_STUN_TYPE[k2(rl.G, rl.H)] && c[k2(0x9ba, 'Mmsl')] !== null && c[k2(rl.I, 'T3Fv')] !== null && parseTurnErrorCode(A[k2(rl.J, rl.K)][TURN_STUN_ATTR[k2(rl.L, rl.o)]]) === 0x191) {
+            const H = A[k2(0x18a1, rl.M)][TURN_STUN_ATTR[k2(rl.N, 'vel(')]],
+                I = A[k2(0x1ce0, 'NxG1')][TURN_STUN_ATTR[k2(rl.O, '2#Qk')]];
+            if (!H || !I?.[k2(0xf42, rl.P)]) throw new Error(k2(0x1450, rl.Q));
+            const J = textDecoder[k2(rl.R, rl.S)](H);
+            C = new Uint8Array(await crypto[k2(rl.T, rl.U)][k2(0x9bd, rl.V)](k2(0xac4, 'IcEg'), textEncoder[k2(rl.W, rl.s)](c[k2(0xe2a, 'T3Fv')] + ':' + J + ':' + c[k2(rl.X, 'V#kN')]))), D = [createTurnStunAttribute(TURN_STUN_ATTR[k2(rl.Y, rl.Z)], textEncoder[k2(0x2e6, rl.U)](c[k2(rl.a0, rl.D)])), createTurnStunAttribute(TURN_STUN_ATTR[k2(0x33c, '6UCx')], textEncoder[k2(0x16c5, '9rQu')](J)), createTurnStunAttribute(TURN_STUN_ATTR[k2(0xbd8, 'w(Wr')], I)];
+            const K = await addTurnMessageIntegrity(createTurnStunMessage(TURN_STUN_TYPE[k2(0x3c8, '60r9')], randomTurnTransactionId(), [createTurnStunAttribute(TURN_STUN_ATTR[k2(0x489, rl.a1)], y), ...D]), C),
+                L = await Promise[k2(0x3f3, rl.a2)]([E(createTurnStunMessage(TURN_STUN_TYPE[k2(rl.a3, rl.a4)], randomTurnTransactionId(), [x, ...D])), E(createTurnStunMessage(TURN_STUN_TYPE[k2(0x1a37, 'T3Fv')], randomTurnTransactionId(), [x, ...D]))]);
+            await writeTurnBytes(n, concatByteData(K, ...L), k2(0x1612, rl.a5)), z = await readTurnStunMessage(o, B, k2(0x962, 'NMJQ')), A = z[k2(rl.a6, 'IcEg')], B = z[k2(rl.a7, rl.F)];
+        } else {
+            if (A[k2(0x104c, rl.a8)] === TURN_STUN_TYPE[k2(0xa1d, 'Mmsl')]) {
+                const M = await Promise[k2(0x185c, '#sM9')]([E(createTurnStunMessage(TURN_STUN_TYPE[k2(0x1845, rl.a9)], randomTurnTransactionId(), [x, ...D])), E(createTurnStunMessage(TURN_STUN_TYPE[k2(0xfa3, '*lLT')], randomTurnTransactionId(), [x, ...D]))]);
+                if (M[k2(rl.aa, '9rQu')]) await writeTurnBytes(n, concatByteData(...M), k2(rl.ab, rl.ac));
+            }
+        }
+        if (A[k2(rl.ad, 'oeP*')] !== TURN_STUN_TYPE[k2(rl.ae, rl.U)]) {
+            const N = parseTurnErrorCode(A[k2(rl.af, 'dbGg')][TURN_STUN_ATTR[k2(rl.ag, rl.ah)]]);
+            throw new Error(N ? k2(0x89a, rl.Z) + N : k2(0x1df9, rl.ai));
+        }
+        m = h({ 'hostname': k, 'port': c[k2(rl.aj, '6UCx')] }), z = await readTurnStunMessage(o, B, k2(rl.ak, rl.al)), A = z[k2(0xd36, '[]Y1')], B = z[k2(0x65b, '#sM9')];
+        if (A[k2(rl.am, rl.an)] !== TURN_STUN_TYPE[k2(rl.ao, rl.ap)]) throw new Error(k2(rl.aq, rl.ar));
+        z = await readTurnStunMessage(o, B, k2(rl.as, rl.x)), A = z[k2(0x17eb, 'vel(')], B = z[k2(0x1dba, 'Pt3!')];
+        if (A[k2(rl.at, '%oj0')] !== TURN_STUN_TYPE[k2(rl.au, '[]Y1')] || !A[k2(rl.av, rl.aw)][TURN_STUN_ATTR[k2(rl.ax, '1qbp')]]) throw new Error(k2(0xff3, rl.ay));
+        await withTimeout(m[k2(0x136e, rl.u)], CONNECT_TIMEOUT_MS, k2(0x1e4a, rl.F)), p = m[k2(0x1858, rl.az)][k2(rl.aA, rl.ai)](), q = m[k2(rl.aB, 'wCGK')][k2(rl.aC, rl.a2)]();
+        await writeTurnBytes(p, await E(createTurnStunMessage(TURN_STUN_TYPE[k2(rl.aD, rl.aE)], randomTurnTransactionId(), [createTurnStunAttribute(TURN_STUN_ATTR[k2(rl.aF, rl.x)], A[k2(rl.aG, rl.aH)][TURN_STUN_ATTR[k2(rl.aI, 'wCGK')]]), ...D])), k2(0x8eb, rl.aJ)), z = await readTurnStunMessage(q, null, k2(0x10ad, rl.H)), A = z[k2(0x1068, 'mRB^')];
+        const F = z[k2(0x74e, '$p[^')];
+        if (A[k2(0x5dd, 'vel(')] !== TURN_STUN_TYPE[k2(rl.aK, rl.aL)]) throw new Error(k2(rl.aM, '1qbp'));
+        n[k2(rl.aN, 'GzjL')](), n = null, o[k2(rl.aO, 'zs!c')](), o = null, p[k2(rl.aP, rl.al)](), p = null;
+        const G = new ReadableStream({
+            'start'(O) {
+                const k5 = k2;
+                if (F?.[k5(0x521, '[]Y1')]) O[k5(rh.c, rh.f)](F);
+            },
+            'pull'(O) {
+                const ri = { c: 0x1599, f: 0x1dfd, g: 'egod' },
+                    k6 = k2;
+                return q[k6(0x6ea, rj.c)]()[k6(rj.f, rj.g)](({ done: P, value: Q }) => {
+                    const k7 = k6;
+                    if (P) t(), O[k7(0x6c4, 'PYt$')]();
+                    else {
+                        if (Q?.[k7(ri.c, '89Hn')]) O[k7(ri.f, ri.g)](new Uint8Array(Q));
+                    }
+                });
+            },
+            'cancel'() {
+                const k8 = k2;
+                try { q?.[k8(rk.c, '$BSl')]?.(); } catch (O) {}
+                t(), s();
+            }
+        });
+        return { 'readable': G, 'writable': m[k2(0x1967, rl.aw)], 'closed': m[k2(rl.aQ, '60r9')], 'close': s };
+    } catch (O) {
+        try { n?.[k2(0xc2b, rl.aR)]?.(); } catch (P) {}
+        try { o?.[k2(rl.aS, '5M6D')]?.(); } catch (Q) {}
+        try { p?.[k2(0x1075, '60r9')]?.(); } catch (R) {}
+        t(), s();
+        throw O;
+    }
+}
+
+const SSTP_TCP_MSS = 0x578,
+    SSTP_EMPTY_BYTES = new Uint8Array(0x0);
+
+function readSstpUint16(c, f = 0x0) { return c[f] << 0x8 | c[f + 0x1]; }
+
+function readSstpUint32(c, f = 0x0) { return (c[f] << 0x18 | c[f + 0x1] << 0x10 | c[f + 0x2] << 0x8 | c[f + 0x3]) >>> 0x0; }
+
+function randomSstpUint16() { const k9 = fX; return readSstpUint16(crypto[k9(0xc66, '1qbp')](new Uint8Array(0x2))); }
+
+function internetChecksum(c, f, g) {
+    let h = 0x0;
+    for (let i = f; i < f + g - 0x1; i += 0x2) h += readSstpUint16(c, i);
+    if (g & 0x1) h += c[f + g - 0x1] << 0x8;
+    while (h >> 0x10) h = (h & 0xffff) + (h >> 0x10);
+    return ~h & 0xffff;
+                                }
+
