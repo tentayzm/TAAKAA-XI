@@ -3101,4 +3101,164 @@ const _cidrListCache = new Map(),
                 } catch (Z) {}
             if (X) return new Response(g4(mS.bv, mS.W), { 'status': 0x1f7, 'headers': { 'Content-Type': g4(mS.bw, 'jODS'), 'Cache-Control': g4(mS.bx, 'V#kN') } });
         }
+        if (E === g4(0x39b, mS.by) && p[g4(mS.bz, 'w3Tt')][g4(0xcab, 'oeP*')](g4(0x108f, mS.bA)) === B) return new Response(JSON[g4(0x13f9, 'M5Ii')]({ 'Version': Number(String(Version)[g4(0x1409, mS.H)](/\D+/g, '')) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1990, mS.bB) } });
+else {
+    if (x && s === g4(mS.bC, mS.bD)) {
+        await fetchProxyParams(p, B, g), log(g4(mS.bE, 'vel(') + p[g4(mS.bF, 'NMJQ')] + p[g4(0x18b4, 'jODS')]);
+        {
+            const a0 = backendModeConfig(g);
+            if (a0['on'] && !isBackendExcludedPath(E, p[g4(0xa6f, mS.bG)])) {
+                if (connRejectReason) return new Response(g4(0x1382, mS.bH) + connRejectReason + ')', { 'status': 0x193 });
+                return await forwardWsToBackend(f, p, g, h, a0[g4(mS.bI, 'b)3q')], connUserId);
+            }
+        }
+        return await handleWsRequest(f, B, p, g, h);
+    } else {
+        if (x && !E[g4(0x85d, '0Ua@')](g4(mS.bJ, 'V#kN')) && E !== g4(mS.bK, 'rsIZ') && E !== g4(mS.bL, '$p[^') && f[g4(mS.bM, '60r9')] === g4(0x180d, mS.J)) {
+            if (E === g4(0x3d7, '9rQu') || p[g4(0x1ba4, mS.bN)] === g4(0x2ab, 'PSkb') || E === g4(0x192e, mS.bO) || p[g4(0x8a7, mS.bP)] === g4(0x152d, 'egod')) return handleDoHRequest(f);
+            await fetchProxyParams(p, B, g);
+            {
+                const a3 = backendModeConfig(g);
+                if (a3['on'] && !isBackendExcludedPath(E, p[g4(0x13c3, mS.bQ)])) {
+                    if (connRejectReason) return new Response(g4(0x1efd, mS.bQ) + connRejectReason + ')', { 'status': 0x193 });
+                    return await forwardHttpToBackend(f, p, g, a3[g4(mS.bR, 'dZbH')]);
+                }
+            }
+            const a1 = f[g4(mS.bS, mS.bT)][g4(mS.aM, '$BSl')](g4(mS.bU, mS.bl)) || '',
+                a2 = a1[g4(0x5e2, mS.ae)](g4(mS.bV, mS.bH), 0xe) || a1[g4(mS.bW, mS.bX)](g4(mS.bY, mS.bZ));
+            if (!a2 && t[g4(0x1cac, 'PYt$')](g4(mS.c0, mS.c1))) return log(g4(mS.c2, mS.c3) + p[g4(mS.c4, mS.c1)] + p[g4(mS.c5, mS.c6)]), await handleGrpcRequest(f, B, g, h);
+            return log(g4(0xbad, mS.aD) + p[g4(mS.c7, mS.c8)] + p[g4(0x9ae, mS.c9)]), await handleXhttpRequest(f, B, g, h);
+        } else {
+            if (p[g4(mS.ca, mS.cb)] === g4(0x175, mS.aB)) return Response[g4(0x112e, 'rsIZ')](p[g4(mS.cc, 'Pt3!')][g4(mS.cd, mS.ce)](g4(0x1baa, 'd%lH') + p[g4(mS.cf, mS.m)], g4(0x10f7, mS.cg) + p[g4(mS.ch, '[p9(')]), 0x12d);
+            if (E === g4(mS.ci, mS.f) || p[g4(mS.c4, 'oeP*')] === g4(mS.ck, 'rsIZ') || E === g4(0xae9, '9rQu') || p[g4(0x17d1, 'jODS')] === g4(0xb85, 'GzjL')) return handleDoHRequest(f);
+            if (E === g4(mS.cl, 'jODS')) return await backendDiagnostic(g, p);
+            if (E === g4(0x1c44, '#sM9') || E[g4(0x1d28, mS.cm)](g4(0x17ef, '2#Qk'))) return handleWarpRequest(f);
+            if (E === g4(0xee0, 'M5Ii')) return taakaaXiBlockPage(f);
+            if (E === g4(0x191e, mS.W) || E[g4(mS.cn, '60r9')](g4(mS.co, '[]Y1'))) return await handleInstall(f, g, p, x, z, q);
+            if (panelHasAssets(g) && /\.\w{2,5}$/[g4(0x622, mS.ap)](p[g4(mS.cp, mS.ap)]) && s !== g4(mS.cq, '$p[^')) {
+                const a4 = await panelFetch(g, p[g4(mS.cr, 'egod')])[g4(0x17d, mS.cs)](() => null);
+                if (a4 && a4['ok']) return a4;
+            }
+            if (!x) return new Response(null, { 'status': 0x12e, 'headers': { 'Location': g4(mS.ct, mS.cg), 'Cache-Control': g4(mS.cu, mS.aF) } });
+            if (g['KV'] && typeof g['KV'][g4(mS.cv, mS.aj)] === g4(mS.cw, 'vel(')) {
+                const a5 = p[g4(mS.cx, mS.ak)][g4(mS.cy, 'PYt$')](0x1);
+                if (a5 === z && z !== g4(0x1092, mS.cb)) {
+                    const a6 = new URLSearchParams(p[g4(0x1de, 'egod')]);
+                    return a6[g4(mS.cz, 'NxG1')](g4(0xe1c, mS.u), await MD5MD5(D + B)), new Response(g4(0x12b, mS.bg), { 'status': 0x12e, 'headers': { 'Location': g4(mS.cA, 'dbGg') + a6[g4(mS.cB, mS.cC)]() } });
+                } else {
+                    if (E === g4(0x163a, 'V#kN')) {
+                        const a7 = f[g4(mS.cD, 'n7E3')][g4(0x119, mS.cE)](g4(0x11f9, mS.cF)) || '',
+                            a8 = a7[g4(mS.cG, 'Gn7Q')](';')[g4(mS.cH, 'NxG1')](a9 => a9[g4(0xb64, '2#Qk')]()[g4(0x1b30, '5M6D')](g4(0xd28, '1qbp')))?.[g4(0xcfa, mS.bH)]('=')[0x1];
+                        if (await verifySessionToken(a8, q, z, x)) return new Response(g4(0x652, mS.cI), { 'status': 0x12e, 'headers': { 'Location': g4(0xdfd, 'mRB^') } });
+                        if (f[g4(mS.cJ, 'dZbH')] === g4(mS.cK, 'w(Wr')) {
+                            const a9 = f[g4(mS.cL, 'b)3q')][g4(0x1d56, 'yxI7')](g4(mS.cM, 'GzjL')) || f[g4(mS.cN, mS.cO)][g4(0x1d56, mS.aj)](g4(mS.cP, mS.bm)) || g4(0x4e0, mS.cQ),
+                                aa = loginRateCheck(a9);
+                            if (!aa[g4(0x1b0a, mS.cR)]) return new Response(JSON[g4(mS.cS, mS.cT)]({ 'error': g4(mS.cU, '9rQu') }), { 'status': 0x1ad, 'headers': { 'Content-Type': g4(0xa93, mS.cV), 'Retry-After': String(aa[g4(0x1377, 'zs!c')]), 'Cache-Control': g4(mS.cW, 'Pt3!') } });
+                            const ab = await f[g4(mS.cX, '9rQu')](),
+                                ac = new URLSearchParams(ab),
+                                ad = ac[g4(0x968, mS.cY)](g4(0x6ca, mS.cZ)),
+                                ae = af => String(af == null ? '' : af)[g4(0xb64, '2#Qk')]()[g4(0x1462, 'vel(')](/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, '');
+                            if (timingSafeStrEqual(ae(ad), ae(x)) || w && timingSafeStrEqual(ae(ad), ae(w))) {
+                                let af = null;
+                                try {
+                                    if (g['KV'] && typeof g['KV'][g4(0xd31, '5M6D')] === g4(mS.d0, 'ZgMu')) af = JSON[g4(0x980, mS.cm)](await g['KV'][g4(mS.d1, mS.Y)](g4(0x70c, 'oeP*')) || g4(mS.d2, mS.d3));
+                                } catch (ah) {}
+                                if (af && af[g4(0xb57, 'w(Wr')] && af[g4(mS.d4, mS.d5)]) {
+                                    const ai = (ac[g4(mS.d6, 'wCGK')](g4(0x902, 'ZgMu')) || ac[g4(mS.d7, mS.aw)](g4(0x117, 'vel(')) || '')[g4(0xa89, 'oeP*')]();
+                                    if (!ai) return new Response(JSON[g4(mS.d8, '%oj0')]({ 'need2fa': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x18cc, 'V#kN') } });
+                                    if (!await totpVerify(af[g4(0x180b, 'IcEg')], ai)) return loginRecordFailure(a9), new Response(JSON[g4(mS.d9, mS.da)]({ 'need2fa': !![], 'error': g4(0x17a4, mS.ce) }), { 'status': 0x191, 'headers': { 'Content-Type': g4(mS.db, mS.dc) } });
+                                }
+                                const ag = new Response(JSON[g4(mS.dd, '[p9(')]({ 'success': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x96d, 'vel(') } });
+                                return loginRecordSuccess(a9), ag[g4(0x7f4, mS.by)][g4(0x50a, mS.dc)](g4(0x14d3, mS.S), g4(0x1f07, mS.de) + await makeSessionToken(q, z, x) + g4(0x25d, 'C2T0')), ag;
+                            } else loginRecordFailure(a9);
+                        }
+                        return await panelHtml(g, g4(0x276, mS.df));
+                    } else {
+                        if (E === g4(0x29c, 'zs!c')) {
+                            if (!await isAuthed(f, q, z, x)) return new Response(g4(mS.dg, '$p[^'), { 'status': 0x12e, 'headers': { 'Location': g4(0x384, mS.dh) } });
+                            const aj = await g['KV'][g4(mS.v, 'IcEg')](g4(0xf2f, mS.di));
+                            if (!aj) return new Response(g4(mS.dj, '[p9('), { 'status': 0x190 });
+                            const ak = JSON[g4(mS.dk, '5M6D')](aj);
+                            if (!ak[g4(0x1689, mS.cb)]) return new Response(g4(0x14e2, mS.dl), { 'status': 0x190 });
+                            const al = p[g4(0xde1, 'w3Tt')] + '//' + p[g4(mS.dm, 'dn8p')] + g4(0x30b, 'b)3q'),
+                                am = g4(0xd1b, mS.dn) + ak[g4(mS.dp, mS.cC)] + g4(0x813, 'b)3q') + encodeURIComponent(al) + g4(mS.dq, mS.U);
+                            const an = await fetch(am);
+                            h[g4(mS.dr, 'C2T0')](tgSetMyCommands(ak[g4(mS.ds, 'zs!c')]));
+                            const ao = await an[g4(mS.dt, 'd%lH')]();
+                            return new Response(JSON[g4(mS.du, mS.aP)](ao, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1d41, mS.F) } });
+                        } else {
+                            if (E === g4(0x131d, 'mRB^')) {
+                                if (f[g4(0x1f7, '7NO9')] === g4(mS.dv, 'b)3q')) return await handleTelegramWebhook(f, g, B, D);
+                                return new Response(g4(mS.dw, '[p9('), { 'status': 0xc8 });
+                            } else {
+                                if (E === g4(mS.dx, '0Ua@') || E[g4(mS.dy, 'T3Fv')](g4(mS.dz, 'w3Tt'))) {
+                                    const ap = f[g4(0xa09, mS.aL)][g4(0xb3b, mS.dA)](g4(0x426, 'b)3q')) || '',
+                                        aq = ap[g4(mS.dB, mS.p)](';')[g4(0xc0c, mS.dC)](at => at[g4(0x8a2, 'Pt3!')]()[g4(0x1e81, 'T3Fv')](g4(0xab5, '60r9')))?.[g4(0x5b4, 'XITC')]('=')[0x1];
+                                    if (!aq || !await verifySessionToken(aq, q, z, x)) return new Response(g4(mS.dD, 'PSkb'), { 'status': 0x12e, 'headers': { 'Location': g4(mS.dE, 'jODS') } });
+                                    h[g4(mS.dF, mS.aB)](flushUsage(g));
+                                    Date[g4(mS.dG, 'Gn7Q')]() - lastCentralSync > 0x927c0 && (lastCentralSync = Date[g4(mS.dH, mS.dI)](), h[g4(mS.dJ, 'GzjL')](centralHeartbeat(g)), h[g4(mS.dK, mS.dL)](refreshAnnouncements(g)));
+                                    if (E === g4(0x179a, 'XITC')) {
+                                        const at = f['cf'] || {};
+                                        return new Response(JSON[g4(0x97f, 'GzjL')]({ 'asn': at[g4(mS.dM, mS.cZ)] || 0x0, 'isp': at[g4(mS.dN, mS.dL)] || '', 'country': at[g4(mS.dO, mS.dP)] || '', 'city': at[g4(mS.dQ, mS.dR)] || '', 'carrier': identifyCarrier(f) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.dS, mS.dT), 'Cache-Control': g4(0x2c3, '5M6D') } });
+                                    } else {
+                                        if (E === g4(mS.dU, mS.c9)) {
+                                            let au = null;
+                                            try { au = JSON[g4(mS.dV, mS.aF)](await g['KV'][g4(0xf99, 'PSkb')](g4(mS.dW, 'Mmsl')) || g4(mS.dX, '[p9(')); } catch (aw) {}
+                                            const av = await g['KV'][g4(0x968, 'mRB^')](g4(mS.dY, mS.cO));
+                                            return new Response(JSON[g4(mS.dZ, mS.e0)]({ 'twofa': !!(au && au[g4(0x1a4, mS.cR)]), 'passwordSource': av ? 'kv' : g4(0xd35, '2#Qk'), 'envRecovery': !!w, 'kvSet': !!av, 'uuidPinned': !!await g['KV'][g4(0xf92, mS.B)](g4(0x1a9, 'dn8p')) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0xf70, mS.aq), 'Cache-Control': g4(mS.e1, mS.e2) } });
+                                        } else {
+                                            if (E === g4(mS.e3, 'NxG1')) {
+                                                if (f[g4(mS.e4, 'GzjL')] !== g4(mS.e5, 'dbGg')) return new Response(g4(mS.e6, mS.d3), { 'status': 0x195 });
+                                                let ax = {};
+                                                try { ax = await f[g4(mS.e7, mS.N)](); } catch (aC) {}
+                                                const ay = (ax[g4(mS.e8, 'NxG1')] || '')[g4(mS.e9, mS.ea)]()[g4(mS.eb, '#sM9')](/[\r\n]/g, ''),
+                                                    az = (ax[g4(0x4ab, '89Hn')] || '')[g4(mS.ec, 'w(Wr')]()[g4(0x6f0, 'M5Ii')](/[\r\n]/g, ''),
+                                                    aA = timingSafeStrEqual(ay, String(x || '')[g4(mS.ed, mS.L)](/[\r\n]/g, '')) || w && timingSafeStrEqual(ay, String(w)[g4(mS.ee, mS.bc)](/[\r\n]/g, ''));
+                                                if (!aA) return new Response(JSON[g4(0x840, '*lLT')]({ 'error': g4(mS.ef, '*lLT') }), { 'status': 0x193, 'headers': { 'Content-Type': g4(mS.eg, mS.eh) } });
+                                                if (az[g4(0x181f, 'dn8p')] < 0x6) return new Response(JSON[g4(0xc60, mS.bH)]({ 'error': g4(0x8ce, mS.B) }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0xef1, 'Gn7Q') } });
+                                                try {
+                                                    if (!(g[g4(mS.ei, mS.aS)] || g[g4(mS.ej, 'rsIZ')])) {
+                                                        const aD = await g['KV'][g4(mS.ek, mS.el)](g4(mS.em, '$BSl'));
+                                                        !aD && (await g['KV'][g4(0x156e, 'zs!c')](g4(0x1e9e, 'C2T0'), B), cachedWorkerUUID = B, cachedWorkerUUIDAt = Date[g4(mS.en, mS.eo)]());
+                                                    }
+                                                } catch (aE) {}
+                                                await g['KV'][g4(0x1254, 'Mmsl')](g4(0x1747, 'V#kN'), az), cachedAdminPass = az, cachedAdminPassAt = Date[g4(0x1bb8, 'w3Tt')]();
+                                                const aB = new Response(JSON[g4(mS.ep, 'CeJW')]({ 'success': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4d1, 'n7E3') } });
+                                                return aB[g4(0xce0, 'PYt$')][g4(mS.eq, mS.i)](g4(mS.er, mS.es), g4(0xe66, 'd%lH') + await makeSessionToken(q, z, az) + g4(mS.et, mS.eu)), aB;
+                                            } else {
+                                                if (E === g4(0x136a, 'NMJQ')) {
+                                                    let aF = g4(0x9e4, 'mRB^');
+                                                    try { aF = w ? g4(0x12a3, '$p[^') : await g['KV'][g4(mS.ev, 'yxI7')](g4(mS.ew, mS.aw)) ? 'kv' : g4(mS.ex, '%oj0'); } catch (aG) { aF = w ? g4(0x1c68, '[]Y1') : g4(mS.ey, '8Ys%'); }
+                                                    return new Response(JSON[g4(mS.ez, 'dZbH')]({ 'password': x || '', 'source': aF }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.eA, mS.eB), 'Cache-Control': g4(mS.eC, '5M6D') } });
+                                                } else {
+                                                    if (E === g4(0x1d7d, '[]Y1')) {
+                                                        const aH = randomBase32(0x20),
+                                                            aI = encodeURIComponent(g4(mS.eD, mS.eE) + p[g4(mS.eF, mS.eG)] + ')'),
+                                                            aJ = g4(mS.eH, mS.aj) + aI + g4(mS.eI, 'vel(') + aH + g4(0xe5a, 'n7E3') + encodeURIComponent(g4(mS.eJ, mS.f)) + g4(0x150f, 'jODS');
+                                                        return new Response(JSON[g4(mS.eK, 'b)3q')]({ 'secret': aH, 'otpauth': aJ }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.eL, mS.eM), 'Cache-Control': g4(0xd05, 'dZbH') } });
+                                                    } else {
+                                                        if (E === g4(0xc70, '0Ua@')) {
+                                                            if (f[g4(mS.eN, mS.eO)] !== g4(mS.eP, mS.eQ)) return new Response(g4(mS.eR, '9rQu'), { 'status': 0x195 });
+                                                            let aK = {};
+                                                            try { aK = await f[g4(mS.eS, 'w3Tt')](); } catch (aN) {}
+                                                            const aL = (aK[g4(mS.eT, mS.eU)] || '')[g4(mS.eV, mS.eW)]()[g4(0x1e7d, mS.eX)](),
+                                                                aM = (aK[g4(0xee9, mS.bN)] || '')[g4(mS.eY, 'dbGg')]()[g4(mS.eZ, mS.f0)]();
+                                                            if (!aL) return new Response(JSON[g4(0x1ede, mS.f1)]({ 'error': g4(mS.f2, '60r9') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(mS.f3, 'b)3q') } });
+                                                            if (!await totpVerify(aL, aM)) return new Response(JSON[g4(0x1589, mS.df)]({ 'error': g4(0x1c69, mS.f4) }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x183e, mS.f5) } });
+                                                            return await g['KV'][g4(mS.f6, mS.eE)](g4(0x13ea, mS.cC), JSON[g4(mS.f7, mS.eh)]({ 'enabled': !![], 'secret': aL, 'addedAt': Date[g4(0x1016, 'dZbH')]() })), new Response(JSON[g4(mS.f8, mS.f9)]({ 'success': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x403, mS.eQ) } });
+                                                        } else {
+                                                            if (E === g4(mS.fa, mS.fb)) {
+                                                                if (f[g4(mS.fc, 'CeJW')] !== g4(mS.fd, mS.dT)) return new Response(g4(mS.fe, mS.eO), { 'status': 0x195 });
+                                                                let aO = {};
+                                                                try { aO = await f[g4(mS.ff, mS.fg)](); } catch (aR) {}
+                                                                const aP = (aO[g4(mS.fh, '[p9(')] || '')[g4(0x1cc2, mS.fi)]()[g4(0xa16, mS.ap)]();
+                                                                let aQ = null;
+                                                                try { aQ = JSON[g4(mS.fj, 'w(Wr')](await g['KV'][g4(0x14ed, '[p9(')](g4(0x555, mS.eB)) || g4(mS.fk, 'T3Fv')); } catch (aS) {}
+                                                                if (aQ && aQ[g4(mS.fl, mS.cY)] && aQ[g4(mS.fm, 'mRB^')] && !await totpVerify(aQ[g4(0x6ab, mS.fn)], aP)) return new Response(JSON[g4(0x1ca4, 'V#kN')]({ 'error': g4(0x17a4, '[]Y1') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x1c90, mS.fo) } });
+                                                                return await g['KV'][g4(mS.fp, mS.fq)](g4(mS.fr, mS.fs)), new Response(JSON[g4(mS.ft, mS.fu)]({ 'success': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4d7, 'w(Wr') } });
+                                                            } else {
+                                                                if (E === g4(mS.fv, 'mRB^')) {
+                                                                    const aT = JSON[g4(0x1d53, mS.cQ)](await logReadAll(g));
+                                                                    return new Response(aT, { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.fw, mS.cQ) } });
+                                                                } else {
                                                                                                                                                                                                        }
