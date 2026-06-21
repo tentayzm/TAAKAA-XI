@@ -4590,4 +4590,1214 @@ function backendTargetUrl(c, f) {
     if (h && h !== '/') g[gE(0x260, nq.h)] = h;
     return g[gE(0x1b2b, nq.i)] = f && f[gE(0x3ca, 'GzjL')] || '', g[gE(nq.j, nq.k)]();
                         }
+async function forwardWsToBackend(c, f, g, h, i, j) {
+    const nv = { c: 0x1ad8, f: 0x1c70, g: 0x52a, h: 'b)3q', i: 0x162c, j: 'jODS', k: 'n7E3', l: '8Ys%', m: 0x17a5, n: 'oeP*', o: 'mRB^', p: 0x311, q: 0x5bc, r: 0x117b, s: '*lLT', t: 0x19cb, u: 'ZgMu', v: 0x1223, w: 'rsIZ', x: 0x74d, y: 0x691, z: '%oj0', A: 0x2ad, B: 0x16c7, C: 0x50b, D: '%oj0', E: 0x513, F: '$BSl', G: 0x373, H: 'd%lH', I: 0x817, J: '$p[^', K: 0x1be6, L: 'w(Wr', M: 0x1e9, N: 0x19fe, O: 0x7d0, P: 'b)3q', Q: 'vel(', R: '89Hn', S: 0xc16, T: 0x1068, U: 'mRB^', V: 0x738, W: 0x4c9, X: 'CeJW', Y: '0Ua@', Z: 'PSkb', a0: 0x1d8f, a1: 'Pt3!' },
+        nu = { c: '*lLT', f: 0xe23, g: '5M6D', h: 0x1b17, i: '9rQu', j: 0x822 },
+        nt = { c: 0x1d26, f: 0xad0, g: '[]Y1', h: 0x172a },
+        ns = { c: 0x133, f: 'mRB^', g: 0x149d, h: '*lLT', i: 0xe9b, j: 'NxG1', k: 0x1b89, l: 'dZbH', m: 0x15ec },
+        nr = { c: '$BSl' },
+        gF = fX,
+        k = backendTargetUrl(i, f);
+    if (!k) return new Response(gF(nv.c, '9rQu'), { 'status': 0x1f4 });
+    const l = new WebSocketPair(),
+        m = l[0x0],
+        n = l[0x1];
+    try { n[gF(nv.f, 'dbGg')](); } catch (w) {}
+    const o = new Headers(c[gF(nv.g, 'n7E3')]);
+    o[gF(0x1886, nv.h)](gF(nv.i, nv.j)), o[gF(0x173d, nv.k)](gF(0xf3e, nv.l)), o[gF(nv.m, nv.n)](gF(0xe71, nv.o), gF(nv.p, '%oj0')), o[gF(0x106d, 'CeJW')](gF(nv.q, 'dbGg'), gF(0x1116, 'b)3q'));
+    let p;
+    try { p = await fetch(k, { 'method': gF(nv.r, nv.s), 'headers': o, 'redirect': gF(nv.t, nv.u) }); } catch (x) {
+        try { n[gF(nv.v, nv.w)](0x3f3, gF(nv.x, nv.h)); } catch (y) {}
+        try { m[gF(0x1149, '9rQu')](0x3f3, gF(nv.y, nv.z)); } catch (z) {}
+        return new Response(gF(nv.A, 'Mmsl') + (x && x[gF(nv.B, '0Ua@')] || x), { 'status': 0x1f6 });
+    }
+    if (p[gF(nv.C, nv.D)] !== 0x65 || !p[gF(nv.E, 'wCGK')]) {
+        try { await p[gF(0x705, nv.F)]?.[gF(nv.G, nv.H)](); } catch (A) {}
+        try { n[gF(0xda1, '8Ys%')](0x3f3, gF(nv.I, nv.J)); } catch (B) {}
+        try { m[gF(nv.K, nv.L)](0x3f3, gF(nv.M, nv.u)); } catch (C) {}
+        return new Response(gF(0xd30, '6UCx') + p[gF(nv.N, '*lLT')] + ')', { 'status': 0x1f6 });
+    }
+    const q = p[gF(nv.O, nv.P)];
+    try { q[gF(0xde9, nv.Q)](); } catch (D) {}
+    let r = ![];
+    const s = { 'up': 0x0, 'down': 0x0 },
+        t = E => {
+            const gG = gF;
+            try {
+                return E && E[gG(0x3aa, 'n7E3')] != null ? E[gG(0xebf, 'NxG1')] : E && E[gG(0xac2, '9rQu')] != null ? E[gG(0xe27, '5M6D')] : E && E[gG(0x1ac7, nr.c)] || 0x0;
+            } catch (F) { return 0x0; }
+        },
+        u = (E, F) => {
+            const gH = gF;
+            if (r) return;
+            r = !![];
+            try { n[gH(ns.c, ns.f)](E || 0x3e8, F || gH(ns.g, ns.h)); } catch (G) {}
+            try { q[gH(ns.i, ns.j)](E || 0x3e8, F || gH(ns.k, ns.l)); } catch (H) {}
+            try { recordUsage(g, s['up'], s[gH(0xf0d, 'C2T0')], h); } catch (I) {}
+            if (j)
+                try { recordUserUsage(g, j, s['up'], s[gH(ns.m, 'PYt$')], h); } catch (J) {}
+        },
+        v = (E, F, G) => {
+            const gI = gF;
+            if (r) return;
+            if (F instanceof Blob) {
+                F[gI(0x145f, '7NO9')]()[gI(0x88b, nu.c)](H => {
+                    const gJ = gI;
+                    if (r) return;
+                    try {
+                        E[gJ(nt.c, 'vel(')](H);
+                        if (G) s['up'] += t(H);
+                        else s[gJ(nt.f, nt.g)] += t(H);
+                    } catch (I) { u(0x3f3, gJ(nt.h, 'zs!c')); }
+                })[gI(nu.f, nu.g)](() => u(0x3f3, gI(0x137f, 'vel(')));
+                return;
+            }
+            if (E[gI(nu.h, 'Mmsl')] !== 0x1) return;
+            try {
+                E[gI(0x15a0, '8Ys%')](F);
+                if (G) s['up'] += t(F);
+                else s[gI(0x3d2, nu.i)] += t(F);
+            } catch (H) { u(0x3f3, gI(nu.j, 'ZgMu')); }
+        };
+    return n[gF(0xab3, nv.R)](gF(nv.S, '8Ys%'), E => v(q, E[gF(0x1ca5, '$p[^')], !![])), q[gF(0x10d3, '1qbp')](gF(nv.T, nv.U), E => v(n, E[gF(0x8be, 'jODS')], ![])), n[gF(nv.V, '7NO9')](gF(nv.W, nv.X), E => u(E[gF(0x1ec4, 'Pt3!')], E[gF(0xf56, '6UCx')] || gF(0x1771, '#sM9'))), q[gF(0x1ec3, nv.Y)](gF(0xc43, '*lLT'), E => u(E[gF(0x1ab4, 'M5Ii')], E[gF(0xf56, '6UCx')] || gF(0x56d, '89Hn'))), n[gF(0xc9a, nv.Z)](gF(0xcd6, 'NxG1'), () => u(0x3f3, gF(0x1182, 'T3Fv'))), q[gF(nv.a0, 'vel(')](gF(0x783, nv.a1), () => u(0x3f3, gF(0x10fa, 'w(Wr'))), new Response(null, { 'status': 0x65, 'webSocket': m });
+}
 
+async function forwardHttpToBackend(c, f, g, h) {
+    const nw = { c: 0x1683, f: '$BSl', g: 0x1e53, h: '8Ys%', i: 0x2de, j: '5M6D', k: 'dbGg', l: 0x3c7, m: 0x146d, n: 'Mmsl', o: 0x151a, p: 'w3Tt' },
+        gK = fX,
+        i = backendTargetUrl(h, f);
+    if (!i) return new Response(gK(nw.c, nw.f), { 'status': 0x1f4 });
+    const j = new Headers();
+    for (const [l, m] of c[gK(nw.g, 'wCGK')]) {
+        const n = l[gK(0x1d1, nw.h)]();
+        if (n === gK(0x68b, 'CeJW') || n[gK(nw.i, 'dZbH')](gK(0x1632, nw.j)) || n === gK(0x517, nw.k)) continue;
+        j[gK(0x169, 'rsIZ')](l, m);
+    }
+    try { return await fetch(i, { 'method': c[gK(nw.l, '*lLT')], 'headers': j, 'body': c[gK(0x78b, '8Ys%')], 'redirect': gK(nw.m, nw.n) }); } catch (o) { return new Response(gK(nw.o, nw.p) + (o && o[gK(0x1068, 'mRB^')] || o), { 'status': 0x1f6 }); }
+}
+
+async function handleWsRequest(c, f, g, h, i) {
+    const o3 = { c: 0xad2, f: '*lLT', g: 0x14af, h: 0x1811, i: 0x18b1, j: 0x485, k: 0xdee, l: '0Ua@', m: 'Pt3!', n: '9rQu', o: 0xa94, p: 'GzjL', q: 0x1d64, r: 'dbGg', s: 0x4e1, t: 'Mmsl', u: 0x12c0, v: '89Hn', w: '5M6D', x: 0x5d6, y: 0x1eb5, z: '%oj0' },
+        o0 = { c: 0x5b1, f: 0xf2a },
+        nX = { c: 0x1109 },
+        nW = { c: 0x26e, f: 'NxG1', g: 0xc3c },
+        nU = { c: 0x1bbd, f: 'wCGK', g: 0x1d1c, h: '0Ua@' },
+        nT = { c: 0x497, f: '89Hn', g: 0x5b9, h: 'NxG1', i: '2#Qk', j: 0x7f6, k: 'XITC', l: 0x14e9, m: 0x8dc, n: '#sM9', o: 0x17c7, p: 'rsIZ' },
+        nS = { c: 'd%lH', f: 'IcEg', g: '9rQu', h: 0x14c6, i: 'mRB^', j: 0x1505, k: 'dZbH', l: 'dn8p', m: 'PSkb', n: 0x515, o: 0xb62, p: 0x18a3, q: '#sM9', r: 0x18d6, s: 0x129c, t: 'egod', u: 0x12f0, v: '%oj0', w: 0xdbd, x: 'w3Tt', y: 0x9e3, z: 0x16a8, A: 'd%lH', B: 'V#kN' },
+        nR = { c: 0x1763, f: 'b)3q', g: 0x3c1, h: 'vel(', i: 0x16e9, j: '*lLT', k: 0x1bba, l: 'w(Wr', m: 'Mmsl', n: 'zs!c', o: 0x170e, p: 'ZgMu', q: '5M6D', r: 0xef5, s: 'Mmsl', t: 0xe63, u: '$BSl', v: 0x1eaa, w: 0x6e6, x: 'd%lH', y: 0xe0c, z: '[p9(', A: '[p9(', B: 0x1775, C: 'egod', D: 'NxG1', E: 0x9d7, F: 'mRB^', G: 0x1599, H: 'n7E3', I: 0xc37, J: 'w3Tt', K: 0x770, L: 0x1103, M: 0x826, N: 'Mmsl', O: 0xd24, P: 0x122d, Q: 0x23b, R: 'wCGK', S: 'Gn7Q', T: 0x84a, U: '8Ys%', V: 'zs!c', W: 'NMJQ' },
+        nQ = { c: 'IcEg' },
+        nO = { c: 0x569, f: 0x1e94, g: '*lLT', h: 0xd78, i: 'T3Fv', j: 0x13dc },
+        nB = { c: '9rQu' },
+        nA = { c: '*lLT' },
+        nz = { c: 0x1359, f: '$BSl', g: '8Ys%', h: 0x53d },
+        ny = { c: 0xa29, f: '5M6D', g: 0x206, h: 'M5Ii' },
+        gL = fX;
+    if (connRejectReason) return new Response(gL(o3.c, o3.f) + connRejectReason + ')', { 'status': 0x193 });
+    const j = connUserId,
+        k = new WebSocketPair(),
+        [l, m] = Object[gL(o3.g, 'XITC')](k);
+    try { m[gL(o3.h, '89Hn')]({ 'allowHalfOpen': !![] }); } catch (R) { m[gL(o3.i, 'PYt$')](); }
+    m[gL(o3.j, 'Gn7Q')] = gL(0x53c, '89Hn');
+    let n = { 'socket': null, 'connectingPromise': null, 'retryConnect': null };
+    const o = { 'up': 0x0, 'down': 0x0 };
+    let p = ![],
+        q = null;
+    const r = { 'cache': new Uint8Array(0x0) },
+        s = c[gL(0x7f4, 'egod')][gL(o3.k, o3.l)](gL(0x15a8, 'rsIZ')) || '',
+        t = !!g[gL(0x19bd, o3.m)][gL(0x8ed, o3.n)](gL(0x1c2e, 'w3Tt'));
+    let u = null,
+        v = Promise[gL(o3.o, o3.p)](),
+        w = ![],
+        x = ![],
+        y = ![],
+        z = 0x0,
+        A = 0x0,
+        B = null,
+        C = null,
+        D = null,
+        E = null,
+        F = null;
+    const G = () => {
+            const gM = gL;
+            if (D) { try { D[gM(0x1ae2, 'T3Fv')](); } catch (S) {} D = null; }
+            C = null;
+        },
+        H = u = createUpstreamWriteQueue({ 'getWriter': () => {
+                const gN = gL,
+                    S = n[gN(ny.c, ny.f)];
+                if (!S) return null;
+                return S !== C && (G(), C = S, D = S[gN(ny.g, ny.h)][gN(0x470, 'V#kN')]()), D;
+            }, 'releaseWriter': G, 'retryConnection': async() => {
+                const gO = gL;
+                if (typeof n[gO(nz.c, nz.f)] !== gO(0x9a8, nz.g)) throw new Error(gO(nz.h, 'rsIZ'));
+                await n[gO(0x17b, '1qbp')]();
+            }, 'closeConnection': () => {
+                const gP = gL;
+                try { n[gP(0x11f4, nA.c)]?.[gP(0x103b, 'ZgMu')](); } catch (S) {}
+                closeSocketQuietly(m);
+            }, 'name': gL(o3.q, o3.r) }),
+        I = async(S, T = !![]) => { const gQ = gL; return H[gQ(0xac7, nB.c)](S, T); },
+        J = async() => {
+            const nL = { c: '60r9' },
+                nG = { c: 'b)3q', f: 0x15dd, g: 0x1ec7 },
+                nD = { c: 0xd2a, f: 'rsIZ', g: '#sM9', h: 0x4e5, i: 0xd2a, j: '5M6D', k: 0x1f3, l: 'PSkb', m: 0xded, n: '60r9', o: 0x1c79, p: 0x10c8, q: 'dZbH', r: 0x93d, s: '7NO9', t: 0xe3b, u: 0xcda, v: 0x438, w: 0x1c48, x: 0xb03, y: 0x13eb, z: 0x9a5, A: 'wCGK', B: 'NxG1', C: 0x1c9a, D: 0x820, E: 'w(Wr', F: 0x1213, G: 'jODS', H: 0x4bb, I: 0x1b75, J: 'NxG1', K: 0xfed, L: 'GzjL', M: '[]Y1', N: 0x147c, O: '60r9', P: 'Pt3!', Q: 0x457, R: 'w(Wr', S: '0Ua@', T: 0xc98, U: 'dn8p' },
+                nC = { c: 0x1701, f: 'NMJQ', g: 0xbe2, h: 0x1467, i: 0x11f5, j: 0xf92, k: 0x863 },
+                h3 = gL;
+            if (E) return E;
+            return !F && (F = (async() => {
+                const nM = { c: 0x1c91, f: 0x186f, g: 0x7ba, h: 0xebf, i: 'NxG1', j: 0x1611, k: 0x1af9, l: 'wCGK', m: '7NO9' },
+                    nK = { c: 0x70e, f: 0x11ab },
+                    nE = { c: 0x3aa, f: '8Ys%', g: 0x93d, h: 0x1caf, i: 'egod', j: 0x12d, k: 'dn8p', l: 0xd4c, m: 0xaaf, n: 'CeJW', o: 0x12ae, p: '89Hn', q: 0x1adc, r: '#sM9', s: 0x1d5e, t: 0xf05, u: 'XITC', v: 0x11c4, w: 'w(Wr', x: 0x567, y: 'dZbH', z: '%oj0', A: 0x17f9, B: 0x3e5, C: 0x150a, D: 'wCGK' },
+                    gR = b,
+                    S = (g[gR(0x976, '6UCx')][gR(nO.c, 'wCGK')](gR(nO.f, nO.g)) || '')[gR(0xa2d, '9rQu')](),
+                    T = SSsupportEncryptionConfig[S] || SSsupportEncryptionConfig[gR(nO.h, nO.i)],
+                    U = [T, ...Object[gR(nO.j, 'C2T0')](SSsupportEncryptionConfig)[gR(0x1af4, '$BSl')](a6 => a6[gR(0x1a71, 'XITC')] !== T[gR(0x6ee, '$BSl')])],
+                    V = new Map(),
+                    W = a6 => {
+                        const gS = gR;
+                        if (!V[gS(nC.c, nC.f)](a6[gS(nC.g, 'mRB^')])) V[gS(nC.h, 'PSkb')](a6[gS(0x1cc9, 'T3Fv')], SSderiveMasterKey(f, a6[gS(nC.i, '89Hn')]));
+                        return V[gS(nC.j, '8Ys%')](a6[gS(nC.k, '60r9')]);
+                    },
+                    X = { 'buffer': new Uint8Array(0x0), 'hasSalt': ![], 'waitPayloadLength': null, 'decryptKey': null, 'nonceCounter': new Uint8Array(SSNoncelength), 'encryptionConfig': null },
+                    Y = async() => {
+                        const gT = gR,
+                            a6 = 0x2 + SSAEADtagLength,
+                            a7 = Math[gT(nD.c, nD.f)](...U[gT(0x1517, nD.g)](ab => ab[gT(0x1809, 'IcEg')])),
+                            a8 = 0x10,
+                            a9 = Math[gT(nD.h, 'yxI7')](a8, Math[gT(nD.i, nD.f)](0x0, X[gT(0x1113, nD.j)][gT(nD.k, nD.l)] - (a6 + Math[gT(nD.m, nD.n)](...U[gT(nD.o, 'ZgMu')](ab => ab[gT(0x49e, 'T3Fv')])))));
+                        for (let ab = 0x0; ab <= a9; ab++) {
+                            for (const ac of U) {
+                                const ad = ab + ac[gT(0xc05, 'jODS')] + a6;
+                                if (X[gT(0x17d5, '[]Y1')][gT(nD.p, nD.q)] < ad) continue;
+                                const ae = X[gT(nD.r, nD.s)][gT(0x1142, '0Ua@')](ab, ab + ac[gT(nD.t, 'dbGg')]),
+                                    af = X[gT(0x1a96, 'C2T0')][gT(nD.u, 'Gn7Q')](ab + ac[gT(nD.v, 'NxG1')], ad),
+                                    ag = await W(ac),
+                                    ah = await SSderiveSessionKey(ac, ag, ae, [gT(nD.w, 'C2T0')]),
+                                    ai = new Uint8Array(SSNoncelength);
+                                try {
+                                    const aj = await SSAEADdecrypt(ah, ai, af);
+                                    if (aj[gT(0x712, '$BSl')] !== 0x2) continue;
+                                    const ak = aj[0x0] << 0x8 | aj[0x1];
+                                    if (ak < 0x0 || ak > ac[gT(nD.x, 'b)3q')]) continue;
+                                    if (ab > 0x0) log(gT(nD.y, 'egod') + ab + gT(nD.z, nD.A));
+                                    if (ac[gT(0x14b9, nD.B)] !== T[gT(nD.C, 'b)3q')]) log(gT(nD.D, nD.E) + (S || T[gT(0x14b9, 'NxG1')]) + gT(nD.F, '7NO9') + ac[gT(0xa4b, 'IcEg')] + gT(0x1205, nD.G));
+                                    return X[gT(0x1a96, 'C2T0')] = X[gT(nD.H, 'XITC')][gT(0xb09, 'ZgMu')](ad), X[gT(0x78c, '7NO9')] = ah, X[gT(nD.I, nD.J)] = ai, X[gT(nD.K, nD.L)] = ak, X[gT(0x1ac, nD.M)] = ac, X[gT(0xd50, nD.g)] = !![], !![];
+                                } catch (al) {}
+                            }
+                        }
+                        const aa = a7 + a6 + a8;
+                        if (X[gT(nD.N, nD.O)][gT(nD.p, nD.q)] >= aa) throw new Error(gT(0x177d, 'b)3q') + (S || gT(0x1ba1, 'Mmsl')) + gT(nD.Q, nD.R) + U[gT(0x271, nD.S)](am => am[gT(0x1a71, 'XITC')])[gT(nD.T, nD.U)]('/') + ')');
+                        return ![];
+                    },
+                    Z = { async 'input'(a6) {
+                            const gU = gR,
+                                a7 = dataToUint8Array(a6);
+                            if (a7[gU(nE.c, 'n7E3')] > 0x0) X[gU(0xeb1, nE.f)] = concatByteData(X[gU(nE.g, '7NO9')], a7);
+                            if (!X[gU(nE.h, 'egod')]) { const a9 = await Y(); if (!a9) return []; }
+                            const a8 = [];
+                            while (!![]) {
+                                if (X[gU(0x1410, '6UCx')] === null) {
+                                    const ad = 0x2 + SSAEADtagLength;
+                                    if (X[gU(0x1a96, 'C2T0')][gU(0x19d2, 'V#kN')] < ad) break;
+                                    const ae = X[gU(0x1650, nE.i)][gU(nE.j, nE.k)](0x0, ad);
+                                    X[gU(0x12d6, '6UCx')] = X[gU(0x1d4e, 'Pt3!')][gU(nE.l, 'C2T0')](ad);
+                                    const af = await SSAEADdecrypt(X[gU(nE.m, nE.k)], X[gU(0x63f, 'Gn7Q')], ae);
+                                    if (af[gU(0x1786, 'Gn7Q')] !== 0x2) throw new Error(gU(0x7d3, 'vel('));
+                                    const ag = af[0x0] << 0x8 | af[0x1];
+                                    if (ag < 0x0 || ag > X[gU(0xba3, 'ZgMu')][gU(0x3f1, 'PSkb')]) throw new Error(gU(0x1671, 'Gn7Q') + ag);
+                                    X[gU(0x1cb5, nE.n)] = ag;
+                                }
+                                const aa = X[gU(nE.o, nE.p)] + SSAEADtagLength;
+                                if (X[gU(nE.q, nE.r)][gU(nE.s, '#sM9')] < aa) break;
+                                const ab = X[gU(nE.t, '$BSl')][gU(0xc14, nE.u)](0x0, aa);
+                                X[gU(nE.v, nE.w)] = X[gU(0x750, 'NxG1')][gU(nE.x, nE.y)](aa);
+                                const ac = await SSAEADdecrypt(X[gU(0xf1, nE.z)], X[gU(nE.A, 'zs!c')], ab);
+                                a8[gU(nE.B, 'mRB^')](ac), X[gU(nE.C, nE.D)] = null;
+                            }
+                            return a8;
+                        } };
+                let a0 = null;
+                const a1 = 0x20 * 0x400,
+                    a2 = async() => {
+                        const nF = { c: 0x5d6, f: 'w3Tt', g: 0x1a42, h: 'NMJQ', i: 0x730, j: 'vel(', k: 0x10c8, l: 'dZbH', m: 0x9d7, n: 'mRB^', o: 0x7a9, p: 'w3Tt', q: 0x4e2, r: 'egod', s: 0x291, t: 0x1dac, u: 0x1f3 },
+                            gV = gR;
+                        if (a0) return a0;
+                        if (!X[gV(0x92f, 'NxG1')]) throw new Error(gV(0xc91, nG.c));
+                        const a6 = X[gV(0x2dc, 'zs!c')],
+                            a7 = await SSderiveMasterKey(f, a6[gV(nG.f, 'b)3q')]),
+                            a8 = crypto[gV(0x1710, 'Gn7Q')](new Uint8Array(a6[gV(nG.g, '%oj0')])),
+                            a9 = await SSderiveSessionKey(a6, a7, a8, [gV(0xbdc, 'yxI7')]),
+                            aa = new Uint8Array(SSNoncelength);
+                        let ab = ![];
+                        return a0 = { async 'encryptAndSend'(ac, ad) {
+                                const gW = gV,
+                                    ae = dataToUint8Array(ac);
+                                !ab && (await ad(a8), ab = !![]);
+                                if (ae[gW(nF.c, 'C2T0')] === 0x0) return;
+                                let af = 0x0;
+                                while (af < ae[gW(0x7a9, nF.f)]) {
+                                    const ag = Math[gW(nF.g, nF.h)](af + a6[gW(nF.i, nF.j)], ae[gW(nF.k, nF.l)]),
+                                        ah = ae[gW(nF.m, nF.n)](af, ag),
+                                        ai = new Uint8Array(0x2);
+                                    ai[0x0] = ah[gW(nF.o, nF.p)] >>> 0x8 & 0xff, ai[0x1] = ah[gW(nF.q, 'w(Wr')] & 0xff;
+                                    const aj = await SSAEADencryption(a9, aa, ai),
+                                        ak = await SSAEADencryption(a9, aa, ah),
+                                        al = new Uint8Array(aj[gW(0x186f, 'CeJW')] + ak[gW(0x181a, nF.r)]);
+                                    al[gW(nF.s, 'NxG1')](aj, 0x0), al[gW(nF.t, 'IcEg')](ak, aj[gW(nF.u, 'PSkb')]), await ad(al), af = ag;
+                                }
+                            }, a0;
+                    }();
+                let a3 = Promise[gR(0x1ca3, 'T3Fv')]();
+                const a4 = a6 => {
+                    const nJ = { c: '#sM9' },
+                        nI = { c: 'd%lH', f: 0xe93, g: '0Ua@' },
+                        nH = { c: 0x1397, f: 'dn8p', g: 'egod' },
+                        gX = gR;
+                    return a3 = a3[gX(nK.c, 'CeJW')](async() => {
+                        const gY = gX;
+                        if (m[gY(0x80b, nI.c)] !== WebSocket[gY(nI.f, nI.g)]) return;
+                        const a7 = await a2();
+                        await a7[gY(0x1e87, 'b)3q')](a6, async a8 => {
+                            const gZ = gY;
+                            a8[gZ(0x4fa, 'dbGg')] > 0x0 && m[gZ(nH.c, 'zs!c')] === WebSocket[gZ(0x13a3, nH.f)] && await WebSocketsendAndWait(m, a8[gZ(0x1650, nH.g)]);
+                        });
+                    })[gX(nK.f, '%oj0')](a7 => { const h0 = gX; log(h0(0x176a, '%oj0') + (a7?.[h0(0xbc1, nJ.c)] || a7)), closeSocketQuietly(m); }), a3;
+                };
+                return E = { 'inboundDecryptor': Z, 'replyChunkSocket': a5, 'firstPacketEstablished': ![], 'targetHost': '', 'targetPort': 0x0 }, E;
+            })()[h3(0x19b9, nQ.c)](() => { F = null; })), F;
+        },
+        K = async S => {
+            const h4 = gL,
+                T = await J();
+            let U = null;
+            try { U = await T[h4(nR.c, '1qbp')][h4(0x14d5, nR.f)](S); } catch (V) {
+                const W = V?.[h4(nR.g, '1qbp')] || '' + V;
+                if (W[h4(0x267, 'Pt3!')](h4(0x1acd, nR.h)) || W[h4(nR.i, '5M6D')](h4(0x11aa, '7NO9')) || W[h4(0x92e, nR.j)](h4(nR.k, nR.l))) { log(h4(0x1aa6, nR.m) + W), closeSocketQuietly(m); return; }
+                throw V;
+            }
+            for (const X of U) {
+                let Y = ![];
+                try { Y = await I(X, ![]); } catch (a5) { if (a5?.[h4(0xd8c, 'dn8p')]) throw a5; Y = ![]; }
+                if (Y) continue;
+                if (T[h4(0x1924, nR.n)] && T[h4(nR.o, nR.p)] && T[h4(0xfd0, nR.q)] > 0x0) {
+                    o['up'] += validDataLength(X), await forwardataTCP(T[h4(nR.r, '89Hn')], T[h4(0x1ef5, nR.s)], X, T[h4(nR.t, nR.u)], null, n, f, c, o);
+                    continue;
+                }
+                const Z = dataToUint8Array(X);
+                if (Z[h4(nR.v, 'Pt3!')] < 0x3) throw new Error(h4(nR.w, '#sM9'));
+                const a0 = Z[0x0];
+                let a1 = 0x1,
+                    a2 = '';
+                if (a0 === 0x1) {
+                    if (Z[h4(0x1297, nR.x)] < a1 + 0x4 + 0x2) throw new Error(h4(0x1e37, 'GzjL'));
+                    a2 = Z[a1] + '.' + Z[a1 + 0x1] + '.' + Z[a1 + 0x2] + '.' + Z[a1 + 0x3], a1 += 0x4;
+                } else {
+                    if (a0 === 0x3) {
+                        if (Z[h4(nR.y, nR.z)] < a1 + 0x1) throw new Error(h4(0x94c, 'b)3q'));
+                        const a6 = Z[a1];
+                        a1 += 0x1;
+                        if (Z[h4(nR.y, nR.A)] < a1 + a6 + 0x2) throw new Error(h4(nR.B, nR.C));
+                        a2 = SStextDecode[h4(0x1b32, nR.D)](Z[h4(nR.E, nR.F)](a1, a1 + a6)), a1 += a6;
+                    } else {
+                        if (a0 === 0x4) {
+                            if (Z[h4(nR.G, '89Hn')] < a1 + 0x10 + 0x2) throw new Error(h4(0xcbd, nR.H));
+                            const a7 = [],
+                                a8 = new DataView(Z[h4(nR.I, nR.J)], Z[h4(nR.K, 'GzjL')] + a1, 0x10);
+                            for (let a9 = 0x0; a9 < 0x8; a9++) a7[h4(nR.L, nR.H)](a8[h4(nR.M, 'egod')](a9 * 0x2)[h4(0xa0c, nR.N)](0x10));
+                            a2 = a7[h4(nR.O, 'CeJW')](':'), a1 += 0x10;
+                        } else throw new Error(h4(nR.P, 'GzjL') + a0);
+                    }
+                }
+                if (!a2) throw new Error(h4(0xc2f, 'M5Ii') + a0);
+                const a3 = Z[a1] << 0x8 | Z[a1 + 0x1];
+                a1 += 0x2;
+                const a4 = Z[h4(nR.Q, nR.R)](a1);
+                if (isBlockedSite(a2)) throw new Error(h4(0x1a43, nR.S));
+                T[h4(0x1f1d, 'rsIZ')] = !![], T[h4(nR.T, nR.U)] = a2, T[h4(0xe74, nR.V)] = a3, o['up'] += validDataLength(a4), await forwardataTCP(a2, a3, a4, T[h4(0x5cb, nR.W)], null, n, f, c, o);
+            }
+        },
+        L = async S => {
+            const h5 = gL;
+            let T = null;
+            if (p) {
+                if (q) return await forwardTrojanUdpData(S, m, r, c);
+                return await forwardataudp(S, m, null, c);
+            }
+            if (B === 'ss') { await K(S); return; }
+            if (await I(S)) { o['up'] += validDataLength(S); return; }
+            if (B === null) {
+                if (g[h5(0x1ef7, nS.c)][h5(0x15eb, nS.f)](h5(0x3fe, nS.g))) B = 'ss';
+                else { T = T || dataToUint8Array(S); const U = T; B = isTrojanFirstPacket(U, f) ? h5(0x1c5c, 'vel(') : h5(nS.h, '$p[^'); }
+                q = B === h5(0x12be, nS.i), log(h5(nS.j, nS.k) + B + h5(0x13a2, nS.l) + g[h5(0x54b, 'C2T0')] + h5(0x706, 'dZbH') + (c[h5(0xcea, nS.m)][h5(nS.n, '89Hn')](h5(nS.o, 'C2T0')) || h5(nS.p, nS.q)));
+            }
+            if (B === 'ss') { await K(S); return; }
+            if (await I(S)) { o['up'] += validDataLength(S); return; }
+            if (B === h5(nS.r, 'M5Ii')) {
+                const V = parseTrojanRequest(S, f);
+                if (V?.[h5(nS.s, nS.t)]) throw new Error(V[h5(0x1f1, 'n7E3')] || h5(nS.u, 'NxG1'));
+                const { port: W, hostname: X, rawClientData: Y, isUDP: Z } = V;
+                if (isBlockedSite(X)) throw new Error(h5(0x17d8, 'vel('));
+                if (Z) { p = !![];
+                    if (validDataLength(Y) > 0x0) return o['up'] += validDataLength(Y), forwardTrojanUdpData(Y, m, r, c);
+                    return; }
+                o['up'] += validDataLength(Y), await forwardataTCP(X, W, Y, m, null, n, f, c, o);
+            } else {
+                q = ![], T = T || dataToUint8Array(S);
+                const a0 = T,
+                    a1 = parseVlessRequest(a0, f);
+                if (a1?.[h5(0x7aa, nS.v)]) throw new Error(a1[h5(nS.w, nS.x)] || h5(nS.y, 'n7E3'));
+                const { port: a2, hostname: a3, version: a4, isUDP: a5, rawClientData: a6 } = a1;
+                if (isBlockedSite(a3)) throw new Error(h5(nS.z, nS.A));
+                if (a5) { if (a2 === 0x35) p = !![];
+                    else throw new Error(h5(0x41a, nS.B)); }
+                const a7 = new Uint8Array([a4, 0x0]),
+                    a8 = a6;
+                if (p) {
+                    if (q) return o['up'] += validDataLength(a8), forwardTrojanUdpData(a8, m, r, c);
+                    return o['up'] += validDataLength(a8), forwardataudp(a8, m, a7, c);
+                }
+                o['up'] += validDataLength(a8), await forwardataTCP(a3, a2, a8, m, a7, n, f, c, o);
+            }
+        },
+        M = S => {
+            const h6 = gL;
+            if (x) return;
+            x = !![], w = !![], z = 0x0, A = 0x0;
+            const T = S?.[h6(nT.c, nT.f)] || '' + S;
+            T[h6(0x1a7f, '2#Qk')](h6(nT.g, nT.h)) || T[h6(0x1a7f, nT.i)](h6(nT.j, nT.k)) ? log(h6(nT.l, 'n7E3') + T) : log(h6(nT.m, nT.n) + T), H[h6(nT.o, nT.p)](), G(), closeSocketQuietly(m);
+        },
+        N = S => { const h7 = gL; return v = v[h7(nU.c, nU.f)](S)[h7(nU.g, nU.h)](M), v; },
+        O = S => {
+            const nV = { c: 0x18e4, f: 'Gn7Q' },
+                h8 = gL;
+            if (w || x) return;
+            const T = Math[h8(nW.c, nW.f)](0x0, validDataLength(S)),
+                U = z + T,
+                V = A + 0x1;
+            if (U > upstreamQueueMaxBytes || V > upstreamQueueMaxItems) { M(new Error(h8(nW.g, '[p9(') + U + 'B/' + V)); return; }
+            z = U, A = V, N(async() => {
+                const h9 = h8;
+                z = Math[h9(nV.c, nV.f)](0x0, z - T), A = Math[h9(0x4c3, 'dbGg')](0x0, A - 0x1);
+                if (x) return;
+                await L(S);
+            });
+        },
+        P = () => {
+            if (y) return;
+            y = !![], w = !![], N(async() => {
+                const ha = b;
+                if (x) return;
+                await H[ha(nX.c, '7NO9')](), G();
+            });
+        };
+    m[gL(0xd1a, 'dn8p')](gL(o3.s, o3.t), S => { const hb = gL; O(S[hb(0x117e, '89Hn')]); });
+    const Q = () => { const hc = gL; recordUsage(h, o['up'], o[hc(o0.c, 'Mmsl')], i); if (j) recordUserUsage(h, j, o['up'], o[hc(o0.f, 'IcEg')], i); };
+    m[gL(0x7fd, 'C2T0')](gL(o3.u, o3.v), () => { closeSocketQuietly(m), P(), Q(); }), m[gL(0x1328, 'Gn7Q')](gL(0x1a8e, o3.w), S => { M(S), Q(); });
+    if (!t && s)
+        try {
+            const S = decodeWsEarlyData(s, f);
+            if (S?.[gL(o3.x, 'C2T0')]) O(S[gL(o3.y, o3.z)]);
+        } catch (T) { M(T); }
+    return new Response(null, { 'status': 0x65, 'webSocket': l, 'headers': { 'Sec-WebSocket-Extensions': '' } });
+}
+
+function isTrojanFirstPacket(c, f) {
+    const o4 = { c: 0x176 },
+        hd = fX;
+    if (!c || c[hd(0x15f9, 'zs!c')] < 0x3a || c[0x38] !== 0xd || c[0x39] !== 0xa) return ![];
+    const g = sha224(f);
+    for (let h = 0x0; h < 0x38; h++) {
+        if (c[h] !== g[hd(o4.c, 'Pt3!')](h)) return ![];
+    }
+    return !![];
+}
+
+const trojanTextDecoder = new TextDecoder();
+
+function parseTrojanRequest(c, f) {
+    const o5 = { c: 0x687, f: 0x10c9, g: 'PSkb', h: 0x7ed, i: 'wCGK', j: 0xc1f, k: '#sM9', l: '$BSl', m: 0x165, n: '89Hn', o: 0x62c, p: 'mRB^', q: 'T3Fv', r: 'egod', s: 0x2ee, t: 'NMJQ', u: 0x14fc, v: '1qbp', w: 'vel(', x: 0x1711, y: 'wCGK', z: 0x8f1, A: 0x949, B: 'dbGg', C: 0x1a7c, D: 'rsIZ', E: 'dbGg', F: 0xc14, G: 'XITC' },
+        he = fX,
+        g = dataToUint8Array(c),
+        h = sha224(f);
+    if (g[he(o5.c, '%oj0')] < 0x3a) return { 'hasError': !![], 'message': he(o5.f, o5.g) };
+    let j = 0x38;
+    if (g[j] !== 0xd || g[j + 0x1] !== 0xa) return { 'hasError': !![], 'message': he(0x18a7, 'ZgMu') };
+    for (let t = 0x0; t < j; t++) {
+        if (g[t] !== h[he(o5.h, o5.i)](t)) return { 'hasError': !![], 'message': he(o5.j, o5.k) };
+    }
+    const k = j + 0x2;
+    if (g[he(0x712, o5.l)] < k + 0x6) return { 'hasError': !![], 'message': he(0x953, 'd%lH') };
+    const l = g[k];
+    if (l !== 0x1 && l !== 0x3) return { 'hasError': !![], 'message': he(o5.m, o5.n) };
+    const m = l === 0x3,
+        n = g[k + 0x1];
+    let o = 0x0,
+        p = k + 0x2,
+        q = '';
+    switch (n) {
+        case 0x1:
+            o = 0x4;
+            if (g[he(0xf43, '0Ua@')] < p + o + 0x4) return { 'hasError': !![], 'message': he(0x1d89, 'M5Ii') };
+            q = g[p] + '.' + g[p + 0x1] + '.' + g[p + 0x2] + '.' + g[p + 0x3];
+            break;
+        case 0x3:
+            if (g[he(o5.o, o5.p)] < p + 0x1) return { 'hasError': !![], 'message': he(0xb50, o5.q) };
+            o = g[p], p += 0x1;
+            if (g[he(0x181a, o5.r)] < p + o + 0x4) return { 'hasError': !![], 'message': he(o5.s, o5.t) };
+            q = trojanTextDecoder[he(o5.u, 'NMJQ')](g[he(0xb3e, o5.v)](p, p + o));
+            break;
+        case 0x4:
+            o = 0x10;
+            if (g[he(0x1d5e, '#sM9')] < p + o + 0x4) return { 'hasError': !![], 'message': he(0x1d87, o5.w) };
+            const u = [];
+            for (let v = 0x0; v < 0x8; v++) {
+                const w = p + v * 0x2;
+                u[he(o5.x, o5.y)]((g[w] << 0x8 | g[w + 0x1])[he(0x345, 'd%lH')](0x10));
+            }
+            q = u[he(o5.z, 'd%lH')](':');
+            break;
+        default:
+            return { 'hasError': !![], 'message': he(o5.A, 'dZbH') + n };
+    }
+    if (!q) return { 'hasError': !![], 'message': he(0x10f8, o5.B) + n };
+    const r = p + o;
+    if (g[he(o5.C, o5.D)] < r + 0x4) return { 'hasError': !![], 'message': he(0x8e1, o5.E) };
+    const s = g[r] << 0x8 | g[r + 0x1];
+    return { 'hasError': ![], 'addressType': n, 'port': s, 'hostname': q, 'isUDP': m, 'rawClientData': g[he(o5.F, o5.G)](r + 0x4) };
+}
+
+const UUIDbytesCache = new Map(),
+    VLESStextDecode = new TextDecoder();
+
+function readHexNibble(c) {
+    if (c >= 0x30 && c <= 0x39) return c - 0x30;
+    c |= 0x20;
+    if (c >= 0x61 && c <= 0x66) return c - 0x57;
+    return -0x1;
+}
+
+function getUuidBytes(c) {
+    const o7 = { c: 0x12b9, f: 'zs!c', g: 'PSkb', h: 0x1c85, i: '6UCx', j: '6UCx', k: 0x115c, l: 0x17fa },
+        hf = fX,
+        f = String(c || '');
+    let g = UUIDbytesCache[hf(o7.c, o7.f)](f);
+    if (g) return g;
+    const h = f[hf(0x1770, o7.g)](/-/g, '');
+    if (h[hf(o7.h, o7.i)] !== 0x20) return null;
+    const j = new Uint8Array(0x10);
+    for (let k = 0x0; k < 0x10; k++) {
+        const l = readHexNibble(h[hf(0x1b35, o7.j)](k * 0x2)),
+            m = readHexNibble(h[hf(0x176, 'Pt3!')](k * 0x2 + 0x1));
+        if (l < 0x0 || m < 0x0) return null;
+        j[k] = l << 0x4 | m;
+    }
+    if (UUIDbytesCache[hf(0x1137, 'oeP*')] >= 0x20) UUIDbytesCache[hf(o7.k, '89Hn')]();
+    return UUIDbytesCache[hf(o7.l, 'M5Ii')](f, j), j;
+}
+
+function UUIDbyteMatch(c, f, g) {
+    const hg = fX,
+        h = getUuidBytes(g);
+    if (!h || c[hg(0x521, '[]Y1')] < f + 0x10) return ![];
+    for (let j = 0x0; j < 0x10; j++) {
+        if (c[f + j] !== h[j]) return ![];
+    }
+    return !![];
+}
+
+function parseVlessRequest(c, f) {
+    const o9 = { c: 0x19e5, f: 'Mmsl', g: '89Hn', h: 0x1e0e, i: 'Pt3!', j: 0x13a8, k: 'vel(', l: 0xdc8, m: 'V#kN', n: 0x683, o: 'V#kN', p: '2#Qk', q: 'T3Fv', r: '%oj0' },
+        hh = fX,
+        g = dataToUint8Array(c),
+        h = g[hh(0x1599, '89Hn')];
+    if (h < 0x18) return { 'hasError': !![], 'message': hh(o9.c, o9.f) };
+    const j = g[0x0];
+    if (!UUIDbyteMatch(g, 0x1, f)) return { 'hasError': !![], 'message': hh(0x11ce, 'V#kN') };
+    const k = g[0x11],
+        l = 0x12 + k;
+    if (h < l + 0x4) return { 'hasError': !![], 'message': hh(0x1ee7, o9.g) };
+    const m = g[l];
+    let n = ![];
+    if (m === 0x1) {} else { if (m === 0x2) n = !![]; else return { 'hasError': !![], 'message': hh(o9.h, o9.i) }; }
+    const o = l + 0x1,
+        p = g[o] << 0x8 | g[o + 0x1];
+    let q = o + 0x3,
+        r = 0x0,
+        s = '';
+    const t = g[o + 0x2];
+    switch (t) {
+        case 0x1:
+            r = 0x4;
+            if (h < q + r) return { 'hasError': !![], 'message': hh(o9.j, o9.k) };
+            s = g[q] + '.' + g[q + 0x1] + '.' + g[q + 0x2] + '.' + g[q + 0x3];
+            break;
+        case 0x2:
+            if (h < q + 0x1) return { 'hasError': !![], 'message': hh(0x8bb, '9rQu') };
+            r = g[q], q += 0x1;
+            if (h < q + r) return { 'hasError': !![], 'message': hh(0xf2, 'w3Tt') };
+            s = VLESStextDecode[hh(0x13ca, o9.i)](g[hh(o9.l, o9.m)](q, q + r));
+            break;
+        case 0x3:
+            r = 0x10;
+            if (h < q + r) return { 'hasError': !![], 'message': hh(0x39a, 'wCGK') };
+            const v = [];
+            for (let w = 0x0; w < 0x8; w++) {
+                const x = q + w * 0x2;
+                v[hh(0xa07, 'PSkb')]((g[x] << 0x8 | g[x + 0x1])[hh(o9.n, o9.o)](0x10));
+            }
+            s = v[hh(0x18e7, o9.p)](':');
+            break;
+        default:
+            return { 'hasError': !![], 'message': hh(0x1ec8, 'PYt$') + t };
+    }
+    if (!s) return { 'hasError': !![], 'message': hh(0xba0, o9.q) + t };
+    const u = q + r;
+    return { 'hasError': ![], 'addressType': t, 'port': p, 'hostname': s, 'isUDP': n, 'rawClientData': g[hh(0x351, o9.r)](u), 'version': j };
+           const SSsupportEncryptionConfig = {
+    'aes-128-gcm': { 'method': fX(0x1362, 'egod'), 'keyLen': 0x10, 'saltLen': 0x10, 'maxChunk': 0x3fff, 'aesLength': 0x80 },
+    'aes-256-gcm': { 'method': fX(0x11e8, '0Ua@'), 'keyLen': 0x20, 'saltLen': 0x20, 'maxChunk': 0x3fff, 'aesLength': 0x100 }
+},
+SSAEADtagLength = 0x10,
+SSNoncelength = 0xc,
+SSsubkeyInfo = new TextEncoder()[fX(0x1709, '2#Qk')](fX(0xc0d, 'V#kN')),
+SStextEncoder = new TextEncoder(),
+SStextDecode = new TextDecoder(),
+SSmasterKeyCache = new Map();
+
+function dataToUint8Array(c) {
+    const oa = { c: 'w3Tt', f: 0x119c, g: 'jODS', h: 0x15f9 },
+        hi = fX;
+    if (c instanceof Uint8Array) return c;
+    if (c instanceof ArrayBuffer) return new Uint8Array(c);
+    if (ArrayBuffer[hi(0xff1, oa.c)](c)) return new Uint8Array(c[hi(oa.f, oa.g)], c[hi(0x114, 'n7E3')], c[hi(oa.h, 'zs!c')]);
+    return new Uint8Array(c || 0x0);
+}
+
+function concatByteData(...f) {
+    const ob = { c: 0x111e, f: '60r9', g: 0x1582, h: 0x530, i: '[p9(', j: 0x17a5, k: 'oeP*', l: '6UCx' },
+        hj = fX;
+    if (!f || f[hj(ob.c, ob.f)] === 0x0) return new Uint8Array(0x0);
+    const g = f[hj(ob.g, 'w3Tt')](dataToUint8Array),
+        h = g[hj(ob.h, ob.i)]((k, l) => k + l[hj(0x7a9, 'w3Tt')], 0x0),
+        i = new Uint8Array(h);
+    let j = 0x0;
+    for (const k of g) { i[hj(ob.j, ob.k)](k, j), j += k[hj(0x3ec, ob.l)]; }
+    return i;
+}
+
+async function forwardTrojanUdpData(c, f, g, h) {
+    const od = { c: '$p[^', f: 0x7c4, g: '9rQu', h: 0x1eaa, i: 0xf42, j: '*lLT', k: 0x116e, l: '6UCx', m: 0x10fd, n: 'XITC', o: 0xcc4, p: '0Ua@', q: 'dn8p', r: 0x1e19, s: 'zs!c', t: '9rQu', u: '*lLT', v: '89Hn', w: 0x229, x: 'XITC', y: 0x1d11 },
+        oc = { c: 0x520, f: 0xe0c, g: '[p9(', h: 0xa3c, i: 'dn8p', j: 0x7ba, k: 0x9b2, l: 'T3Fv', m: 0x107a, n: 0x1a94, o: 0xebf, p: 'NxG1', q: 0x1a7c, r: 'rsIZ', s: 0x1920, t: 0xf43, u: '0Ua@', v: 0x869, w: '$p[^', x: 'jODS', y: 'Mmsl', z: 'n7E3' },
+        hk = fX,
+        i = dataToUint8Array(c),
+        j = g?.[hk(0x145e, 'IcEg')] instanceof Uint8Array ? g[hk(0x11ad, 'w3Tt')] : new Uint8Array(0x0),
+        k = j[hk(0x869, od.c)] ? concatByteData(j, i) : i;
+    let l = 0x0;
+    while (l < k[hk(od.f, od.g)]) {
+        const m = l,
+            n = k[l];
+        let o = l + 0x1,
+            p = 0x0;
+        if (n === 0x1) p = 0x4;
+        else {
+            if (n === 0x4) p = 0x10;
+            else {
+                if (n === 0x3) {
+                    if (k[hk(od.h, 'Pt3!')] < o + 0x1) break;
+                    p = 0x1 + k[o];
+                } else throw new Error(hk(0x551, 'C2T0') + n);
+            }
+        }
+        const q = o + p;
+        if (k[hk(od.i, od.j)] < q + 0x6) break;
+        const r = k[q] << 0x8 | k[q + 0x1],
+            s = k[q + 0x2] << 0x8 | k[q + 0x3];
+        if (k[q + 0x4] !== 0xd || k[q + 0x5] !== 0xa) throw new Error(hk(od.k, od.l));
+        const t = q + 0x6,
+            u = t + s;
+        if (k[hk(od.m, od.n)] < u) break;
+        const v = k[hk(od.o, od.p)](m, q + 0x2),
+            w = k[hk(0x1ab2, od.q)](t, u);
+        l = u;
+        if (r !== 0x35) throw new Error(hk(od.r, 'Pt3!'));
+        if (!w[hk(0x15f9, od.s)]) continue;
+        let x = w;
+        (w[hk(0x1eaa, 'Pt3!')] < 0x2 || (w[0x0] << 0x8 | w[0x1]) !== w[hk(0x7c4, od.t)] - 0x2) && (x = new Uint8Array(w[hk(0xf42, od.u)] + 0x2), x[0x0] = w[hk(0x1599, od.v)] >>> 0x8 & 0xff, x[0x1] = w[hk(0x4fa, 'dbGg')] & 0xff, x[hk(od.w, 'w(Wr')](w, 0x2));
+        const y = { 'cache': new Uint8Array(0x0) };
+        await forwardataudp(x, f, null, h, z => {
+            const hl = hk,
+                A = dataToUint8Array(z),
+                B = y[hl(oc.c, 'egod')][hl(oc.f, oc.g)] ? concatByteData(y[hl(oc.h, oc.i)], A) : A,
+                C = [];
+            let D = 0x0;
+            while (D + 0x2 <= B[hl(oc.j, 'oeP*')]) {
+                const E = B[D] << 0x8 | B[D + 0x1],
+                    F = D + 0x2,
+                    G = F + E;
+                if (G > B[hl(oc.k, oc.l)]) break;
+                const H = B[hl(0x159a, 'w(Wr')](F, G),
+                    I = new Uint8Array(v[hl(oc.m, 'yxI7')] + 0x4 + H[hl(0xd13, 'vel(')]);
+                I[hl(oc.n, '7NO9')](v, 0x0), I[v[hl(oc.o, oc.p)]] = H[hl(0x1d5e, '#sM9')] >>> 0x8 & 0xff, I[v[hl(oc.q, oc.r)] + 0x1] = H[hl(oc.s, '60r9')] & 0xff, I[v[hl(oc.t, oc.u)] + 0x2] = 0xd, I[v[hl(oc.v, oc.w)] + 0x3] = 0xa, I[hl(0x12e4, '#sM9')](H, v[hl(0xb5c, oc.x)] + 0x4), C[hl(0xfc7, 'd%lH')](I), D = G;
+            }
+            return y[hl(0xff2, oc.y)] = B[hl(0x7ef, 'NMJQ')](D), C[hl(0x131a, oc.z)] ? C : new Uint8Array(0x0);
+        });
+    }
+    if (g) g[hk(0x1343, od.x)] = k[hk(od.y, '60r9')](l);
+}
+
+function SSincrementNonceCounter(c) {
+    const hm = fX;
+    for (let f = 0x0; f < c[hm(0x1814, 'NxG1')]; f++) {
+        c[f] = c[f] + 0x1 & 0xff;
+        if (c[f] !== 0x0) return;
+    }
+}
+
+async function SSderiveMasterKey(c, f) {
+    const og = { c: 0xfaf, f: 0xdee, g: '0Ua@', h: 0xc7e },
+        of = { c: '8Ys%', f: 'b)3q', g: 0x1920, h: '60r9', i: 0x1ee8, j: '%oj0', k: '0Ua@', l: 0x1ed3, m: '60r9' },
+        hn = fX,
+        g = f + ':' + c;
+    if (SSmasterKeyCache[hn(og.c, 'dn8p')](g)) return SSmasterKeyCache[hn(og.f, og.g)](g);
+    const h = ((async() => {
+        const ho = hn,
+            i = SStextEncoder[ho(0x1906, of.c)](c || '');
+        let j = new Uint8Array(0x0),
+            k = new Uint8Array(0x0);
+        while (k[ho(0xb8f, of.f)] < f) {
+            const l = new Uint8Array(j[ho(of.g, of.h)] + i[ho(of.i, '7NO9')]);
+            l[ho(0xf9d, 'egod')](j, 0x0), l[ho(0x125d, '9rQu')](i, j[ho(0x687, of.j)]), j = new Uint8Array(await crypto[ho(0x10d1, of.k)][ho(of.l, of.m)](ho(0x15f3, 'V#kN'), l)), k = concatByteData(k, j);
+        }
+        return k[ho(0x55f, '1qbp')](0x0, f);
+    })());
+    SSmasterKeyCache[hn(0x1216, '2#Qk')](g, h);
+    try { return await h; } catch (i) { SSmasterKeyCache[hn(og.h, '[]Y1')](g); throw i; }
+}
+
+async function SSderiveSessionKey(c, f, g, h) {
+    const oh = { c: '0Ua@', f: '*lLT', g: 0xdc4, h: 'dZbH', i: 0x60c, j: 'w3Tt', k: 'V#kN', l: 'M5Ii', m: 'w(Wr', n: 0x1586, o: 'dbGg', p: '$BSl', q: 0xded, r: '60r9', s: 0xea8, t: '$p[^', u: 0x1e55, v: 0x1e52, w: 0x91f, x: 'GzjL', y: 0x103e },
+        hp = fX,
+        i = { 'name': hp(0x1c9f, 'jODS'), 'hash': hp(0x150e, oh.c) },
+        j = await crypto[hp(0x647, oh.f)][hp(0x1c62, 'IcEg')](hp(0xcf8, 'PSkb'), g, i, ![], [hp(oh.g, oh.h)]),
+        k = new Uint8Array(await crypto[hp(0x1a06, '7NO9')][hp(0x1871, 'w(Wr')](hp(oh.i, '$BSl'), j, f)),
+        l = await crypto[hp(0x10dd, oh.j)][hp(0xff6, oh.k)](hp(0xb78, oh.l), k, i, ![], [hp(0x1871, oh.m)]),
+        m = new Uint8Array(c[hp(oh.n, 'PSkb')]);
+    let n = new Uint8Array(0x0),
+        o = 0x0,
+        p = 0x1;
+    while (o < c[hp(0x152c, 'egod')]) {
+        const q = concatByteData(n, SSsubkeyInfo, new Uint8Array([p]));
+        n = new Uint8Array(await crypto[hp(0x1947, 'NxG1')][hp(0x684, oh.o)](hp(0x60c, oh.p), l, q));
+        const r = Math[hp(oh.q, oh.r)](n[hp(oh.s, 'ZgMu')], c[hp(0x1e63, oh.t)] - o);
+        m[hp(oh.u, 'V#kN')](n[hp(oh.v, 'b)3q')](0x0, r), o), o += r, p += 0x1;
+    }
+    return crypto[hp(oh.w, 'PYt$')][hp(0x1519, oh.x)](hp(0xf2d, '*lLT'), m, { 'name': hp(oh.y, 'V#kN'), 'length': c[hp(0x33d, 'jODS')] }, ![], h);
+}
+
+async function SSAEADencryption(c, f, g) {
+    const oi = { c: 0x1c1b, f: 0x171c, g: 'CeJW' },
+        hq = fX,
+        h = f[hq(0x249, '8Ys%')](),
+        i = await crypto[hq(oi.c, 'vel(')][hq(0x1aac, 'zs!c')]({ 'name': hq(oi.f, oi.g), 'iv': h, 'tagLength': 0x80 }, c, g);
+    return SSincrementNonceCounter(f), new Uint8Array(i);
+}
+
+async function SSAEADdecrypt(c, f, g) {
+    const oj = { c: 0x249, f: '8Ys%', g: 'w3Tt' },
+        hr = fX,
+        h = f[hr(oj.c, oj.f)](),
+        i = await crypto[hr(0x287, 'n7E3')][hr(0xed9, oj.g)]({ 'name': hr(0x148b, 'vel('), 'iv': h, 'tagLength': 0x80 }, c, g);
+    return SSincrementNonceCounter(f), new Uint8Array(i);
+                }
+    function isIPv4Addr(c) {
+    const ok = { c: 0xf3d, f: '8Ys%' },
+        hs = fX;
+    return /^(\d{1,3}\.){3}\d{1,3}$/[hs(ok.c, ok.f)](c);
+}
+
+async function resolveAviaDoH(c) {
+    const ol = { c: 0x166e, f: '8Ys%', g: 'GzjL', h: 0x1e58, i: 0x978, j: 0xa03, k: 'IcEg', l: 0x1898, m: '6UCx', n: 0xa95, o: '89Hn', p: '7NO9', q: 'Mmsl', r: 0xc3f },
+        ht = fX;
+    try {
+        const f = await fetch(ht(ol.c, ol.f) + encodeURIComponent(c) + ht(0x13ce, ol.g), { 'headers': { 'accept': ht(ol.h, 'V#kN') } }),
+            g = await f[ht(ol.i, 'NMJQ')](),
+            h = (g[ht(ol.j, ol.k)] || [])[ht(ol.l, ol.m)](i => i[ht(0x13f6, '5M6D')] === 0x1)[ht(ol.n, '$p[^')](i => i[ht(0x193e, 'd%lH')]);
+        return h[ht(0x925, ol.o)] ? h[Math[ht(0x14e4, ol.p)](Math[ht(0x1bce, ol.q)]() * h[ht(ol.r, 'Gn7Q')])] : null;
+    } catch (i) { return null; }
+}
+
+function makeNat64Address(c, f) {
+    const om = { c: 0x10dc, f: 'Pt3!', g: 0x116c, h: 'CeJW', i: 0x1ae1, j: 'PSkb', k: 0xc3f, l: 'Gn7Q', m: 0x868, n: '2#Qk', o: 0x21c, p: 'w3Tt', q: 'rsIZ' },
+        hu = fX,
+        g = String(c)[hu(0x10d5, '[]Y1')]()[hu(0x18e6, 'w(Wr')](/[\[\]]/g, '')[hu(om.c, om.f)](/:+$/, ''),
+        h = f[hu(om.g, om.h)]('.')[hu(om.i, om.j)](j => parseInt(j, 0xa));
+    if (h[hu(om.k, om.l)] !== 0x4 || h[hu(om.m, om.n)](j => isNaN(j) || j < 0x0 || j > 0xff)) return null;
+    const i = ((h[0x0] << 0x8 | h[0x1]) >>> 0x0)[hu(om.o, 'mRB^')](0x10)[hu(0x1d0a, om.p)](0x4, '0') + ':' + ((h[0x2] << 0x8 | h[0x3]) >>> 0x0)[hu(0x19f5, om.p)](0x10)[hu(0xfe, om.q)](0x4, '0');
+    return '[' + g + '::' + i + ']';
+}
+
+async function getNat64Prefixes() {
+    const on = { c: 'jODS', f: 0x33f, g: 'dZbH', h: 0xbd5, i: '*lLT', j: '0Ua@', k: 0xe5b, l: 0x1b78, m: 'n7E3', n: 0x194d, o: 'T3Fv', p: 0x15e1, q: 0x1a86 },
+        hv = fX,
+        c = (nat64Config || '')[hv(0x9ff, 'n7E3')]();
+    if (!c) return [];
+    if (/^https?:\/\//i[hv(0x143c, on.c)](c)) {
+        if (cachedNat64Prefixes && cachedNat64Src === c && Date[hv(on.f, 'XITC')]() - cachedNat64At < 0x36ee80) return cachedNat64Prefixes;
+        try {
+            const f = await fetch(c, { 'headers': { 'User-Agent': hv(0x12e3, 'yxI7') } }),
+                g = await f[hv(0x1d36, on.g)]();
+            let h = (g[hv(0x19a, 'dbGg')](/\[([0-9a-fA-F:]+::)\]/g) || [])[hv(on.h, on.i)](i => i[hv(0xa39, '7NO9')](/[\[\]]/g, ''));
+            if (!h[hv(0x1189, on.j)]) h = g[hv(0xbcd, '5M6D')](/[\n,]+/)[hv(on.k, 'vel(')](i => i[hv(0x10dc, 'Pt3!')](/[\[\]]/g, '')[hv(0x1aa0, '6UCx')]())[hv(on.l, on.m)](i => i[hv(0x483, 'mRB^')]('::'));
+            return cachedNat64Prefixes = [...new Set(h)], cachedNat64At = Date[hv(on.n, '[]Y1')](), cachedNat64Src = c, cachedNat64Prefixes;
+        } catch (i) { return cachedNat64Prefixes || []; }
+    }
+    return [...new Set(c[hv(0x5f7, on.o)](/[\n,]+/)[hv(on.p, 'egod')](j => j[hv(0x5f3, 'b)3q')](/[\[\]]/g, '')[hv(0x6dc, 'PYt$')]())[hv(on.q, '5M6D')](Boolean))];
+}
+
+async function forwardataTCP(c, f, g, h, i, j, k, l = null, m = null) {
+    const oA = { c: 0x744, f: 'T3Fv', g: 0x5dc, h: 'Mmsl', i: 0x1122, j: 'Pt3!', k: 'C2T0', l: 'ZgMu', m: 'd%lH', n: 0x975, o: 'Gn7Q', p: 'GzjL', q: 0x1ae4, r: 'PSkb', s: 'dn8p', t: 0xdd4 },
+        oz = { c: 0x18e8, f: 'M5Ii' },
+        oy = { c: '1qbp', f: 'NMJQ', g: 0x9da, h: 0x187c },
+        ox = { c: '%oj0', f: 0xa27, g: 'mRB^', h: '[p9(', i: 0x1187, j: 0x237, k: 'ZgMu', l: 0xa42, m: 0x1475, n: 0x1afc, o: 'Gn7Q', p: 0xdfc, q: '5M6D', r: 'w3Tt', s: 0x1ae2, t: 'T3Fv', u: 0xbcc, v: '[p9(', w: 0x16de, x: 0x6d5, y: 'w3Tt', z: 0x12ce, A: 'PYt$', B: 0x13a0, C: 'dZbH', D: 0x1347, E: 'ZgMu' },
+        ov = { c: 0x1106, f: '9rQu', g: 'mRB^', h: 0x1814, i: 'NxG1', j: 0x1214, k: 0x1026, l: 0x9f2, m: 0x1dc, n: 0xbce, o: 'V#kN', p: 0x16ec, q: '1qbp', r: 'd%lH', s: 0x18a5, t: 'b)3q', u: 0x1b31, v: '89Hn', w: 0x1d46, x: 'egod', y: 0x19ed, z: 0x11da, A: '[]Y1', B: 0x2bb, C: '*lLT' },
+        ou = { c: 0x7c1, f: 0x5f9, g: 0xffa, h: '6UCx', i: 'CeJW', j: '6UCx' },
+        os = { c: 'zs!c', f: 'Mmsl' },
+        or = { c: 0x6e3, f: 'CeJW', g: 'T3Fv', h: '*lLT' },
+        oq = { c: '2#Qk', f: 'b)3q' },
+        op = { c: 'egod' },
+        oo = { c: 0x15ad, f: 'mRB^' },
+        hw = fX;
+    log(hw(oA.c, oA.f) + c + ':' + f + hw(oA.g, oA.h) + proxyIP + hw(oA.i, 'GzjL') + (enableProxyFallback ? 'is' : '') + hw(0xe6e, oA.j) + (enableSocks5Proxy || hw(0x4ba, oA.k)) + hw(0xe01, oA.l) + (enableSocks5GlobalProxy ? 'is' : ''));
+    const n = 0x1388;
+    let o = ![];
+    const p = createRequestTcpConnector(l);
+
+    async function q(x, y = n) {
+        const hx = hw;
+        await Promise[hx(0xad9, 'wCGK')]([x[hx(oo.c, oo.f)], new Promise((z, A) => setTimeout(() => A(new Error(hx(0x1ae5, 'b)3q'))), y))]);
+    }
+
+    async function r(x, y) {
+        const hy = hw,
+            z = p({ 'hostname': x, 'port': y });
+        try { return await q(z), z; } catch (A) { try { z?.[hy(0x175f, op.c)]?.(); } catch (B) {} throw A; }
+    }
+
+    async function s(x, y) {
+        const hz = hw;
+        if (validDataLength(y) <= 0x0) return;
+        const z = x[hz(0x372, oq.c)][hz(0x15d9, oq.f)]();
+        try { await z[hz(0x1e12, 'dbGg')](dataToUint8Array(y)); } finally { try { z[hz(0x6d5, 'w3Tt')](); } catch (A) {} }
+    }
+
+    async function t(x) {
+        const hA = hw,
+            y = await getNat64Prefixes();
+        if (!y[hA(0xc3f, 'Gn7Q')]) return null;
+        const z = isIPv4Addr(c) ? c : await resolveAviaDoH(c);
+        if (!z) return null;
+        for (const A of y[hA(or.c, 'C2T0')](0x0, 0x4)) {
+            const B = makeNat64Address(A, z);
+            if (!B) continue;
+            try {
+                const C = await r(B, f);
+                return await s(C, x), log(hA(0x163e, or.f) + B + ':' + f), C;
+            } catch (D) { log(hA(0x68e, or.g) + B + ':\x20' + (D[hA(0x29e, or.h)] || D)); }
+        }
+        return null;
+    }
+
+    async function u(x) {
+        const hB = hw;
+        if (x[hB(ou.c, '8Ys%')] === 0x1) {
+            const A = x[0x0];
+            return { 'socket': await r(A[hB(ou.f, '89Hn')], A[hB(ou.g, ou.h)]), 'candidate': A };
+        }
+        const y = x[hB(0xed6, 'GzjL')](B => r(B[hB(0x9a1, 'ZgMu')], B[hB(0x1d90, 'dZbH')])[hB(0xbaf, '%oj0')](C => ({ 'socket': C, 'candidate': B })));
+        let z = null;
+        try { return z = await Promise[hB(0x19cf, '[p9(')](y), z; } finally {
+            if (z)
+                for (const B of y) {
+                    B[hB(0x70e, ou.i)](({ socket: C }) => {
+                        const hC = hB;
+                        if (C !== z[hC(0xad6, os.c)]) try { C?.[hC(0x1071, os.f)]?.(); } catch (D) {}
+                    })[hB(0xf7c, ou.j)](() => {});
+                }
+        }
+    }
+
+    async function v(x, y, z = null, A = null, B = ![]) {
+        const hD = hw;
+        if (A && A[hD(ov.c, ov.f)] > 0x0)
+            for (let C = 0x0; C < A[hD(0x5e1, ov.g)]; C += TCPconcurrentDialCount) {
+                const D = [];
+                for (let G = 0x0; G < TCPconcurrentDialCount && C + G < A[hD(ov.h, ov.i)]; G++) {
+                    const H = (cachedProxyArrayIndex + C + G) % A[hD(ov.j, '1qbp')],
+                        [I, J] = A[H];
+                    D[hD(ov.k, ov.f)]({ 'hostname': I, 'port': J, 'index': H });
+                }
+                let E = null,
+                    F = null;
+                try {
+                    log(hD(ov.l, '%oj0') + D[hD(0x1c75, 'CeJW')] + hD(0x1969, 'XITC') + D[hD(ov.m, 'Gn7Q')](L => L[hD(0xda7, '2#Qk')] + ':' + L[hD(0x1ea, '89Hn')])[hD(ov.n, ov.o)](',\x20'));
+                    const K = await u(D);
+                    return E = K[hD(ov.p, 'V#kN')], F = K[hD(0x5d0, ov.q)], await s(E, z), log(hD(0xe79, '*lLT') + F[hD(0x1086, ov.r)] + ':' + F[hD(0x6ba, '5M6D')] + hD(ov.s, ov.t) + F[hD(ov.u, ov.v)] + ')'), cachedProxyArrayIndex = F[hD(ov.w, ov.x)], E;
+                } catch (L) {
+                    try { E?.[hD(0x5be, 'Pt3!')]?.(); } catch (M) {}
+                    log(hD(0x9a4, 'vel(') + (L[hD(0x640, 'NxG1')] || L));
+                }
+            }
+        if (B) {
+            const N = Array[hD(0x1842, 'Gn7Q')]({ 'length': TCPconcurrentDialCount }, (P, Q) => ({ 'hostname': x, 'port': y, 'attempt': Q }));
+            log(hD(ov.y, 'Mmsl') + N[hD(ov.z, ov.A)] + hD(ov.B, ov.C) + x + ':' + y);
+            let O = null;
+            try {
+                const P = await u(N);
+                return O = P[hD(0x1344, '2#Qk')], await s(O, z), O;
+            } catch (Q) { try { O?.[hD(0x4c9, 'CeJW')]?.(); } catch (R) {} throw Q; }
+        } else { closeSocketQuietly(h); throw new Error(hD(0x617, 'dn8p')); }
+    }
+
+    async function w(x = ![]) {
+        const hE = hw;
+        if (j[hE(0xa54, oy.c)]) { await j[hE(0x10f4, oy.f)]; return; }
+        const y = x && !o && validDataLength(g) > 0x0,
+            z = y ? g : null,
+            A = ((async() => {
+                const hF = hE;
+                let B;
+                if (enableSocks5Proxy === hF(0x31c, ox.c)) log(hF(ox.f, ox.g) + c + ':' + f), B = await socks5Connect(c, f, z, p);
+                else {
+                    if (enableSocks5Proxy === hF(0x1629, ox.h)) log(hF(ox.i, '6UCx') + c + ':' + f), B = await httpConnect(c, f, z, ![], p);
+                    else {
+                        if (enableSocks5Proxy === hF(0xf60, '6UCx')) log(hF(ox.j, ox.k) + c + ':' + f), B = isIPHostname(parsedSocks5Address[hF(ox.l, 'mRB^')]) ? await httpsConnect(c, f, z, p) : await httpConnect(c, f, z, !![], p);
+                        else {
+                            if (enableSocks5Proxy === hF(ox.m, 'PYt$')) {
+                                log(hF(ox.n, 'b)3q') + c + ':' + f), B = await turnConnect(parsedSocks5Address, c, f, p);
+                                if (validDataLength(z) > 0x0) {
+                                    const C = B[hF(0xd7c, ox.o)][hF(ox.p, ox.q)]();
+                                    try { await C[hF(0x245, ox.r)](dataToUint8Array(z)); } finally { try { C[hF(ox.s, ox.t)](); } catch (D) {} }
+                                }
+                            } else {
+                                if (enableSocks5Proxy === hF(ox.u, 'V#kN')) {
+                                    log(hF(0xc22, ox.v) + c + ':' + f), B = await sstpConnect(parsedSocks5Address, c, f, p);
+                                    if (validDataLength(z) > 0x0) {
+                                        const E = B[hF(0x1acb, '8Ys%')][hF(0x470, 'V#kN')]();
+                                        try { await E[hF(ox.w, '60r9')](dataToUint8Array(z)); } finally { try { E[hF(ox.x, ox.y)](); } catch (F) {} }
+                                    }
+                                } else {
+                                    log(hF(ox.z, ox.A) + c + ':' + f);
+                                    const G = await parseAddressPort(proxyIP, c, k);
+                                    try { B = await v(atob(hF(0xe5d, '6UCx')), 0x1, z, G, enableProxyFallback); } catch (H) { const I = nat64Config ? await t(z) : null; if (!I) throw H; B = I; }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (y) o = !![];
+                j[hF(0x1233, 'dbGg')] = B, B[hF(ox.B, ox.C)][hF(ox.D, '1qbp')](() => {})[hF(0x8ac, ox.E)](() => closeSocketQuietly(h)), connectStreams(B, h, i, null, m);
+            })());
+        j[hE(0xfcf, 'w3Tt')] = A;
+        try { await A; } finally { j[hE(oy.g, 'C2T0')] === A && (j[hE(oy.h, 'rsIZ')] = null); }
+    }
+    j[hw(0x1a3f, oA.m)] = async() => w(!o);
+    if (enableSocks5Proxy && (enableSocks5GlobalProxy || hostMatchesProxyList(c))) {
+        log(hw(oA.n, oA.o));
+        try { await w(); } catch (x) { log(hw(0x1bed, oA.p) + x[hw(0xa46, 'T3Fv')]); throw x; }
+    } else
+        try {
+            log(hw(oA.q, '60r9') + c + ':' + f);
+            const y = await v(c, f, g);
+            j[hw(0x1c7f, '[]Y1')] = y, connectStreams(y, h, i, async() => {
+                const hG = hw;
+                if (j[hG(oz.c, oz.f)] !== y) return;
+                await w();
+            }, m);
+        } catch (z) { log(hw(0x1432, oA.r) + c + ':' + f + hw(0x88f, oA.s) + z[hw(oA.t, 'jODS')]), await w(); }
+}
+
+async function forwardataudp(c, f, g, h, i = null) {
+    const oC = { c: 0xf42, f: '*lLT', g: 0x77b, h: 0x15ab, i: 'egod', j: 'Mmsl', k: 0x1457, l: 'dZbH', m: 0x1c94, n: 0x818, o: '89Hn', p: 0xfb7, q: 'PYt$', r: 0xd36, s: '[]Y1' },
+        oB = { c: 'jODS', f: 'Pt3!', g: 'ZgMu', h: 0x4a3, i: 'rsIZ', j: 0x1297, k: 'd%lH', l: 0x5d6, m: 0x1083, n: 0xfff, o: 0x1edb, p: '2#Qk', q: 'GzjL' },
+        hH = fX,
+        j = dataToUint8Array(c),
+        k = j[hH(oC.c, oC.f)];
+    log(hH(oC.g, 'GzjL') + k + hH(oC.h, oC.i));
+    try {
+        const l = createRequestTcpConnector(h),
+            m = l({ 'hostname': hH(0x1c5d, '60r9'), 'port': 0x35 });
+        let n = g;
+        const o = m[hH(0x1858, 'T3Fv')][hH(0x1eb4, oC.j)]();
+        await o[hH(oC.k, oC.l)](j), log(hH(oC.m, 'IcEg') + k + 'B'), o[hH(oC.n, oC.o)](), await m[hH(0x132d, 'GzjL')][hH(0x2a0, '2#Qk')](new WritableStream({
+            async 'write'(p) {
+                const hI = hH,
+                    q = dataToUint8Array(p);
+                log(hI(0xd6c, oB.c) + q[hI(0x1786, 'Gn7Q')] + 'B');
+                const r = i ? await i(q) : q,
+                    s = Array[hI(0x15ce, oB.f)](r) ? r : [r];
+                if (!s[hI(0xaca, oB.g)]) return;
+                if (f[hI(oB.h, 'XITC')] !== WebSocket[hI(0xbae, oB.i)]) return;
+                for (const t of s) {
+                    const u = dataToUint8Array(t);
+                    if (!u[hI(oB.j, oB.k)]) continue;
+                    if (n) {
+                        const v = new Uint8Array(n[hI(0x1796, 'oeP*')] + u[hI(oB.l, 'C2T0')]);
+                        v[hI(oB.m, '[]Y1')](n, 0x0), v[hI(oB.n, 'XITC')](u, n[hI(oB.o, oB.p)]), await WebSocketsendAndWait(f, v[hI(0x1dd9, oB.q)]), n = null;
+                    } else await WebSocketsendAndWait(f, u);
+                }
+            }
+        }));
+    } catch (p) { log(hH(oC.p, oC.q) + (p?.[hH(oC.r, oC.s)] || p)); }
+}
+
+function closeSocketQuietly(c) {
+    const oD = { c: 'PYt$', f: 0xe93, g: '60r9', h: '[]Y1' },
+        hJ = fX;
+    try { (c[hJ(0xeef, oD.c)] === WebSocket[hJ(oD.f, '0Ua@')] || c[hJ(0x154a, 'mRB^')] === WebSocket[hJ(0xdce, oD.g)]) && c[hJ(0x1486, oD.h)](); } catch (f) {}
+        }
+    function formatIdentifier(c, f = 0x0) {
+    const oE = { c: 0x15d, f: 0x140f, g: '*lLT', h: 'XITC', i: 0xdc7, j: '5M6D', k: 0x1361, l: '0Ua@', m: 0x49f, n: '$p[^' },
+        hK = fX,
+        g = [...c[hK(oE.c, 'PSkb')](f, f + 0x10)][hK(0x16d7, 'zs!c')](h => h[hK(0x128e, 'NMJQ')](0x10)[hK(0xb79, 'd%lH')](0x2, '0'))[hK(0x433, 'GzjL')]('');
+    return g[hK(oE.f, oE.g)](0x0, 0x8) + '-' + g[hK(0x1d06, oE.h)](0x8, 0xc) + '-' + g[hK(oE.i, oE.j)](0xc, 0x10) + '-' + g[hK(oE.k, oE.l)](0x10, 0x14) + '-' + g[hK(oE.m, oE.n)](0x14);
+}
+
+async function WebSocketsendAndWait(c, f) {
+    const oF = { c: 0xa5d, f: 0x745, g: 'mRB^', h: 0x16ae },
+        hL = fX,
+        g = c[hL(oF.c, 'b)3q')](f);
+    if (g && typeof g[hL(oF.f, oF.g)] === hL(oF.h, '1qbp')) await g;
+}
+
+function createUpstreamWriteQueue({ getWriter: c, releaseWriter: f, retryConnection: g, closeConnection: h, name: name = fX(0xd92, 'XITC') }) {
+    const oO = { c: 'XITC', f: 0x1ee8, g: '9rQu', h: 'GzjL', i: 0x17ec, j: 'PSkb', k: '7NO9', l: 0x145a },
+        oN = { c: 0x1c9c, f: 'Pt3!', g: 0x11df, h: 'vel(', i: 0x1e13, j: 0x7fc, k: 'dn8p', l: '$p[^', m: 0x83c, n: 'NMJQ', o: 0x1863, p: 'GzjL', q: 0x1a1f, r: 0x1e7a, s: 'wCGK' },
+        oM = { c: 0x1a31, f: 'b)3q', g: 'rsIZ', h: 'w3Tt', i: 0xf88, j: '1qbp', k: 0x16a1, l: 0x1ac7, m: '$BSl', n: 0x16e2, o: 0xa9d, p: 'PYt$', q: 'PSkb', r: 0x16b5, s: 'yxI7', t: 0x800, u: 'NxG1', v: 0x1e50, w: 'NMJQ', x: 0x15ed, y: 'mRB^', z: 0x58b, A: 0xa9d, B: 'PYt$', C: '2#Qk', D: 'NxG1' },
+        oL = { c: 'w3Tt' },
+        oI = { c: '6UCx' },
+        oH = { c: 0x1261, f: 'GzjL', g: 0x10f6, h: 0x1954 },
+        oG = { c: 0x12c9, f: '1qbp' };
+    let i = [],
+        j = 0x0,
+        k = 0x0,
+        l = ![],
+        m = ![],
+        n = null,
+        o = [],
+        p = null;
+
+    const q = (z, A = null) => {
+            const hM = b;
+            if (!z) return;
+            for (const B of z) {
+                if (A) B[hM(oG.c, '*lLT')](A);
+                else B[hM(0x1735, oG.f)]();
+            }
+        },
+        r = z => {
+            const hN = b;
+            for (let A = j; A < i[hN(oH.c, oH.f)]; A++) {
+                const B = i[A];
+                if (B?.[hN(oH.g, '*lLT')]) q(B[hN(oH.h, '[]Y1')], z);
+            }
+        },
+        s = () => {
+            const hO = b;
+            j > 0x20 && j * 0x2 >= i[hO(0x1c85, oI.c)] && (i = i[hO(0x10b9, 'w3Tt')](j), j = 0x0);
+        },
+        t = () => {
+            const hP = b;
+            if (k || l || !o[hP(0xaae, '#sM9')]) return;
+            const z = o;
+            o = [];
+            for (const A of z) A();
+        },
+        u = (z = null) => {
+            const hQ = b,
+                A = z || (m ? new Error(name + hQ(0x17f5, 'Gn7Q')) : null);
+            A && (r(A), q(p, A), p = null), i = [], j = 0x0, k = 0x0, t();
+        },
+        v = () => {
+            const hR = b;
+            if (j >= i[hR(0x10e1, oL.c)]) return null;
+            const z = i[j];
+            return i[j++] = undefined, k -= z[hR(0x15fc, 'IcEg')][hR(0x152, 'dn8p')], s(), z;
+        },
+        w = () => {
+            const hS = b,
+                z = v();
+            if (!z) return null;
+            if (j >= i[hS(oM.c, oM.f)] || z[hS(0xa67, oM.g)][hS(0x7a9, oM.h)] >= upstreamBatchTargetBytes) return z;
+            let A = z[hS(0x184f, 'T3Fv')][hS(0x3ec, '6UCx')],
+                B = j,
+                C = z[hS(oM.i, oM.j)],
+                D = z[hS(oM.k, 'M5Ii')] || null;
+            while (B < i[hS(oM.l, oM.m)]) {
+                const G = i[B],
+                    H = A + G[hS(oM.n, '[]Y1')][hS(oM.o, oM.p)];
+                if (H > upstreamBatchTargetBytes) break;
+                A = H, C = C && G[hS(0x72a, '7NO9')];
+                if (G[hS(0xb24, oM.q)]) D = D ? D[hS(oM.r, oM.s)](G[hS(oM.t, oM.u)]) : G[hS(oM.v, oM.w)];
+                B++;
+            }
+            if (B === j) return z;
+            const E = n ||= new Uint8Array(upstreamBatchTargetBytes);
+            E[hS(oM.x, oM.y)](z[hS(oM.z, 'vel(')]);
+            let F = z[hS(0x1a53, 'dbGg')][hS(oM.A, oM.B)];
+            while (j < B) {
+                const I = i[j];
+                i[j++] = undefined, k -= I[hS(0xfea, oM.m)][hS(0x1599, '89Hn')], E[hS(0x1768, '%oj0')](I[hS(0x1b0d, oM.C)], F), F += I[hS(0x1c0c, oM.D)][hS(0xd1f, 'NMJQ')];
+            }
+            return s(), { 'chunk': E[hS(0x147e, 'PSkb')](0x0, A), 'allowRetry': C, 'completions': D };
+        },
+        x = async() => {
+            const hT = b;
+            if (l || m) return;
+            l = !![];
+            try {
+                for (;;) {
+                    if (m) break;
+                    const z = w();
+                    if (!z) break;
+                    let A = c();
+                    if (!A) throw new Error(name + hT(oN.c, oN.f));
+                    const B = z[hT(oN.g, 'V#kN')] || null;
+                    p = B;
+                    try {
+                        try { await A[hT(0x1f22, oN.h)](z[hT(oN.i, 'GzjL')]); } catch (C) {
+                            f?.();
+                            if (!z[hT(0x16b, 'NMJQ')] || typeof g !== hT(oN.j, oN.k)) throw C;
+                            await g(), A = c();
+                            if (!A) throw C;
+                            await A[hT(0x1412, oN.l)](z[hT(oN.m, oN.n)]);
+                        }
+                        q(B);
+                    } catch (D) { q(B, D); throw D; } finally { if (p === B) p = null; }
+                }
+            } catch (E) { m = !![], u(E), log('[' + name + hT(oN.o, oN.p) + (E?.[hT(oN.q, 'rsIZ')] || E)); try { h?.(E); } catch (F) {} } finally { l = ![]; if (!m && j < i[hT(oN.r, oN.s)]) queueMicrotask(x); else t(); }
+        },
+        y = (z, A = ![], B = ![]) => {
+            const hU = b;
+            if (m) return ![];
+            if (!c()) return ![];
+            const C = dataToUint8Array(z);
+            if (!C[hU(0x10fd, oO.c)]) return !![];
+            const D = k + C[hU(oO.f, '7NO9')],
+                E = i[hU(0x1106, oO.g)] - j + 0x1;
+            if (D > upstreamQueueMaxBytes || E > upstreamQueueMaxItems) {
+                m = !![];
+                const H = Object[hU(0x41b, oO.h)](new Error(name + hU(oO.i, oO.j) + D + 'B/' + E + ')'), { 'isQueueOverflow': !![] });
+                u(H), log('[' + name + hU(0x1d48, '$p[^'));
+                try { h?.(H); } catch (I) {}
+                throw H;
+            }
+            let F = null,
+                G = null;
+            B && (G = [], F = new Promise((J, K) => G[hU(0x135f, 'XITC')]({ 'resolve': J, 'reject': K })));
+            i[hU(0x8ba, oO.k)]({ 'chunk': C, 'allowRetry': A, 'completions': G }), k = D;
+            if (!l) queueMicrotask(x);
+            return B ? F[hU(oO.l, '9rQu')](() => !![]) : !![];
+        };
+    return {
+        'write'(z, A = ![]) { return y(z, A, ![]); },
+        'writeAndWait'(z, A = ![]) { return y(z, A, ![]); },
+        async 'waitEmpty'() {
+            const hV = b;
+            if (!k && !l) return;
+            await new Promise(z => o[hV(0x120e, '#sM9')](z));
+        },
+        'clear'() { m = !![], u(); }
+    };
+}
+
+function createDownstreamGrainSender(c, f = null) {
+    const p3 = { c: 0x26e, f: 'NxG1' },
+        p2 = { c: 0x7a9, f: 'Pt3!', g: 0x57d, h: 0x18e0, i: 0x13a7, j: 'w3Tt' },
+        p1 = { c: '#sM9' },
+        oX = { c: 0xec5, f: 0x5ba, g: 'XITC', h: 0x356, i: 'PYt$' },
+        oV = { c: 0xb28, f: 0x7c4, g: 0x77c, h: 0x1dac, i: 'IcEg', j: 'w(Wr' },
+        oU = { c: 0x11f3, f: 'b)3q', g: 'XITC' },
+        hW = fX,
+        g = downstreamGrainChunkBytes,
+        h = downstreamGrainTailThreshold,
+        i = Math[hW(p3.c, p3.f)](0x1000, h << 0x3);
+    let j = f,
+        k = new Uint8Array(g),
+        l = 0x0,
+        m = null,
+        n = ![],
+        o = 0x0,
+        p = 0x0,
+        q = 0x0,
+        r = null;
+
+    const s = async w => {
+            const hX = hW;
+            if (c[hX(oU.c, oU.f)] !== WebSocket[hX(0x532, 'wCGK')]) throw new Error(hX(0x7a0, oU.g));
+            await WebSocketsendAndWait(c, w);
+        },
+        t = w => {
+            const hY = hW;
+            if (!j) return w;
+            const x = new Uint8Array(j[hY(oV.c, 'PSkb')] + w[hY(oV.f, '9rQu')]);
+            return x[hY(oV.g, '6UCx')](j, 0x0), x[hY(oV.h, oV.i)](w, j[hY(0x113c, oV.j)]), j = null, x;
+        },
+        u = async() => {
+            const hZ = hW;
+            while (r) await r;
+            if (m) clearTimeout(m);
+            m = null, n = ![];
+            if (!l) return;
+            const w = k[hZ(oX.c, '9rQu')](0x0, l)[hZ(oX.f, oX.g)]();
+            return k = new Uint8Array(g), l = 0x0, q = 0x0, r = s(w)[hZ(oX.h, oX.i)](() => { r = null; }), r;
+        },
+        v = () => {
+            const oZ = { c: 0x747, f: 'mRB^', g: 0xc2e, h: 'T3Fv' },
+                oY = { c: 0x74c, f: 'egod', g: '6UCx' };
+            if (m || n) return;
+            n = !![], p = o, queueMicrotask(() => {
+                const i0 = b;
+                n = ![];
+                if (!l || m) return;
+                if (g - l < h) { u()[i0(oZ.c, oZ.f)](() => closeSocketQuietly(c)); return; }
+                m = setTimeout(() => {
+                    const i1 = i0;
+                    m = null;
+                    if (!l) return;
+                    if (g - l < h) { u()[i1(oY.c, oY.f)](() => closeSocketQuietly(c)); return; }
+                    if (q < 0x2 && (o !== p || l < i)) { q++, p = o, v(); return; }
+                    u()[i1(0xf7c, oY.g)](() => closeSocketQuietly(c));
+                }, Math[i0(oZ.g, oZ.h)](downstreamGrainSilentMs, 0x1));
+            });
+        };
+    return {
+        async 'directSend'(w) {
+            const i2 = hW;
+            let x = dataToUint8Array(w);
+            if (!x[i2(0x1d5e, p1.c)]) return;
+            x = t(x), await s(x);
+        },
+        async 'send'(w) {
+            const i3 = hW;
+            let x = dataToUint8Array(w);
+            if (!x[i3(p2.c, 'w3Tt')]) return;
+            x = t(x);
+            let y = 0x0;
+            const z = x[i3(0x1f3, 'PSkb')];
+            while (y < z) {
+                if (!l && z - y >= g) {
+                    const B = Math[i3(0x1ef8, p2.f)](g, z - y),
+                        C = y || B !== z ? x[i3(p2.g, '6UCx')](y, y + B) : x;
+                    await s(C), y += B;
+                    continue;
+                }
+                const A = Math[i3(0x1acf, 'IcEg')](g - l, z - y);
+                k[i3(p2.h, '8Ys%')](x[i3(p2.i, p2.j)](y, y + A), l), l += A, y += A, o++;
+                if (l === g || g - l < h) await u();
+                else v();
+            }
+        },
+        'flush': u
+    };
+        }
+    
