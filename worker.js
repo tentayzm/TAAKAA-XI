@@ -3697,3 +3697,148 @@ if (E === g4(0x16fe, 'wCGK'))
                                     try {
                                         const dz = await f[g4(0x1469, '5M6D')](),
                                             dA = { 'enableRouting': typeof dz[g4(0x9ad, 'dZbH')] === g4(0x1e9c, 'V#kN') ? dz[g4(0xf80, '2#Qk')] : !![], 'enableGeoIP': typeof dz[g4(0x95d, 'T3Fv')] === g4(0x862, 'wCGK') ? dz[g4(0x13fa, 'oeP*')] : !![], 'enableGeoSite': typeof dz[g4(mS.sL, 'NxG1')] === g4(0x199a, 'NxG1') ? dz[g4(mS.sM, mS.sN)] : !![], 'enableAdBlock': typeof dz[g4(mS.sO, '$p[^')] === g4(0x1378, mS.sP) ? dz[g4(mS.sQ, mS.oJ)] : !![], 'enablePornBlock': typeof dz[g4(mS.sR, mS.o8)] === g4(0x1378, '[]Y1') ? dz[g4(mS.sS, 'dZbH')] : ![], 'enableMalwareBlock': typeof dz[g4(0xe34, mS.sT)] === g4(0x1bf8, mS.qs) ? dz[g4(mS.sU, 'jODS')] : ![], 'enablePhishingBlock': typeof dz[g4(mS.sV, 'yxI7')] === g4(0x499, mS.n6) ? dz[g4(mS.sW, mS.sX)] : ![], 'blockQUIC': typeof dz[g4(mS.sY, mS.aF)] === g4(mS.sZ, mS.fs) ? dz[g4(0xb2f, '89Hn')] : ![], 'bypassChina': typeof dz[g4(0xb80, mS.t0)] === g4(0xa97, mS.o8) ? dz[g4(0x2c0, 'w(Wr')] : ![], 'bypassRussia': typeof dz[g4(mS.t1, 'rsIZ')] === g4(0xa97, mS.t2) ? dz[g4(0x21d, 'w(Wr')] : ![], 'bypassSanctions': typeof dz[g4(mS.t3, mS.eM)] === g4(mS.t4, '9rQu') ? dz[g4(0x1630, mS.t5)] : ![], 'backendMode': typeof dz[g4(mS.t6, 'XITC')] === g4(0x1bdb, mS.t7) ? dz[g4(0x12ea, mS.t8)] : ![], 'backendUrl': typeof dz[g4(0x104a, 'dn8p')] === g4(0xee2, mS.t9) && /^https?:\/\//i[g4(mS.ta, 'zs!c')](dz[g4(mS.tb, '[]Y1')][g4(mS.tc, mS.td)]()) ? dz[g4(mS.te, 'dZbH')][g4(0x1aa0, mS.o3)]()[g4(0x1d0f, '7NO9')](0x0, 0x12c) : '', 'enableDomesticBypass': typeof dz[g4(0x429, mS.tf)] === g4(mS.tg, '*lLT') ? dz[g4(mS.th, 'NxG1')] : !![], 'enableDoH': typeof dz[g4(mS.ti, mS.tj)] === g4(mS.tk, 'yxI7') ? dz[g4(mS.tl, mS.tm)] : !![], 'dohProvider': [g4(0x1411, 'oeP*'), g4(mS.tn, mS.to), g4(mS.tp, mS.bP), g4(0xc63, mS.tq)][g4(mS.tr, 'Mmsl')](dz[g4(0x4b2, 'dbGg')]) ? dz[g4(0x15d6, mS.o8)] : g4(mS.ts, mS.cR), 'enableLocalDNS': typeof dz[g4(mS.tt, mS.c8)] === g4(0x862, 'wCGK') ? dz[g4(mS.tu, 'mRB^')] : ![], 'localDNSIP': dz[g4(mS.tv, mS.O)] || g4(0xb23, mS.tw), 'localDNSPort': dz[g4(mS.tx, 'n7E3')] || '53', 'enableAntiSanctionDNS': typeof dz[g4(mS.ty, 'oeP*')] === g4(mS.tz, '8Ys%') ? dz[g4(mS.tA, 'd%lH')] : ![], 'antiSanctionDNSProvider': [g4(mS.tB, 'PYt$'), g4(mS.tC, 'n7E3'), g4(mS.tD, mS.tE), g4(0x6c7, '7NO9'), g4(0x10b2, 'CeJW'), g4(mS.tF, mS.tG), g4(0x90c, mS.pb)][g4(0x1dcf, mS.pk)](dz[g4(mS.tH, mS.nV)]) ? dz[g4(0x610, 'zs!c')] : g4(mS.tI, 'wCGK'), 'antiSanctionCustomDNS': dz[g4(0x4de, 'PSkb')] || '', 'enableFakeDNS': typeof dz[g4(0x35b, mS.dh)] === g4(0x12ed, 'mRB^') ? dz[g4(mS.tJ, mS.aB)] : ![], 'fakeDNSIP': dz[g4(mS.tK, '89Hn')] || g4(0x1b93, 'NxG1'), 'enableIPv6': typeof dz[g4(0xce3, 'w3Tt')] === g4(mS.tL, '2#Qk') ? dz[g4(0x10bc, '6UCx')] : !![], 'allowLAN': typeof dz[g4(mS.tM, mS.om)] === g4(0x1bf8, mS.i) ? dz[g4(mS.tN, mS.tO)] : ![], 'logLevel': [g4(mS.tP, mS.aP), g4(mS.tQ, mS.t7), g4(mS.tR, '$p[^'), g4(0xef4, mS.dc)][g4(mS.tS, mS.dC)](dz[g4(mS.tT, mS.tU)]) ? dz[g4(0x16f3, mS.bp)] : g4(0x6a8, '89Hn'), 'enableWarp': typeof dz[g4(mS.tV, '*lLT')] === g4(mS.tW, mS.eu) ? dz[g4(0x907, mS.pw)] : ![], 'warpMode': [g4(0x3a7, mS.tX), g4(0x1a87, 'mRB^'), g4(mS.tY, mS.B)][g4(0x1bf6, '9rQu')](dz[g4(mS.tZ, mS.u0)]) ? dz[g4(mS.u1, mS.rm)] : g4(mS.u2, mS.o2), 'warpEndpoint': dz[g4(0x121e, 'GzjL')] || '', 'warpAmnezia': typeof dz[g4(mS.u3, '$p[^')] === g4(0x31f, mS.u4) ? dz[g4(0x9e5, mS.od)] : ![], 'customRules': typeof dz[g4(mS.u5, 'T3Fv')] === g4(0xeb7, mS.u6) ? dz[g4(0x4f5, 'Mmsl')] : '', 'bypassCountries': Array[g4(mS.u7, '1qbp')](dz[g4(0x1765, mS.u8)]) ? [...new Set(dz[g4(0xd15, '#sM9')][g4(0x74b, 'PYt$')](dB => /^[a-z]{2}$/i[g4(0x710, 'NMJQ')](dB))[g4(mS.u9, mS.ua)](dB => dB[g4(0x1161, '5M6D')]()))][g4(mS.ub, 'PSkb')](0x0, 0x14) : [], 'blockCategories': Array[g4(0x233, mS.uc)](dz[g4(0x997, 'wCGK')]) ? dz[g4(mS.ud, mS.be)][g4(mS.ue, 'n7E3')](dB => [g4(0x1358, 'jODS'), g4(0xdf9, 'zs!c'), g4(0x10ab, 'V#kN'), g4(0xe4e, '89Hn')][g4(0x92e, '*lLT')](dB)) : [], 'warpNoise': dz[g4(mS.uf, mS.ug)] && typeof dz[g4(0x1d22, 'mRB^')] === g4(mS.uh, 'dn8p') ? { 'mode': ['', g4(0x110b, 'egod'), g4(mS.ui, mS.O)][g4(mS.uj, mS.u4)](dz[g4(mS.uk, mS.fn)][g4(mS.ul, 'w(Wr')]) ? dz[g4(mS.um, 'jODS')][g4(0x316, mS.t0)] : '', 'count': String(dz[g4(mS.un, '[]Y1')][g4(0x1c5, 'T3Fv')] || '')[g4(mS.uo, '60r9')](0x0, 0xc), 'size': String(dz[g4(mS.up, 'PYt$')][g4(0xf40, 'ZgMu')] || '')[g4(mS.uq, mS.ur)](0x0, 0xc), 'delay': String(dz[g4(0x662, '$BSl')][g4(0x1012, '%oj0')] || '')[g4(0x17f0, mS.nV)](0x0, 0xc) } : { 'mode': '', 'count': '', 'size': '', 'delay': '' } };
+                                            try {
+                                                const dB = JSON[g4(0xfe3, mS.us)](await g['KV'][g4(0xdee, mS.d3)](g4(0x1bdf, 'Gn7Q')) || '{}');
+                                                dA[g4(mS.ut, 'w(Wr')] = typeof dz[g4(0xe1e, mS.t9)] === g4(mS.uu, 'M5Ii') ? dz[g4(0x1b71, mS.uv)] : dB[g4(mS.uw, mS.ux)] || ![], dA[g4(mS.uy, 'Mmsl')] = Array[g4(mS.uz, 'egod')](dz[g4(0xd29, mS.b5)]) ? dz[g4(mS.sv, mS.sw)] : dB[g4(mS.uA, mS.uB)] || [];
+                                            } catch (dC) { dA[g4(mS.uC, mS.nu)] = !!dz[g4(mS.uD, '*lLT')], dA[g4(0x13d6, mS.uE)] = Array[g4(mS.uF, mS.o5)](dz[g4(mS.uG, mS.dl)]) ? dz[g4(mS.uy, mS.uH)] : []; }
+                                            return await g['KV'][g4(mS.uI, 'yxI7')](g4(mS.uJ, '[p9('), JSON[g4(mS.uK, mS.fE)](dA, null, 0x2)), cachedNetworkSettings = null, h[g4(0x1d94, mS.uL)](requestLogRecord(g, f, F, g4(0x381, mS.uM), config_JSON)), new Response(JSON[g4(0xeee, '1qbp')]({ 'success': !![], 'message': g4(0x5d1, 'V#kN') }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.uN, '%oj0') } });
+                                        } catch (dD) {
+                                            return console[g4(0x781, 'GzjL')](g4(mS.uO, 'Gn7Q'), dD), new Response(JSON[g4(mS.uP, 'GzjL')]({ 'error': g4(0xbf1, 'Gn7Q') + dD[g4(0x7a5, mS.uQ)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x4d7, 'w(Wr') } });
+                                        } else {
+                                        if (a5 === g4(0x1ee1, mS.rD))
+                                            try {
+                                                const dE = await f[g4(mS.uR, 'zs!c')]();
+                                                return await g['KV'][g4(mS.uS, mS.sf)](g4(0x5fa, mS.uT), dE), h[g4(mS.uU, mS.cC)](requestLogRecord(g, f, F, g4(mS.uV, 'jODS'), config_JSON)), new Response(JSON[g4(0x240, '$BSl')]({ 'success': !![], 'message': g4(0x96e, mS.uW) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.uX, '[p9(') } });
+                                            } catch (dF) {
+                                                return console[g4(0x71d, mS.uY)](g4(mS.uZ, mS.ua), dF), new Response(JSON[g4(mS.v0, 'ZgMu')]({ 'error': g4(0x336, 'V#kN') + dF[g4(mS.v1, 'PSkb')] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0xef1, mS.sK) } });
+                                            } else return new Response(JSON[g4(mS.v2, mS.v3)]({ 'error': g4(0x1ee4, 'rsIZ') }), { 'status': 0x194, 'headers': { 'Content-Type': g4(mS.v4, 'T3Fv') } });
+                                        }
+                                    }
+                                }
+                                }
+                            }
+                        }
+                        }
+                    }
+                }
+            } else {
+                if (E === g4(0x10ec, 'dbGg')) return new Response(JSON[g4(0x1001, 'w3Tt')](config_JSON, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.v5, 'rsIZ') } });
+                else {
+                    if (E === g4(mS.v6, mS.r5))
+                        try {
+                            const dG = await g['KV'][g4(mS.v7, 'mRB^')](g4(0x7b1, '*lLT')),
+                                dH = { 'enableRouting': !![], 'enableGeoIP': !![], 'enableGeoSite': !![], 'enableAdBlock': !![], 'enablePornBlock': ![], 'enableDomesticBypass': !![], 'enableDoH': !![], 'dohProvider': g4(0x178b, 'M5Ii'), 'enableLocalDNS': ![], 'localDNSIP': g4(mS.v8, '#sM9'), 'localDNSPort': '53', 'enableAntiSanctionDNS': ![], 'antiSanctionDNSProvider': g4(0xfd2, '8Ys%'), 'antiSanctionCustomDNS': '', 'enableFakeDNS': ![], 'fakeDNSIP': g4(0x1135, '6UCx'), 'enableIPv6': !![], 'allowLAN': ![], 'logLevel': g4(0x184b, 'zs!c'), 'enableWarp': ![], 'warpMode': g4(mS.v9, 'w3Tt'), 'warpEndpoint': '', 'warpAmnezia': ![], 'customRules': '', 'bypassCountries': [], 'blockCategories': [], 'warpNoise': { 'mode': '', 'count': '', 'size': '', 'delay': '' } },
+                                dI = dG ? JSON[g4(0x709, mS.va)](dG) : dH;
+                            return new Response(JSON[g4(0x631, mS.oN)](dI, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x121d, 'zs!c') } });
+                        } catch (dJ) {
+                            return new Response(JSON[g4(mS.sG, '6UCx')]({ 'error': dJ[g4(0xdd4, mS.dh)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x4b6, mS.sd) } });
+                        } else {
+                        if (E === g4(mS.vb, mS.vc))
+                            try {
+                                const dK = JSON[g4(mS.vd, 'C2T0')](await g['KV'][g4(0x511, 'Gn7Q')](g4(0x916, '$BSl')) || '{}');
+                                let dL = !!dK[g4(mS.ve, 'yxI7')],
+                                    dM = Array[g4(0x1867, mS.vf)](dK[g4(mS.vg, mS.pk)]) ? dK[g4(0x941, '#sM9')] : [];
+                                savedUsersAuth && Date[g4(0x12b8, mS.nU)]() - savedUsersAuthAt < 0x1d4c0 && (dL = !!savedUsersAuth[g4(0x639, '$BSl')], dM = savedUsersAuth[g4(0x892, mS.vh)]);
+                                const dN = {};
+                                return await Promise[g4(0x17ed, mS.pP)](dM[g4(0x97d, mS.vi)](async dO => {
+                                    const g5 = g4;
+                                    if (!dO || !dO['id']) return;
+                                    try {
+                                        const dP = await usageGet(g, g5(0x49c, 'w3Tt') + dO['id']);
+                                        dN[dO['id']] = dP && dP[g5(mN.c, 'b)3q')] || 0x0;
+                                    } catch (dQ) { dN[dO['id']] = 0x0; }
+                                })), new Response(JSON[g4(mS.vj, mS.t0)]({ 'multiUser': dL, 'users': dM, 'usage': dN }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.q4, mS.vk), 'Cache-Control': g4(mS.vl, mS.r4) } });
+                            } catch (dO) {
+                                return new Response(JSON[g4(mS.vm, mS.vn)]({ 'multiUser': ![], 'users': [], 'usage': {} }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.vo, mS.vp), 'Cache-Control': g4(mS.vq, mS.vr) } });
+                            } else {
+                            if (a5 === g4(mS.vs, mS.vt)) {
+                                let dP = await g['KV'][g4(mS.vu, 'dZbH')](g4(mS.vv, mS.vw)) || g4(0x1a4b, 'dbGg');
+                                if (dP == g4(mS.vx, mS.bm)) dP = (await generateRandomIp(f, config_JSON[g4(mS.vy, mS.pI)][g4(0x295, mS.vz)][g4(0xbe7, mS.vA)], config_JSON[g4(0x1a0, 'yxI7')][g4(mS.vB, '%oj0')][g4(mS.vC, 'Pt3!')]))[0x1];
+                                return new Response(dP, { 'status': 0xc8, 'headers': { 'Content-Type': g4(0xf01, '%oj0'), 'asn': f['cf'][g4(0x1d30, '7NO9')] } });
+                            } else {
+                                if (E === g4(0x14d4, 'CeJW')) return new Response(JSON[g4(0x324, mS.vD)](f['cf'], null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4b6, mS.vE) } });
+                                else {
+                                    if (E === g4(0x1c37, '7NO9')) {
+                                        const dQ = !!(g['KV'] && typeof g['KV'][g4(mS.vF, 'ZgMu')] === g4(0x235, mS.bB));
+                                        let dR = ![];
+                                        if (dQ)
+                                            try { await getConfigRaw(g), dR = !![]; } catch (dV) {}
+                                        let dS = { 'up': 0x0, 'down': 0x0, 'total': 0x0 };
+                                        if (dQ)
+                                            try {
+                                                const dW = await usageGet(g, g4(mS.vG, 'V#kN') + getDateKey(new Date()));
+                                                if (dW) dS = { 'up': dW['up'] || 0x0, 'down': dW[g4(0x1e6a, 'Gn7Q')] || 0x0, 'total': dW[g4(0x552, 'wCGK')] || 0x0 };
+                                            } catch (dX) {}
+                                        const dT = f['cf'];
+                                        let dU = null;
+                                        if (g['DB'] && typeof g['DB'][g4(0x1819, mS.vH)] === g4(0x1501, mS.vI))
+                                            try {
+                                                const dY = await g['DB'][g4(0x467, mS.eG)](g4(0x79d, 'd%lH'))[g4(0x3f3, 'n7E3')]();
+                                                if (dY && dY[g4(0x306, mS.vJ)] && typeof dY[g4(mS.vK, mS.vL)][g4(mS.vM, 'w3Tt')] === g4(0x1f03, 'PSkb')) dU = dY[g4(mS.vN, 'vel(')][g4(0x4df, mS.qd)];
+                                            } catch (dZ) {}
+                                        return new Response(JSON[g4(mS.vO, mS.vP)]({ 'ip': F, 'd1SizeBytes': dU, 'colo': dT?.[g4(mS.vQ, 'w(Wr')], 'country': dT?.[g4(mS.vR, mS.cE)], 'city': dT?.[g4(mS.vS, 'PYt$')], 'region': dT?.[g4(0x448, 'yxI7')], 'regionCode': dT?.[g4(0x2d1, 'b)3q')], 'latitude': dT?.[g4(mS.vT, mS.r4)], 'longitude': dT?.[g4(0x12fd, 'V#kN')], 'timezone': dT?.[g4(0x1a6f, 'C2T0')], 'asn': dT?.[g4(0x196, mS.vU)], 'asOrganization': dT?.[g4(0xb38, mS.vV)], 'userAgent': q, 'version': Version, 'instanceId': (await MD5MD5(p[g4(mS.vW, mS.vX)]))[g4(mS.vY, mS.vZ)](0x0, 0x8), 'kvConnected': dQ, 'kvOk': dR, 'host': p[g4(mS.w0, '1qbp')], 'protocol': p[g4(0x577, mS.w1)], 'todayUsage': dS, 'workerStartTime': globalThis[g4(mS.w2, mS.w3)] || null }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.oQ, mS.w4), 'Cache-Control': g4(mS.w5, 'dbGg') } });
+                                    } else {
+                                        if (E === g4(mS.w6, mS.w7))
+                                            try {
+                                                const e0 = new Date(),
+                                                    e1 = 0x10,
+                                                    e2 = [];
+                                                for (let e9 = 0x0; e9 < e1; e9++) {
+                                                    const ea = new Date(e0);
+                                                    ea[g4(mS.w8, '[]Y1')](ea[g4(0x1e6d, mS.bD)]() - e9), e2[g4(mS.w9, mS.l)](g4(mS.wa, '8Ys%') + ea[g4(0x107d, 'd%lH')]() + '-' + String(ea[g4(mS.wb, 'NxG1')]() + 0x1)[g4(mS.wc, mS.wd)](0x2, '0') + '-' + String(ea[g4(mS.we, mS.ce)]())[g4(mS.wf, mS.fs)](0x2, '0'));
+                                                }
+                                                const e3 = await Promise[g4(0x10a3, mS.wg)](e2[g4(0x1196, mS.u4)](eb => usageGet(g, eb)[g4(0xdc1, 'wCGK')](() => null))),
+                                                    e4 = [];
+                                                for (let eb = 0x0; eb < e2[g4(0x18ff, '*lLT')]; eb++) {
+                                                    if (e3[eb])
+                                                        try { e4[g4(mS.wh, mS.pV)]({ 'date': e2[eb][g4(mS.wi, 'b)3q')](0x6), ...e3[eb] }); } catch (ec) {}
+                                                }
+                                                const e5 = {};
+                                                for (const ed of e4) {
+                                                    const ee = ed[g4(0x88d, mS.wj)][g4(0xdf2, mS.wk)](0x0, 0x7);
+                                                    if (!e5[ee]) e5[ee] = { 'up': 0x0, 'down': 0x0, 'total': 0x0 };
+                                                    e5[ee]['up'] += ed['up'] || 0x0, e5[ee][g4(mS.wl, 'T3Fv')] += ed[g4(0x1c91, mS.wm)] || 0x0, e5[ee][g4(0x1065, '1qbp')] += ed[g4(mS.wn, mS.nM)] || 0x0;
+                                                }
+                                                const e6 = Object[g4(mS.wo, 'CeJW')](e5)[g4(mS.wp, mS.pI)](([ef, eg]) => ({ 'month': ef, ...eg })),
+                                                    e7 = {};
+                                                for (const ef of e4) {
+                                                    const eg = ef[g4(mS.wq, 'w(Wr')][g4(mS.wr, 'rsIZ')](0x0, 0x4);
+                                                    if (!e7[eg]) e7[eg] = { 'up': 0x0, 'down': 0x0, 'total': 0x0 };
+                                                    e7[eg]['up'] += ef['up'] || 0x0, e7[eg][g4(0x1e6a, mS.ws)] += ef[g4(0x3d2, mS.wt)] || 0x0, e7[eg][g4(mS.wu, 'PSkb')] += ef[g4(mS.wv, 'egod')] || 0x0;
+                                                }
+                                                const e8 = Object[g4(mS.ww, 'jODS')](e7)[g4(0x11af, 'yxI7')](([eh, ei]) => ({ 'year': eh, ...ei }));
+                                                return new Response(JSON[g4(mS.wx, mS.wy)]({ 'daily': e4, 'monthly': e6, 'yearly': e8 }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x12ff, '1qbp'), 'Cache-Control': g4(0x1e6c, 'vel(') } });
+                                            } catch (eh) {
+                                                return new Response(JSON[g4(mS.wz, 'zs!c')]({ 'error': eh[g4(mS.wA, 'PYt$')] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x1fe, 'PYt$') } });
+                                            } else {
+                                            if (E === g4(0x91a, 'ZgMu')) {
+                                                const ei = await MD5MD5(D + B),
+                                                    ej = p[g4(0x3d8, 'dn8p')] + '//' + p[g4(0x155, mS.el)] + g4(0x1bb1, 'PSkb') + ei,
+                                                    ek = await fetch(ej)[g4(mS.wB, '1qbp')](() => null);
+                                                if (!ek) return new Response(g4(mS.wC, '9rQu'), { 'status': 0x1f6 });
+                                                const el = await ek[g4(mS.wD, 'w3Tt')]();
+                                                return new Response(el, { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.wE, mS.qz), 'Cache-Control': g4(mS.wF, 'zs!c') } });
+                                            } else {
+                                                if (a5 === g4(0xc27, 'Pt3!')) return await bestIP(f, g);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    h[g4(mS.dJ, mS.wG)](requestLogRecord(g, f, F, g4(mS.wH, 'mRB^'), config_JSON));
+    const ar = E[g4(mS.wI, mS.q3)](g4(0xa23, mS.qo)) ? E[g4(mS.wi, 'b)3q')](0x6)[g4(mS.wJ, mS.wK)]('/')[0x0] : '',
+        as = ar ? g4(mS.wL, '%oj0') : g4(mS.wM, 'V#kN') + p[g4(0x18b4, mS.uc)];
+    return await panelHtml(g, as, { 'spaPage': ar })[g4(0x7af, mS.wN)](() => new Response(g4(0x1b8e, 'wCGK'), { 'status': 0x1f6 }));
+} else {
+    if (E === g4(0x1105, mS.wO) || uuidRegex[g4(0x1c1e, mS.v3)](E)) {
+        const en = new Response(g4(0x14a9, mS.uW), { 'status': 0x12e, 'headers': { 'Location': g4(mS.wP, mS.wQ) } });
+        return en[g4(mS.wR, '8Ys%')][g4(0x1970, 'vel(')](g4(mS.wS, mS.wT), g4(mS.wU, mS.wV)), en;
+    } else {
+        if (E === g4(0x1123, '[p9(')) {
