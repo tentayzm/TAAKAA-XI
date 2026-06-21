@@ -3262,3 +3262,214 @@ else {
                                                                     return new Response(aT, { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.fw, mS.cQ) } });
                                                                 } else {
                                                                                                                                                                                                        }
+if (a5 === g4(mS.fx, mS.fy))
+    try {
+        const aU = await getCloudflareUsage(p[g4(0x14ce, 'yxI7')][g4(0x63a, 'w(Wr')](g4(mS.fz, 'dn8p')), p[g4(0x270, mS.fA)][g4(mS.y, mS.fB)](g4(mS.fC, mS.Y)), p[g4(0x136d, 'NMJQ')][g4(mS.fD, mS.fE)](g4(0x8af, mS.fF)), p[g4(0x19bd, 'Pt3!')][g4(mS.d6, 'wCGK')](g4(0x18e3, mS.dT)));
+        return new Response(JSON[g4(mS.fG, 'V#kN')](aU, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.fH, 'ZgMu') } });
+    } catch (aV) {
+        const aW = { 'msg': g4(mS.fI, mS.fJ) + aV[g4(0x167c, mS.e0)], 'error': aV[g4(0x1573, 'dbGg')] };
+        return new Response(JSON[g4(0x1ede, 'dn8p')](aW, null, 0x2), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x1488, 'jODS') } });
+    } else {
+        if (a5 === g4(mS.fK, 'yxI7')) {
+            if (p[g4(0x1639, mS.fL)][g4(mS.fM, mS.fN)](g4(0x1e44, mS.fO))) {
+                const aX = p[g4(mS.fP, mS.fQ)][g4(mS.fR, 'Mmsl')](g4(0x88e, mS.w));
+                try {
+                    new URL(aX);
+                    const aY = await requestBestApi([aX], p[g4(mS.fS, 'n7E3')][g4(0x119, mS.fT)](g4(mS.fU, '[p9(')) || g4(0x11c9, 'IcEg'));
+                    let aZ = aY[0x0][g4(mS.fV, '9rQu')] > 0x0 ? aY[0x0] : aY[0x1];
+                    return aZ = aZ[g4(mS.mT, 'w3Tt')](b0 => b0[g4(0x479, 'PYt$')](/#(.+)$/, (b1, b2) => '#' + decodeURIComponent(b2))), new Response(JSON[g4(mS.mU, '8Ys%')]({ 'success': !![], 'data': aZ }, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0xf5a, mS.mV) } });
+                } catch (b0) {
+                    const b1 = { 'msg': g4(0x12c2, 'oeP*') + b0[g4(mS.mW, mS.be)], 'error': b0[g4(0x1605, mS.a8)] };
+                    return new Response(JSON[g4(0x1b1c, '0Ua@')](b1, null, 0x2), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(mS.mX, mS.mY) } });
+                }
+            }
+            return new Response(JSON[g4(0xeee, mS.fT)]({ 'success': ![], 'data': [] }, null, 0x2), { 'status': 0x193, 'headers': { 'Content-Type': g4(mS.mZ, mS.n0) } });
+        } else {
+            if (E === g4(0x1697, 'PSkb')) {
+                const b2 = [g4(mS.n1, mS.eh), g4(mS.n2, 'Pt3!'), g4(0x1c55, '7NO9'), g4(mS.n3, '$p[^'), g4(mS.n4, mS.fs)][g4(0x11fd, 'NMJQ')](b6 => p[g4(0x18ea, 'jODS')][g4(0x12d8, 'Pt3!')](b6)) || null;
+                if (!b2) return new Response(JSON[g4(mS.n5, mS.n6)]({ 'error': g4(0x1ed7, 'mRB^') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x134e, 'yxI7') } });
+                const b3 = p[g4(mS.n7, '#sM9')][g4(0x1d56, mS.n8)](b2),
+                    b4 = Date[g4(mS.n9, mS.eU)]();
+                let b5;
+                try {
+                    parsedSocks5Address = await getSocks5Account(b3, getProxyDefaultPort(b2));
+                    const { username: b6, password: b7, hostname: b8, port: b9 } = parsedSocks5Address,
+                        ba = b6 && b7 ? b6 + ':' + b7 + '@' + b8 + ':' + b9 : b8 + ':' + b9;
+                    try {
+                        const bb = g4(0xaf5, '9rQu'),
+                            bc = 0x1bb,
+                            bd = new TextEncoder(),
+                            be = new TextDecoder(),
+                            bf = createRequestTcpConnector(f);
+                        let bg = null,
+                            bh = null;
+                        try {
+                            bg = b2 === g4(mS.na, mS.nb) ? await socks5Connect(bb, bc, new Uint8Array(0x0), bf) : b2 === g4(0x468, '9rQu') ? await turnConnect(parsedSocks5Address, bb, bc, bf) : b2 === g4(mS.nc, 'd%lH') ? await sstpConnect(parsedSocks5Address, bb, bc, bf) : b2 === g4(0x1d2f, mS.de) && isIPHostname(b8) ? await httpsConnect(bb, bc, new Uint8Array(0x0), bf) : await httpConnect(bb, bc, new Uint8Array(0x0), b2 === g4(0x1914, mS.bZ), bf);
+                            if (!bg) throw new Error(g4(mS.nd, '[p9('));
+                            bh = new TlsClient(bg, { 'serverName': bb, 'insecure': !![] }), await bh[g4(0x1ce1, mS.bc)](), await bh[g4(mS.ne, 'V#kN')](bd[g4(mS.nf, '7NO9')](g4(0x8b6, mS.bm) + bb + g4(mS.ng, mS.fJ)));
+                            let bi = new Uint8Array(0x0),
+                                bj = -0x1,
+                                bk = null,
+                                bl = ![];
+                            const bm = 0x40 * 0x400;
+                            while (bi[g4(mS.nh, 'oeP*')] < bm) {
+                                const bq = await bh[g4(mS.ni, mS.nj)]();
+                                if (!bq) break;
+                                if (bq[g4(0x186f, mS.nk)] === 0x0) continue;
+                                bi = concatByteData(bi, bq);
+                                if (bj === -0x1) {
+                                    const br = bi[g4(mS.nl, 'PYt$')]((bs, bt) => bt < bi[g4(0x1214, '1qbp')] - 0x3 && bi[bt] === 0xd && bi[bt + 0x1] === 0xa && bi[bt + 0x2] === 0xd && bi[bt + 0x3] === 0xa);
+                                    if (br !== -0x1) {
+                                        bj = br + 0x4;
+                                        const bs = be[g4(mS.nm, mS.fQ)](bi[g4(mS.nn, mS.no)](0x0, bj)),
+                                            bt = bs[g4(0x102a, '89Hn')]('\x0d\x0a')[0x0] || '',
+                                            bu = bt[g4(0x7cf, '89Hn')](/HTTP\/\d\.\d\s+(\d+)/),
+                                            bv = bu ? parseInt(bu[0x1], 0xa) : NaN;
+                                        if (!Number[g4(mS.np, mS.bA)](bv) || bv < 0xc8 || bv >= 0x12c) throw new Error(g4(mS.nq, '8Ys%') + (bt || g4(mS.nr, 'yxI7')));
+                                        const bw = bs[g4(0x1cfc, '6UCx')](/\r\nContent-Length:\s*(\d+)/i);
+                                        if (bw) bk = parseInt(bw[0x1], 0xa);
+                                        bl = /\r\nTransfer-Encoding:\s*chunked/i[g4(0x1d5c, '5M6D')](bs);
+                                    }
+                                }
+                                if (bj !== -0x1 && bk !== null && bi[g4(mS.ns, mS.aP)] >= bj + bk) break;
+                                if (bj !== -0x1 && bl && be[g4(mS.nt, mS.nu)](bi)[g4(0x5e0, 'w3Tt')](g4(0x1c0a, 'XITC'))) break;
+                            }
+                            if (bj === -0x1) throw new Error(g4(mS.nv, 'NMJQ'));
+                            const bn = be[g4(mS.nw, '0Ua@')](bi),
+                                bo = bn[g4(0x89f, 'Gn7Q')](/(?:^|\n)ip=(.*)/)?.[0x1],
+                                bp = bn[g4(0x4fc, mS.bG)](/(?:^|\n)loc=(.*)/)?.[0x1];
+                            if (!bo || !bp) throw new Error(g4(mS.nx, 'ZgMu'));
+                            b5 = { 'success': !![], 'proxy': b2 + g4(mS.ny, 'zs!c') + ba, 'ip': bo, 'loc': bp, 'responseTime': Date[g4(mS.nz, mS.dR)]() - b4 };
+                        } finally {
+                            try { bh ? bh[g4(mS.nA, mS.nB)]() : await bg?.[g4(0xfc0, '7NO9')]?.(); } catch (bx) {}
+                        }
+                    } catch (by) {
+                        b5 = { 'success': ![], 'error': by[g4(mS.nC, mS.fF)], 'proxy': b2 + g4(0xb05, 'IcEg') + ba, 'responseTime': Date[g4(mS.nD, mS.nE)]() - b4 };
+                    }
+                } catch (bz) {
+                    b5 = { 'success': ![], 'error': bz[g4(mS.nF, mS.nG)], 'proxy': b2 + g4(mS.nH, 'yxI7') + b3, 'responseTime': Date[g4(mS.nI, '$p[^')]() - b4 };
+                }
+                return new Response(JSON[g4(mS.nJ, '%oj0')](b5, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1912, 'NxG1') } });
+            } else {
+                if (E === g4(mS.nK, mS.bA)) {
+                    const bA = JSON[g4(mS.nL, mS.nM)](await g['KV'][g4(mS.nN, 'XITC')](g4(0x1e0f, '#sM9')) || g4(mS.nO, '7NO9')),
+                        bB = await announceSubLinks(g, { 'baseUrl': p[g4(mS.nP, 'CeJW')] + '//' + p[g4(0x1c57, mS.bB)], 'health': bA });
+                    return new Response(JSON[g4(mS.nQ, '89Hn')](bB, null, 0x2), { 'status': bB[g4(0x31a, '$p[^')] ? 0x190 : 0xc8, 'headers': { 'Content-Type': g4(0xf8a, 'NMJQ') } });
+                } else {
+                    if (E === g4(0x15e5, mS.nR)) {
+                        const bC = await publishSubMirror(g, p[g4(0x3b0, 'b)3q')] + '//' + p[g4(0x845, mS.ak)]),
+                            bD = !bC[g4(mS.nS, mS.nT)] && Array[g4(0x12bb, mS.nU)](bC[g4(0xe62, 'dn8p')]) && bC[g4(0x848, 'Pt3!')][g4(0x138f, mS.nV)](bE => bE['ok']);
+                        return new Response(JSON[g4(mS.nW, mS.bg)](bC, null, 0x2), { 'status': bC[g4(mS.nX, 'NxG1')] ? 0x190 : bD ? 0xc8 : 0x1f6, 'headers': { 'Content-Type': g4(0x183e, '7NO9') } });
+                    } else {
+                        if (E === g4(0x19a1, mS.nY)) {
+                            let bE = null;
+                            try { bE = JSON[g4(0xfe3, '*lLT')](await g['KV'][g4(mS.nZ, mS.o0)](g4(0x4ca, 'n7E3')) || g4(mS.o1, mS.o2)); } catch (bF) {}
+                            if (f[g4(0x1eaf, mS.o3)] === g4(0x1010, mS.bT)) {
+                                let bG = {};
+                                try { bG = await f[g4(0x77f, '7NO9')](); } catch (bH) {}
+                                try {
+                                    if (bG[g4(mS.o4, mS.o5)]) {
+                                        if (!bE || !bE['id']) bE = await warpRegisterAccount();
+                                        const { api: bI } = await getCentralApi(g);
+                                        if (!bI) throw new Error(g4(mS.o6, 'V#kN'));
+                                        let bJ = [];
+                                        try {
+                                            const bM = await fetch(bI + g4(mS.o7, mS.o8), { 'headers': { 'User-Agent': g4(0x1bae, 'PYt$') } }),
+                                                bN = await bM[g4(mS.o9, mS.O)]();
+                                            bJ = Array[g4(0x91d, 'w3Tt')](bN[g4(0x102e, mS.oa)]) ? bN[g4(0x1bc0, '[p9(')] : [];
+                                        } catch (bO) {}
+                                        if (!bJ[g4(0x925, mS.o5)]) throw new Error(g4(mS.ob, '$BSl'));
+                                        let bK = ![],
+                                            bL = '';
+                                        for (const bP of bJ) {
+                                            try { await warpApplyLicense(bE, String(bP)[g4(0x1e7d, '*lLT')]()), bK = !![]; break; } catch (bQ) { bL = bQ && bQ[g4(mS.oc, mS.od)] ? bQ[g4(0x572, mS.fb)] : String(bQ); }
+                                        }
+                                        if (!bK) throw new Error(g4(0x9d6, mS.oe) + bL + ')');
+                                    } else {
+                                        if (bG[g4(mS.of, mS.n0)]) {
+                                            if (!bE || !bE['id']) bE = await warpRegisterAccount();
+                                            await warpApplyLicense(bE, String(bG[g4(0x17e9, mS.cF)])[g4(0xa3b, mS.U)]());
+                                        } else {
+                                            bE = await warpRegisterAccount();
+                                            if (bG[g4(0x1624, '60r9')]) {
+                                                const bR = await warpRegisterAccount();
+                                                bR[g4(0x99b, '#sM9')] = !![], bE[g4(mS.og, mS.fE)] = bR;
+                                            }
+                                        }
+                                    }
+                                    return bE[g4(0x1dc5, 'T3Fv')] = !![], await g['KV'][g4(mS.oh, 'ZgMu')](g4(mS.oi, mS.fy), JSON[g4(0x1aa3, mS.ah)](bE)), h[g4(mS.oj, 'V#kN')](requestLogRecord(g, f, F, bG[g4(mS.ok, mS.ol)] ? g4(0x16f, mS.O) : g4(0x1656, mS.df), config_JSON)), new Response(JSON[g4(0x1aa3, '6UCx')](warpPublicView(bE, networkSettings && networkSettings[g4(0x44b, mS.om)])), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4b6, mS.on) } });
+                                } catch (bS) {
+                                    return new Response(JSON[g4(mS.oo, mS.N)]({ 'registered': !!(bE && bE[g4(mS.op, 'egod')]), 'error': bS && bS[g4(mS.oq, mS.or)] ? bS[g4(mS.os, mS.ot)] : String(bS) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1875, mS.d3) } });
+                                }
+                            }
+                            return new Response(JSON[g4(0x108b, mS.ou)](warpPublicView(bE, networkSettings && networkSettings[g4(0x1de5, 'ZgMu')])), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x6ff, 'Pt3!') } });
+                        } else {
+                            if (E === g4(mS.ov, '8Ys%')) {
+                                const bT = await getPoolHosts(g),
+                                    bU = p[g4(0x1ef7, 'd%lH')][g4(mS.ow, 'w(Wr')](g4(0x58e, mS.ox)) ? await checkDomainHealth(g, bT, p[g4(mS.oy, mS.W)]) : JSON[g4(mS.oz, 'CeJW')](await g['KV'][g4(0x4cb, mS.Z)](g4(mS.oA, 'jODS')) || g4(0x999, '2#Qk'));
+                                return new Response(JSON[g4(0x1ca4, 'V#kN')]({ 'hosts': bT, 'health': bU }, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x376, 'dbGg') } });
+                            } else {
+                                if (E === g4(0x19ab, mS.nM)) {
+                                    if (p[g4(0x64a, '*lLT')][g4(0x1701, mS.oB)](g4(mS.oC, mS.ak))) await refreshAnnouncements(g);
+                                    return new Response(await g['KV'][g4(mS.oD, mS.d5)](g4(0x1872, 'mRB^')) || g4(mS.oE, '2#Qk'), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.oF, 'dn8p') } });
+                                } else {
+                                    if (E === g4(mS.oG, mS.L)) {
+                                        const { api: bV, token: bW } = await getCentralApi(g);
+                                        if (!bV) return new Response(JSON[g4(mS.nW, mS.bg)]({ 'configured': ![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1660, 'egod') } });
+                                        try {
+                                            const bX = await fetch(bV + g4(0x1c33, mS.oH), { 'headers': bW ? { 'Authorization': g4(mS.oI, mS.cF) + bW } : {} }),
+                                                bY = await bX[g4(0x18f9, mS.oJ)]()[g4(0x1538, mS.oK)](() => ({}));
+                                            return new Response(JSON[g4(0xac3, mS.oL)]({ 'configured': !![], ...bY }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.oM, mS.oN) } });
+                                        } catch (bZ) {
+                                            return new Response(JSON[g4(mS.oO, 'oeP*')]({ 'configured': !![], 'error': bZ[g4(mS.oP, 'ZgMu')] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.oQ, '8Ys%') } });
+                                        }
+                                    } else {
+                                        if (E === g4(mS.oR, mS.dT)) {
+                                            const { api: c0, token: c1 } = await getCentralApi(g);
+                                            if (!c0) return new Response(JSON[g4(0x401, mS.oB)]({ 'ok': ![], 'error': g4(0x87d, '#sM9') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0xf5a, mS.mV) } });
+                                            try {
+                                                const c2 = await fetch(c0 + g4(0x1e5b, 'Gn7Q'), { 'method': g4(mS.oS, mS.fi), 'headers': { 'Content-Type': g4(mS.oT, 'yxI7'), ...c1 ? { 'Authorization': g4(0x13b, mS.oU) + c1 } : {} }, 'body': await f[g4(mS.oV, 'rsIZ')]() });
+                                                return h[g4(mS.oW, mS.oW)](refreshAnnouncements(g)), new Response(await c2[g4(0x1406, 'mRB^')](), { 'status': c2[g4(0xfef, 'mRB^')], 'headers': { 'Content-Type': g4(0xf5a, '89Hn') } });
+                                            } catch (c3) {
+                                                return new Response(JSON[g4(mS.oX, 'XITC')]({ 'ok': ![], 'error': c3[g4(mS.oY, mS.ot)] }), { 'status': 0x1f6, 'headers': { 'Content-Type': g4(0x12ff, mS.fT) } });
+                                            }
+                                        } else {
+                                            if (E === g4(0x141e, 'T3Fv')) {
+                                                const c4 = String(Version)[g4(0x1a72, 'rsIZ')](/^[vV]/, '');
+                                                let c5 = '',
+                                                    c6 = '',
+                                                    c7 = '';
+                                                try {
+                                                    const c9 = await fetch(TAAKAA_VERSION_URL, { 'headers': { 'User-Agent': g4(0xf3a, mS.nG) }, 'cf': { 'cacheTtl': 0x0 } });
+                                                    if (c9['ok']) {
+                                                        const ca = await c9[g4(0x4f0, mS.oZ)]();
+                                                        c5 = String(ca[g4(mS.p0, mS.p1)] || '')[g4(0x6c8, '8Ys%')](/^[vV]/, ''), c6 = ca[g4(mS.p2, mS.p3)] || '', c7 = ca[g4(mS.p4, mS.bp)] || '';
+                                                    }
+                                                } catch (cb) {}
+                                                const c8 = !!c5 && versionGreater(c5, c4);
+                                                return new Response(JSON[g4(0x10a7, mS.c1)]({ 'current': c4, 'latest': c5, 'updateAvailable': c8, 'notes': c6, 'worker_url': c7 }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.p5, mS.p6), 'Cache-Control': g4(0x102f, 'w3Tt') } });
+                                            } else {
+                                                if (E === g4(mS.p7, mS.fy)) {
+                                                    if (f[g4(0x1cc9, 'T3Fv')] !== g4(mS.p8, 'yxI7')) return new Response(JSON[g4(mS.p9, mS.L)]({ 'error': g4(0x1d00, 'PYt$') }), { 'status': 0x195, 'headers': { 'Content-Type': g4(0x1767, mS.e2) } });
+                                                    const cc = (co, cp) => new Response(JSON[g4(0x93a, 'dZbH')](Object[g4(0xf5b, 'M5Ii')]({ 'error': co }, cp || {})), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x68f, 'oeP*'), 'Cache-Control': g4(0x15c7, '$BSl') } });
+                                                    let ce = {};
+                                                    try { ce = await f[g4(mS.pa, mS.i)](); } catch (co) {}
+                                                    const cg = String(ce[g4(0xa65, mS.dR)] || '')[g4(0x1aa0, mS.pb)]();
+                                                    if (!cg) return cc(g4(mS.pc, 'PYt$'));
+                                                    let ch;
+                                                    try { ch = await cfVerifyToken(cg); } catch (cp) { ch = { 'ok': ![] }; }
+                                                    if (!ch || !ch['ok']) return cc(g4(0x19c2, 'egod'));
+                                                    let ci = String(ce[g4(mS.pd, mS.F)] || '')[g4(0x1bdd, 'b)3q')]();
+                                                    if (!ci) {
+                                                        let cq = [];
+                                                        try { cq = await cfListAccounts(cg); } catch (cs) {}
+                                                        if (!cq[g4(mS.pe, mS.c8)]) return cc(g4(mS.pf, mS.pg));
+                                                        if (cq[g4(mS.ph, '7NO9')] === 0x1) ci = cq[0x0]['id'];
+                                                        else return cc(g4(0xd19, '#sM9'), { 'accounts': cq });
+                                                    }
+                                                    let ck = String(ce[g4(mS.pi, mS.f)] || '')[g4(mS.pj, mS.eE)]();
+                                                    if (!ck) {
+                                                        const ct = /^([a-z0-9][a-z0-9-]*)\.[a-z0-9-]+\.workers\.dev$/i[g4(0x1b0c, mS.fE)](p[g4(0x1038, '89Hn')]);
+                                                        if (ct) ck = ct[0x1];
+                                                        else return cc(g4(0x192d, mS.pk));
+                                                }
