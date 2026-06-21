@@ -1,5 +1,5 @@
 // ============================================================
-// TAAKAA-XI CONFIGURATION - اضافه شده به اول فایل
+// TAAKAA-XI CONFIGURATION
 // ============================================================
 
 const TAAKAA_CONFIG = {
@@ -48,92 +48,50 @@ const TAAKAA_CONFIG = {
 };
 
 // ============================================================
-// TAAKAA-XI PAGES - اضافه شدن به اول فایل
+// TAAKAA-XI CONSTANTS (REPLACED NOVA WITH TAAKAA)
 // ============================================================
 
-function taakaaOwnersPage() { /* ... کد کامل صفحه Owners ... */ }
-function taakaaOfflineSupportPage() { /* ... کد کامل صفحه Offline ... */ }
-function taakaaFragmentInfoPage() { /* ... کد کامل صفحه Fragment ... */ }
-function taakaaLocationSelectionPage() { /* ... کد کامل صفحه Location ... */ }
+const TAAKAA_REPO_RAW = 'https://raw.githubusercontent.com/TaakaaOrg/Taakaa-Xi/main/';
+const TAAKAA_VERSION_URL = TAAKAA_REPO_RAW + 'version.json';
+const TAAKAA_WORKER_SRC_FALLBACK = TAAKAA_REPO_RAW + 'worker.js';
 
-// ============================================================
-// TAAKAA-XI USER MANAGEMENT - اضافه شدن به اول فایل
-// ============================================================
+let cfSocketConnect = null;
+try {
+    import('cloudflare:sockets')['then'](c => {
+        if (c && typeof c.connect === 'function') cfSocketConnect = c.connect;
+    })['catch'](() => {});
+} catch (d) {}
 
-const USER_STORAGE_KEY = 'taakaa_users';
+const Version = 'Taakaa-Xi-v2.0.0';
+let config_JSON, proxyIP = '', enableSocks5Proxy = null, enableSocks5GlobalProxy = false;
+let mySocks5Account = '', parsedSocks5Address = {}, cachedSocks5Whitelist = null;
+let cachedProxyIP, cachedProxyResolvedArray, cachedProxyArrayIndex = 0;
+let enableProxyFallback = true, debugLogPrint = false, connProxyWhitelist = [];
+let nat64Config = '', cachedNat64Prefixes = null, cachedNat64At = 0, cachedNat64Src = '';
+let networkSettings = null, cachedNetworkSettings = null, cachedNetworkSettingsAt = 0;
+let cachedAdminPass = null, cachedAdminPassAt = 0;
+const _CFG_KEY = 'taakaa_config';
+let _cfgRaw = null, _cfgRawAt = 0;
 
-async function getUsers(env) {
-    try {
-        const data = await env.KV.get(USER_STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch {
-        return [];
-    }
-}
+let cachedWorkerUUID = null, cachedWorkerUUIDAt = 0;
+let savedUsersAuth = null, savedUsersAuthAt = 0, lastCentralSync = 0;
+let SOCKS5whitelist = [
+    'taakaa.xyz',
+    '*.taakaa.xyz',
+    'localhost',
+    '127.0.0.1'
+];
+let PagesstaticPages = '';
 
-async function saveUsers(env, users) {
-    await env.KV.put(USER_STORAGE_KEY, JSON.stringify(users, null, 2));
-}
-
-async function createUser(env, username, limitGB, expiryDays) {
-    const users = await getUsers(env);
-    const newUser = {
-        id: crypto.randomUUID(),
-        username: username,
-        uuid: crypto.randomUUID().replace(/-/g, ''),
-        limit: limitGB,
-        used: 0,
-        expiry: new Date(Date.now() + expiryDays * 86400000).toISOString(),
-        enabled: true,
-        createdAt: new Date().toISOString(),
-        configName: TAAKAA_CONFIG.configPrefix + (users.length + 1)
-    };
-    users.push(newUser);
-    await saveUsers(env, users);
-    return newUser;
-}
-
-async function checkUserLimit(env, uuid) {
-    const users = await getUsers(env);
-    const user = users.find(u => u.uuid === uuid);
-    if (!user) return { allowed: false, reason: 'User not found' };
-    if (!user.enabled) return { allowed: false, reason: 'User disabled' };
-    if (new Date(user.expiry) < new Date()) return { allowed: false, reason: 'Expired' };
-    if (user.used >= user.limit) return { allowed: false, reason: 'Limit exceeded' };
-    return { allowed: true, user };
-}
-
-async function recordUserUsage(env, uuid, bytes) {
-    const users = await getUsers(env);
-    const user = users.find(u => u.uuid === uuid);
-    if (user) {
-        user.used += bytes / (1024 * 1024 * 1024);
-        await saveUsers(env, users);
-    }
-}
-
-// ============================================================
-// TAAKAA-XI PANEL HTML - اضافه شدن به اول فایل
-// ============================================================
-
-function panelHtml() { /* ... کد کامل پنل ... */ }
-// ============================================================
-// TAAKAA-XI PROXY WORKER - PART 2: NOVA CORE
-// ============================================================
-// این بخش شامل: Constants, Helpers, Crypto Functions
-// از فایل اصلی Nova-Proxy (worker (24).js) کپی شده
-// ============================================================
-
-// ============================================================
-// CONSTANTS
-// ============================================================
+globalThis['TaakaaXiStartTime'] = Date['now']();
 
 const SESSION_MAX_AGE_MS = 0x5265c00;
 const LOGIN_MAX_ATTEMPTS = 0x8;
 const LOGIN_WINDOW_MS = 0x927c0;
 const LOGIN_BLOCK_MS = 0xdbba0;
+const __loginAttempts = new Map();
 const WSearlyDataMaxBytes = 0x8 * 0x400;
-const WSearlyDataMaxHeaderLength = Math.ceil(WSearlyDataMaxBytes * 0x4 / 0x3) + 0x4;
+const WSearlyDataMaxHeaderLength = Math['ceil'](WSearlyDataMaxBytes * 0x4 / 0x3) + 0x4;
 const upstreamBatchTargetBytes = 0x40 * 0x400;
 const upstreamQueueMaxBytes = 0x20 * 0x400 * 0x400;
 const upstreamQueueMaxItems = 0x2000;
@@ -143,361 +101,14 @@ const downstreamGrainSilentMs = 0x0;
 const TCPconcurrentDialCount = 0x4;
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 const NODE_ADDR_REGEX = /^(\[[\da-fA-F:]+\]|[\d.]+|[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*)(?::(\d+))?(?:#(.+))?$/;
-const NOVA_REPO_RAW = 'https://raw.githubusercontent.com/SamadiPour/Nova-Proxy/main/';
-const NOVA_VERSION_URL = NOVA_REPO_RAW + 'version.json';
-const NOVA_WORKER_SRC_FALLBACK = NOVA_REPO_RAW + 'worker.js';
-
 // ============================================================
-// GLOBALS
+// TAAKAA-XI HELPERS
 // ============================================================
-
-let cfSocketConnect = null;
-let config_JSON = null;
-let proxyIP = '';
-let enableSocks5Proxy = null;
-let enableSocks5GlobalProxy = false;
-let mySocks5Account = '';
-let parsedSocks5Address = {};
-let cachedSocks5Whitelist = null;
-let cachedProxyIP = null;
-let cachedProxyResolvedArray = null;
-let cachedProxyArrayIndex = 0;
-let enableProxyFallback = true;
-let debugLogPrint = false;
-let connProxyWhitelist = [];
-let nat64Config = '';
-let cachedNat64Prefixes = null;
-let cachedNat64At = 0;
-let cachedNat64Src = '';
-let networkSettings = null;
-let cachedNetworkSettings = null;
-let cachedNetworkSettingsAt = 0;
-let cachedAdminPass = null;
-let cachedAdminPassAt = 0;
-let cachedWorkerUUID = null;
-let cachedWorkerUUIDAt = 0;
-let savedUsersAuth = null;
-let savedUsersAuthAt = 0;
-let lastCentralSync = 0;
-let _kvMigratedFlag = false;
-let cachedCfUsage = null;
-let cachedCfUsageAt = 0;
-let connUserId = null;
-let connRejectReason = null;
-let userUsageCache = {};
-let userUsageCacheAt = 0;
-let userDayUsageCache = {};
-let userDayUsageCacheDay = '';
-let _uusagePending = {};
-let _uusageLastFlush = 0;
-let _uusageFlushing = false;
-let usagePending = { up: 0, down: 0 };
-let usageLastFlush = 0;
-let usageFlushing = false;
-const USAGE_FLUSH_MS = 0x5 * 0x3c * 0x3e8;
-const USAGE_FLUSH_BYTES = 0xc8 * 0x400 * 0x400;
-const __loginAttempts = new Map();
-const _cidrListCache = new Map();
-const _md5md5Cache = new Map();
-const _sha224Cache = new Map();
-let PagesstaticPages = '';
-const _CFG_KEY = 'taakaa_config';
-let _cfgRaw = null;
-let _cfgRawAt = 0;
-
-// ============================================================
-// SOCKS5 WHITELIST
-// ============================================================
-
-let SOCKS5whitelist = [
-    'taakaa.xyz',
-    '*.taakaa.xyz',
-    'localhost',
-    '127.0.0.1'
-];
-
-// ============================================================
-// HELPER FUNCTIONS
-// ============================================================
-
-function dataToUint8Array(c) {
-    if (c instanceof Uint8Array) return c;
-    if (c instanceof ArrayBuffer) return new Uint8Array(c);
-    if (ArrayBuffer.isView(c)) return new Uint8Array(c.buffer, c.byteOffset, c.byteLength);
-    return new Uint8Array(c || 0);
-}
-
-function concatByteData(...f) {
-    if (!f || f.length === 0) return new Uint8Array(0);
-    const g = f.filter(Boolean).map(dataToUint8Array);
-    const h = g.reduce((a, b) => a + b.length, 0);
-    const i = new Uint8Array(h);
-    let j = 0;
-    for (const k of g) {
-        i.set(k, j);
-        j += k.length;
-    }
-    return i;
-}
-
-function validDataLength(c) {
-    if (!c) return 0;
-    if (typeof c.length === 'number') return c.length;
-    if (typeof c.byteLength === 'number') return c.byteLength;
-    return 0;
-}
-
-function closeSocketQuietly(c) {
-    try {
-        if ((c.readyState === WebSocket.CLOSING || c.readyState === WebSocket.CLOSED) && c.close) {
-            c.close();
-        }
-    } catch (f) {}
-}
-
-function log(...c) {
-    if (debugLogPrint) console.log(...c);
-}
-
-function timingSafeStrEqual(c, f) {
-    if (typeof c !== 'string' || typeof f !== 'string' || c.length !== f.length) return false;
-    let g = 0;
-    for (let h = 0; h < c.length; h++) g |= c.charCodeAt(h) ^ f.charCodeAt(h);
-    return g === 0;
-}
-
-function getDateKey(c) {
-    const f = c || new Date();
-    return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0') + '-' + String(f.getDate()).padStart(2, '0');
-}
-
-function getMonthKey(c) {
-    const f = c || new Date();
-    return f.getFullYear() + '-' + String(f.getMonth() + 1).padStart(2, '0');
-}
-
-function formatBytes(c) {
-    c = Number(c) || 0;
-    const f = ['B', 'KB', 'MB', 'GB', 'TB'];
-    let g = 0;
-    while (c >= 1024 && g < f.length - 1) { c /= 1024; g++; }
-    return c.toFixed(g === 0 ? 0 : 2) + ' ' + f[g];
-}
-
-function maskSensitiveInfo(c, f = 3, g = 2) {
-    if (!c || typeof c !== 'string') return c;
-    if (c.length <= f + g) return c;
-    const h = c.slice(0, f);
-    const i = c.slice(-g);
-    const j = c.length - f - g;
-    return h + '*'.repeat(j) + i;
-}
-
-function randomBase32(c = 32) {
-    const f = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    const g = crypto.getRandomValues(new Uint8Array(c));
-    let h = '';
-    for (const i of g) h += f[i % 32];
-    return h;
-}
-
-function base32Decode(f) {
-    const g = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let h = '';
-    const j = [];
-    for (const k of String(f).toUpperCase().replace(/=+$/, '').replace(/[^A-Z2-7]/g, '')) {
-        h += g.indexOf(k).toString(2).padStart(5, '0');
-    }
-    for (let l = 0; l + 8 <= h.length; l += 8) {
-        j.push(parseInt(h.slice(l, l + 8), 2));
-    }
-    return new Uint8Array(j);
-}
-
-function base64SecretEncode(c, f) {
-    const g = new TextEncoder();
-    const h = g.encode(c);
-    const j = g.encode(f);
-    const k = new Uint8Array(h.length);
-    for (let m = 0; m < h.length; m++) {
-        k[m] = h[m] ^ j[m % j.length];
-    }
-    let l = '';
-    for (let n = 0; n < k.length; n++) {
-        l += String.fromCharCode(k[n]);
-    }
-    return btoa(l);
-}
-
-function base64SecretDecode(c, f) {
-    const g = atob(c);
-    const h = new Uint8Array(g.length);
-    for (let n = 0; n < g.length; n++) {
-        h[n] = g.charCodeAt(n);
-    }
-    const j = new TextEncoder();
-    const k = j.encode(f);
-    const l = new Uint8Array(h.length);
-    for (let o = 0; o < h.length; o++) {
-        l[o] = h[o] ^ k[o % k.length];
-    }
-    const m = new TextDecoder();
-    return m.decode(l);
-}
-
-function randomPath(c = '/') {
-    const f = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
-    const g = Math.floor(Math.random() * 3 + 1);
-    const h = Array.from({ length: g }, () => f[Math.floor(Math.random() * f.length)]).join('/');
-    if (c === '/') return '/' + h;
-    return '/' + (h + c.replace('/?', '?'));
-}
-
-function replaceStarWithRandom(c) {
-    if (typeof c !== 'string' || !c.includes('*')) return c;
-    const f = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    return c.replace(/\*/g, () => {
-        let g = '';
-        for (let h = 0; h < Math.floor(Math.random() * 14) + 3; h++) {
-            g += f[Math.floor(Math.random() * f.length)];
-        }
-        return g;
-    });
-}
-
-function getTransportProtocolConfig(c = {}) {
-    const f = c.transportProtocol === 'xhttp';
-    return {
-        type: f ? (c.protocolType === 'trojan' ? 'trojan' : 'vless') : (c.protocolType === 'trojan' ? 'trojan' : 'ws'),
-        pathFieldName: f ? 'xhttp' : 'path',
-        domainFieldName: f ? 'xhttp-host' : 'host'
-    };
-}
-
-function getTransportPathParamValue(c = {}, f = '/', g = false) {
-    const h = g ? '/' : (c.randomPath ? randomPath(f) : f);
-    if (c.transportProtocol !== 'xhttp') return h;
-    return h.split('?')[0] || '/';
-}
-
-function isIPv4Addr(c) {
-    return /^(\d{1,3}\.){3}\d{1,3}$/.test(c);
-}
-
-function isIPv4(c) {
-    const f = String(c || '').split('.');
-    return f.length === 4 && f.every(g => /^\d{1,3}$/.test(g) && Number(g) >= 0 && Number(g) <= 255);
-}
-
-function isIPHostname(c = '') {
-    const f = stripIPv6Brackets(c);
-    const g = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
-    if (g.test(f)) return true;
-    if (!f.includes(':')) return false;
-    try { new URL('https://[' + f + ']/'); return true; } catch (h) { return false; }
-}
-
-function stripIPv6Brackets(c = '') {
-    const f = String(c || '').trim();
-    return f.startsWith('[') && f.endsWith(']') ? f.slice(1, -1) : f;
-}
-
-function isBlockedSite(c) {
-    if (isSpeedTestSite(c)) return true;
-    if (networkSettings && networkSettings.enablePornBlock) return isAdultDomain(c);
-    return false;
-}
-
-const SPEEDTEST_DOMAIN = atob('c3BlZWR0ZXN0Lm5ldA==');
-
-function isSpeedTestSite(c) {
-    return c === SPEEDTEST_DOMAIN || c.endsWith('.' + SPEEDTEST_DOMAIN);
-}
-
-const IRANIAN_DOMAINS = [
-    'ir', 'co.ir', 'ac.ir', 'sch.ir', 'org.ir', 'net.ir', 'gov.ir',
-    'edu.ir', 'id.ir', 'k12.ir', 'cbi.ir', 'mci.ir', 'mtn.ir', 'irancell.ir'
-];
-
-function isIranianDomain(c) {
-    if (!c) return false;
-    const f = c.toLowerCase();
-    for (const g of IRANIAN_DOMAINS) {
-        if (f === g || f.endsWith('.' + g)) return true;
-    }
-    return false;
-}
-
-const ADULT_DOMAINS = [
-    'porn', 'xxx', 'sex', 'adult', 'hentai', 'nude', 'fuck', 'cock', 'dick',
-    'pussy', 'ass', 'boobs', 'tits', 'cum', 'orgasm', 'masturbate'
-];
-
-function isAdultDomain(c) {
-    if (!c) return false;
-    const f = c.toLowerCase();
-    for (const g of ADULT_DOMAINS) {
-        if (f === g || f.endsWith('.' + g)) return true;
-    }
-    return false;
-}
-
-function identifyCarrier(c) {
-    const f = c && c.cf;
-    const g = {
-        '4134': 'ct', '4809': 'ct', '4811': 'ct', '4812': 'ct', '4815': 'ct',
-        '4837': 'cu', '4814': 'cu', '9929': 'cu', '17623': 'cu', '17816': 'cu',
-        '9808': 'cmcc', '24400': 'cmcc', '56040': 'cmcc', '56041': 'cmcc', '56044': 'cmcc'
-    };
-    const h = [
-        { code: 'ct', pattern: /chinanet|chinatelecom|china telecom|cn2|shtel/ },
-        { code: 'cmcc', pattern: /cmi|cmnet|chinamobile|china mobile|cmcc|mobile communications/ },
-        { code: 'cu', pattern: /china169|china unicom|chinaunicom|cucc|cncgroup|cuii|netcom/ }
-    ];
-    if (String(f && f.country || '').toLowerCase() !== 'cn') return 'cf';
-    const i = String(f && f.asOrganization || '').toLowerCase();
-    const j = h.find(({ pattern }) => pattern.test(i));
-    return (j && j.code) || g[String(f && f.asn || '')] || 'cf';
-}
-
-function hostMatchesProxyList(c) {
-    const f = connProxyWhitelist.length ? connProxyWhitelist : SOCKS5whitelist;
-    return f.some(g => {
-        try {
-            return new RegExp('^' + String(g).trim().replace(/\*/g, '.*') + '$', 'i').test(c);
-        } catch { return false; }
-    });
-}
-
-function formatIdentifier(c, f = 0) {
-    const g = [...c.slice(f, f + 16)].map(h => h.toString(16).padStart(2, '0')).join('');
-    return g.slice(0, 8) + '-' + g.slice(8, 12) + '-' + g.slice(12, 16) + '-' + g.slice(16, 20) + '-' + g.slice(20);
-}
-
-function resolveConnUser(c) {
-    connUserId = null;
-    connRejectReason = null;
-    if (!networkSettings || !Array.isArray(networkSettings.users)) return;
-    const f = c.url.searchParams.get('u');
-    if (!f) return;
-    const g = networkSettings.users.find(h => h && h.username === f);
-    if (!g) { connRejectReason = 'User not found'; return; }
-    if (g.enabled === false) { connRejectReason = 'User disabled'; return; }
-    if (g.expiry) {
-        const h = Date.parse(g.expiry);
-        if (!isNaN(h) && Date.now() > h) { connRejectReason = 'User expired'; return; }
-    }
-    if (g.limit) {
-        const i = userUsageCache[g.id] || 0;
-        if (i >= g.limit) { connRejectReason = 'User limit exceeded'; return; }
-    }
-    connUserId = g.id;
-}
 
 function versionGreater(c, f) {
-    const g = String(c || '').replace(/^[vV]/, '').split('.').map(j => parseInt(j, 10) || 0);
-    const h = String(f || '').replace(/^[vV]/, '').split('.').map(j => parseInt(j, 10) || 0);
-    for (let j = 0; j < Math.max(g.length, h.length); j++) {
+    const g = String(c || '')['replace'](/^[vV]/, '')['split']('.').map(j => parseInt(j, 10) || 0);
+    const h = String(f || '')['replace'](/^[vV]/, '')['split']('.').map(j => parseInt(j, 10) || 0);
+    for (let j = 0; j < Math['max'](g['length'], h['length']); j++) {
         const k = g[j] || 0;
         const l = h[j] || 0;
         if (k > l) return true;
@@ -506,1141 +117,2033 @@ function versionGreater(c, f) {
     return false;
 }
 
-// ============================================================
-// CRYPTO FUNCTIONS
-// ============================================================
-
-async function MD5MD5(c) {
-    if (_md5md5Cache.has(c)) return _md5md5Cache.get(c);
-    const f = new TextEncoder();
-    const g = await crypto.subtle.digest('MD5', f.encode(c));
-    const h = Array.from(new Uint8Array(g));
-    const i = h.map(n => n.toString(16).padStart(2, '0')).join('');
-    const j = await crypto.subtle.digest('MD5', f.encode(i.slice(7, 27)));
-    const k = Array.from(new Uint8Array(j));
-    const l = k.map(n => n.toString(16).padStart(2, '0')).join('');
-    const m = l.slice(0, 32);
-    if (_md5md5Cache.size > 500) _md5md5Cache.clear();
-    _md5md5Cache.set(c, m);
-    return m;
-}
-
-function sha224(k) {
-    if (_sha224Cache.has(k)) return _sha224Cache.get(k);
-    const m = [
-        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
-        0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-        0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
-        0xfc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
-        0x6ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-        0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
-        0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
-        0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-        0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-    ];
-    const n = (y, z) => (y >>> z | y << (32 - z)) >>> 0;
-    k = unescape(encodeURIComponent(k));
-    const o = k.length * 8;
-    k += String.fromCharCode(0x80);
-    while (k.length * 8 % 512 !== 448) k += String.fromCharCode(0);
-    const p = [0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4];
-    const q = Math.floor(o / 0x100000000);
-    const t = o & 0xffffffff;
-    k += String.fromCharCode(q >>> 24 & 0xff, q >>> 16 & 0xff, q >>> 8 & 0xff, q & 0xff, t >>> 24 & 0xff, t >>> 16 & 0xff, t >>> 8 & 0xff, t & 0xff);
-    const u = [];
-    for (let y = 0; y < k.length; y += 4) {
-        u.push(k.charCodeAt(y) << 24 | k.charCodeAt(y + 1) << 16 | k.charCodeAt(y + 2) << 8 | k.charCodeAt(y + 3));
-    }
-    for (let z = 0; z < u.length; z += 16) {
-        const A = new Array(64).fill(0);
-        for (let J = 0; J < 16; J++) A[J] = u[z + J];
-        for (let L = 16; L < 64; L++) {
-            const M = n(A[L - 15], 7) ^ n(A[L - 15], 18) ^ A[L - 15] >>> 3;
-            const N = n(A[L - 2], 17) ^ n(A[L - 2], 19) ^ A[L - 2] >>> 10;
-            A[L] = A[L - 16] + M + A[L - 7] + N >>> 0;
-        }
-        let [B, C, D, E, F, G, H, I] = p;
-        for (let O = 0; O < 64; O++) {
-            const P = n(F, 6) ^ n(F, 11) ^ n(F, 19);
-            const Q = F & G ^ ~F & H;
-            const R = I + P + Q + m[O] + A[O] >>> 0;
-            const S = n(B, 2) ^ n(B, 13) ^ n(B, 22);
-            const T = B & C ^ B & D ^ C & D;
-            const U = S + T >>> 0;
-            I = H; H = G; G = F; F = E + R >>> 0; E = D; D = C; C = B; B = R + U >>> 0;
-        }
-        for (let V = 0; V < 8; V++) {
-            p[V] = p[V] + [B, C, D, E, F, G, H, I][V] >>> 0;
-        }
-    }
-    let v = '';
-    for (let W = 0; W < 7; W++) {
-        for (let X = 24; X >= 0; X -= 8) {
-            v += (p[W] >>> X & 0xff).toString(16).padStart(2, '0');
-        }
-    }
-    if (_sha224Cache.size > 64) _sha224Cache.clear();
-    _sha224Cache.set(k, v);
-    return v;
-}
+let cachedAutoKey = null;
+const _md5md5Cache = new Map(), _sha224Cache = new Map();
+let _kvMigratedFlag = false, cachedCfUsage = null, cachedCfUsageAt = 0;
+const _cidrListCache = new Map();
 
 // ============================================================
-// AES-GCM & ChaCha20-Poly1305 (SS)
+// TAAKAA-XI MAIN WORKER
 // ============================================================
 
-const SSsupportEncryptionConfig = {
-    'aes-128-gcm': { method: 'AES-GCM', keyLen: 16, saltLen: 16, maxChunk: 0x3fff, aesLength: 0x80 },
-    'aes-256-gcm': { method: 'AES-GCM', keyLen: 32, saltLen: 32, maxChunk: 0x3fff, aesLength: 0x100 }
-};
-const SSAEADtagLength = 16;
-const SSNoncelength = 12;
-const SSsubkeyInfo = new TextEncoder().encode('ss-subkey');
-const SStextEncoder = new TextEncoder();
-const SStextDecode = new TextDecoder();
-const SSmasterKeyCache = new Map();
-
-function SSincrementNonceCounter(c) {
-    for (let f = 0; f < c.length; f++) {
-        c[f] = c[f] + 1 & 0xff;
-        if (c[f] !== 0) return;
-    }
-}
-
-async function SSderiveMasterKey(c, f) {
-    const g = f + ':' + c;
-    if (SSmasterKeyCache.has(g)) return SSmasterKeyCache.get(g);
-    const h = (async () => {
-        const i = SStextEncoder.encode(c || '');
-        let j = new Uint8Array(0);
-        let k = new Uint8Array(0);
-        while (k.length < f) {
-            const l = new Uint8Array(j.length + i.length);
-            l.set(j, 0);
-            l.set(i, j.length);
-            j = new Uint8Array(await crypto.subtle.digest('SHA-256', l));
-            k = concatByteData(k, j);
-        }
-        return k.slice(0, f);
-    })();
-    SSmasterKeyCache.set(g, h);
-    try { return await h; } catch (i) { SSmasterKeyCache.delete(g); throw i; }
-}
-
-async function SSderiveSessionKey(c, f, g, h) {
-    const i = { name: 'HKDF', hash: 'SHA-256' };
-    const j = await crypto.subtle.deriveKey(i, g, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-    const k = new Uint8Array(await crypto.subtle.sign('HMAC', j, f));
-    const l = await crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256' }, k, i, false, ['deriveBits']);
-    const m = new Uint8Array(c.saltLen);
-    let n = new Uint8Array(0);
-    let o = 0;
-    let p = 1;
-    while (o < c.saltLen) {
-        const q = concatByteData(n, SSsubkeyInfo, new Uint8Array([p]));
-        n = new Uint8Array(await crypto.subtle.deriveBits({ name: 'HKDF', hash: 'SHA-256' }, l, (q.length + 0x1f) * 8));
-        const r = Math.min(n.length, c.saltLen - o);
-        m.set(n.slice(0, r), o);
-        o += r;
-        p += 1;
-    }
-    return crypto.subtle.importKey('raw', m, { name: 'AES-GCM', length: c.keyLen * 8 }, false, h);
-}
-
-async function SSAEADencryption(c, f, g) {
-    const h = f.slice();
-    const i = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: h, tagLength: 128 }, c, g);
-    SSincrementNonceCounter(f);
-    return new Uint8Array(i);
-}
-
-async function SSAEADdecrypt(c, f, g) {
-    const h = f.slice();
-    const i = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: h, tagLength: 128 }, c, g);
-    SSincrementNonceCounter(f);
-    return new Uint8Array(i);
-}
-
-// ============================================================
-// VLESS & TROJAN PARSING
-// ============================================================
-
-const UUIDbytesCache = new Map();
-const VLESStextDecode = new TextDecoder();
-const trojanTextDecoder = new TextDecoder();
-
-function readHexNibble(c) {
-    if (c >= 0x30 && c <= 0x39) return c - 0x30;
-    c |= 0x20;
-    if (c >= 0x61 && c <= 0x66) return c - 0x57;
-    return -1;
-}
-
-function getUuidBytes(c) {
-    const f = String(c || '');
-    let g = UUIDbytesCache.get(f);
-    if (g) return g;
-    const h = f.replace(/-/g, '');
-    if (h.length !== 32) return null;
-    const j = new Uint8Array(16);
-    for (let k = 0; k < 16; k++) {
-        const l = readHexNibble(h.charCodeAt(k * 2));
-        const m = readHexNibble(h.charCodeAt(k * 2 + 1));
-        if (l < 0 || m < 0) return null;
-        j[k] = l << 4 | m;
-    }
-    if (UUIDbytesCache.size >= 32) UUIDbytesCache.clear();
-    UUIDbytesCache.set(f, j);
-    return j;
-}
-
-function UUIDbyteMatch(c, f, g) {
-    const h = getUuidBytes(g);
-    if (!h || c.length < f + 16) return false;
-    for (let j = 0; j < 16; j++) {
-        if (c[f + j] !== h[j]) return false;
-    }
-    return true;
-}
-
-function parseVlessRequest(c, f) {
-    const g = dataToUint8Array(c);
-    const h = g.length;
-    if (h < 24) return { hasError: true, message: 'Too short' };
-    const j = g[0];
-    if (!UUIDbyteMatch(g, 1, f)) return { hasError: true, message: 'UUID mismatch' };
-    const k = g[17];
-    const l = 18 + k;
-    if (h < l + 4) return { hasError: true, message: 'Incomplete header' };
-    const m = g[l];
-    let n = false;
-    if (m === 1) { /* TCP */ } else if (m === 2) { n = true; } else {
-        return { hasError: true, message: 'Invalid protocol: ' + m };
-    }
-    const o = l + 1;
-    const p = g[o] << 8 | g[o + 1];
-    let q = o + 3;
-    let r = 0;
-    let s = '';
-    const t = g[o + 2];
-    switch (t) {
-        case 1:
-            r = 4;
-            if (h < q + r) return { hasError: true, message: 'Incomplete IPv4' };
-            s = g[q] + '.' + g[q + 1] + '.' + g[q + 2] + '.' + g[q + 3];
-            break;
-        case 2:
-            if (h < q + 1) return { hasError: true, message: 'Incomplete domain length' };
-            r = g[q]; q += 1;
-            if (h < q + r) return { hasError: true, message: 'Incomplete domain' };
-            s = VLESStextDecode.decode(g.slice(q, q + r));
-            break;
-        case 3:
-            r = 16;
-            if (h < q + r) return { hasError: true, message: 'Incomplete IPv6' };
-            const v = [];
-            for (let w = 0; w < 8; w++) {
-                const x = q + w * 2;
-                v.push((g[x] << 8 | g[x + 1]).toString(16));
-            }
-            s = v.join(':');
-            break;
-        default:
-            return { hasError: true, message: 'Invalid address type: ' + t };
-    }
-    if (!s) return { hasError: true, message: 'Empty address, type: ' + t };
-    const u = q + r;
-    return { hasError: false, addressType: t, port: p, hostname: s, isUDP: n, rawClientData: g.slice(u), version: j };
-}
-
-function parseTrojanRequest(c, f) {
-    const g = dataToUint8Array(c);
-    const h = sha224(f);
-    if (g.length < 58) return { hasError: true, message: 'Too short' };
-    let j = 56;
-    if (g[j] !== 13 || g[j + 1] !== 10) return { hasError: true, message: 'Invalid CRLF' };
-    for (let t = 0; t < j; t++) {
-        if (g[t] !== h.charCodeAt(t)) return { hasError: true, message: 'SHA224 mismatch' };
-    }
-    const k = j + 2;
-    if (g.length < k + 6) return { hasError: true, message: 'Incomplete header' };
-    const l = g[k];
-    if (l !== 1 && l !== 3) return { hasError: true, message: 'Invalid address type' };
-    const m = l === 3;
-    const n = g[k + 1];
-    let o = 0, p = k + 2, q = '';
-    switch (n) {
-        case 1:
-            o = 4;
-            if (g.length < p + o + 4) return { hasError: true, message: 'Incomplete IPv4' };
-            q = g[p] + '.' + g[p + 1] + '.' + g[p + 2] + '.' + g[p + 3];
-            break;
-        case 3:
-            if (g.length < p + 1) return { hasError: true, message: 'Incomplete domain length' };
-            o = g[p]; p += 1;
-            if (g.length < p + o + 4) return { hasError: true, message: 'Incomplete domain' };
-            q = trojanTextDecoder.decode(g.slice(p, p + o));
-            break;
-        case 4:
-            o = 16;
-            if (g.length < p + o + 4) return { hasError: true, message: 'Incomplete IPv6' };
-            const u = [];
-            for (let v = 0; v < 8; v++) {
-                const w = p + v * 2;
-                u.push((g[w] << 8 | g[w + 1]).toString(16));
-            }
-            q = u.join(':');
-            break;
-        default:
-            return { hasError: true, message: 'Invalid address type: ' + n };
-    }
-    if (!q) return { hasError: true, message: 'Empty address, type: ' + n };
-    const r = p + o;
-    if (g.length < r + 4) return { hasError: true, message: 'Incomplete port' };
-    const s = g[r] << 8 | g[r + 1];
-    return { hasError: false, addressType: n, port: s, hostname: q, isUDP: m, rawClientData: g.slice(r + 4) };
-}
-
-function isTrojanFirstPacket(c, f) {
-    if (!c || c.length < 58 || c[56] !== 13 || c[57] !== 10) return false;
-    const g = sha224(f);
-    for (let h = 0; h < 56; h++) {
-        if (c[h] !== g.charCodeAt(h)) return false;
-    }
-    return true;
-}
-
-function isValidWsEarlyData(c, f) {
-    if (!c || !c.length) return false;
-    if (c.length >= 18 && UUIDbyteMatch(c, 1, f)) return true;
-    if (c.length < 58 || c[56] !== 13 || c[57] !== 10) return false;
-    const g = sha224(f);
-    for (let h = 0; h < 56; h++) {
-        if (c[h] !== g.charCodeAt(h)) return false;
-    }
-    return true;
-}
-
-function decodeWsEarlyData(c, f) {
-    if (!c) return null;
-    if (c.length > WSearlyDataMaxHeaderLength) throw new Error('Early data too large');
-    let g;
-    const h = Uint8Array;
-    if (typeof h.from === 'function') {
-        try { g = h.from(c, { alphabet: 'base64url' }); } catch (j) {}
-    }
-    if (!g) {
-        let k = c.replace(/-/g, '+').replace(/_/g, '/');
-        const l = k.length % 4;
-        if (l) k += '='.repeat(4 - l);
-        let m;
-        try { m = atob(k); } catch (n) { return null; }
-        g = new Uint8Array(m.length);
-        for (let o = 0; o < m.length; o++) g[o] = m.charCodeAt(o);
-    }
-    if (g.length > WSearlyDataMaxBytes) throw new Error('Decoded early data too large');
-    return isValidWsEarlyData(g, f) ? g : null;
-}
-
-// ============================================================
-// TAAKAA-XI USER MANAGEMENT FUNCTIONS (اضافه شده)
-// ============================================================
-
-async function getUsers(env) {
-    try {
-        const data = await env.KV.get(USER_STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch {
-        return [];
-    }
-}
-
-async function saveUsers(env, users) {
-    await env.KV.put(USER_STORAGE_KEY, JSON.stringify(users, null, 2));
-}
-
-async function createUser(env, username, limitGB, expiryDays) {
-    const users = await getUsers(env);
-    const newUser = {
-        id: crypto.randomUUID(),
-        username: username,
-        uuid: crypto.randomUUID().replace(/-/g, ''),
-        limit: limitGB,
-        used: 0,
-        expiry: new Date(Date.now() + expiryDays * 86400000).toISOString(),
-        enabled: true,
-        createdAt: new Date().toISOString(),
-        configName: TAAKAA_CONFIG.configPrefix + (users.length + 1)
-    };
-    users.push(newUser);
-    await saveUsers(env, users);
-    return newUser;
-}
-
-async function checkUserLimit(env, uuid) {
-    const users = await getUsers(env);
-    const user = users.find(u => u.uuid === uuid);
-    if (!user) return { allowed: false, reason: 'User not found' };
-    if (!user.enabled) return { allowed: false, reason: 'User disabled' };
-    if (new Date(user.expiry) < new Date()) return { allowed: false, reason: 'Expired' };
-    if (user.used >= user.limit) return { allowed: false, reason: 'Limit exceeded' };
-    return { allowed: true, user };
-}
-
-async function recordUserUsage(env, uuid, bytes) {
-    const users = await getUsers(env);
-    const user = users.find(u => u.uuid === uuid);
-    if (user) {
-        user.used += bytes / (1024 * 1024 * 1024);
-        await saveUsers(env, users);
-    }
-}
-
-async function getConfigRaw(env) {
-    if (_cfgRaw !== null && Date.now() - _cfgRawAt < 30000) return _cfgRaw;
-    try {
-        _cfgRaw = env.KV && typeof env.KV.get === 'function' ? await env.KV.get(_CFG_KEY) : null;
-        _cfgRawAt = Date.now();
-    } catch (f) {}
-    return _cfgRaw;
-}
-
-function putConfig(env, f) {
-    _cfgRaw = f;
-    _cfgRawAt = Date.now();
-    return env.KV.put(_CFG_KEY, f);
-}
-// ============================================================
-// TAAKAA-XI PROXY WORKER - PART 3: NOVA PROTOCOLS
-// ============================================================
-// این بخش شامل: VLESS, Trojan, VMess, gRPC, WebSocket Handlers
-// از فایل اصلی Nova-Proxy (worker (24).js) کپی شده
-// ============================================================
-
-// ============================================================
-// WebSocket Handler
-// ============================================================
-
-async function handleWsRequest(c, f, g, h, i) {
-    if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { status: 403 });
-    const j = connUserId;
-    const k = new WebSocketPair();
-    const [l, m] = Object.values(k);
-    try { m.accept({ allowHalfOpen: true }); } catch (R) { m.close(); }
-    m.binaryType = 'arraybuffer';
-    let n = { socket: null, connectingPromise: null, retryConnect: null };
-    const o = { up: 0, down: 0 };
-    let p = false, q = null;
-    const r = { cache: new Uint8Array(0) };
-    const s = c.url.searchParams.get('early') || '';
-    const t = !!g.url.searchParams.has('no-early');
-    let u = null;
-    let v = Promise.resolve();
-    let w = false, x = false, y = false;
-    let z = 0, A = 0;
-    let B = null, C = null, D = null, E = null, F = null;
-
-    const G = () => {
-        if (D) { try { D.close(); } catch (S) {} D = null; }
-        C = null;
-    };
-
-    const H = u = createUpstreamWriteQueue({
-        getWriter: () => {
-            const S = n.socket;
-            if (!S) return null;
-            if (S !== C) { G(); C = S; D = S.writable.getWriter(); }
-            return D;
-        },
-        releaseWriter: G,
-        retryConnection: async () => {
-            if (typeof n.retryConnect !== 'function') throw new Error('No retry connection function');
-            await n.retryConnect();
-        },
-        closeConnection: () => {
-            try { n.socket && n.socket.close(); } catch (S) {}
-            closeSocketQuietly(m);
-        },
-        name: 'ws-writer'
-    });
-
-    const I = async (S, T = true) => { return H.write(S, T); };
-    const J = async () => {
-        if (E) return E;
-        if (!F) {
-            F = (async () => {
-                // SS encryption setup
-                const S = (g.url.searchParams.get('ss') || '').toLowerCase();
-                const T = SSsupportEncryptionConfig[S] || SSsupportEncryptionConfig['aes-256-gcm'];
-                const U = [T, ...Object.values(SSsupportEncryptionConfig).filter(a => a.method !== T.method)];
-                const V = new Map();
-                const W = (a) => {
-                    if (!V.has(a.method)) V.set(a.method, SSderiveMasterKey(f, a.saltLen));
-                    return V.get(a.method);
-                };
-                const X = {
-                    buffer: new Uint8Array(0),
-                    hasSalt: false,
-                    waitPayloadLength: null,
-                    decryptKey: null,
-                    nonceCounter: new Uint8Array(SSNoncelength),
-                    encryptionConfig: null
-                };
-                const Y = async () => {
-                    const a6 = 2 + SSAEADtagLength;
-                    const a7 = Math.max(...U.map(a => a.aesLength));
-                    const a8 = 16;
-                    const a9 = Math.max(a8, Math.min(0, X.buffer.length - (a6 + Math.max(...U.map(a => a.keyLen)))));
-                    for (let ab = 0; ab <= a9; ab++) {
-                        for (const ac of U) {
-                            const ad = ab + ac.keyLen + a6;
-                            if (X.buffer.length < ad) continue;
-                            const ae = X.buffer.slice(ab, ab + ac.keyLen);
-                            const af = X.buffer.slice(ab + ac.keyLen, ad);
-                            const ag = await W(ac);
-                            const ah = await SSderiveSessionKey(ac, ag, ae, ['key']);
-                            const ai = new Uint8Array(SSNoncelength);
-                            try {
-                                const aj = await SSAEADdecrypt(ah, ai, af);
-                                if (aj.length !== 2) continue;
-                                const ak = aj[0] << 8 | aj[1];
-                                if (ak < 0 || ak > ac.maxChunk) continue;
-                                if (ab > 0) log('SS: salt offset ' + ab + ' bytes');
-                                if (ac.method !== T.method) log('SS: using fallback cipher ' + (S || T.method) + ' → ' + ac.method);
-                                X.buffer = X.buffer.slice(ad);
-                                X.decryptKey = ah;
-                                X.nonceCounter = ai;
-                                X.waitPayloadLength = ak;
-                                X.encryptionConfig = ac;
-                                X.hasSalt = true;
-                                return true;
-                            } catch (al) {}
-                        }
-                    }
-                    const aa = a7 + a6 + a8;
-                    if (X.buffer.length >= aa) {
-                        throw new Error('SS: cannot find salt for ' + (S || T.method) + ' (tried ' + U.map(a => a.method).join('/') + ')');
-                    }
-                    return false;
-                };
-                const Z = {
-                    async input(a6) {
-                        const a7 = dataToUint8Array(a6);
-                        if (a7.length > 0) X.buffer = concatByteData(X.buffer, a7);
-                        if (!X.hasSalt) {
-                            const a9 = await Y();
-                            if (!a9) return [];
-                        }
-                        const a8 = [];
-                        while (true) {
-                            if (X.waitPayloadLength === null) {
-                                const ad = 2 + SSAEADtagLength;
-                                if (X.buffer.length < ad) break;
-                                const ae = X.buffer.slice(0, ad);
-                                X.buffer = X.buffer.slice(ad);
-                                const af = await SSAEADdecrypt(X.decryptKey, X.nonceCounter, ae);
-                                if (af.length !== 2) throw new Error('SS: invalid length header');
-                                const ag = af[0] << 8 | af[1];
-                                if (ag < 0 || ag > X.encryptionConfig.maxChunk) throw new Error('SS: invalid chunk length ' + ag);
-                                X.waitPayloadLength = ag;
-                            }
-                            const aa = X.waitPayloadLength + SSAEADtagLength;
-                            if (X.buffer.length < aa) break;
-                            const ab = X.buffer.slice(0, aa);
-                            X.buffer = X.buffer.slice(aa);
-                            const ac = await SSAEADdecrypt(X.decryptKey, X.nonceCounter, ab);
-                            a8.push(ac);
-                            X.waitPayloadLength = null;
-                        }
-                        return a8;
-                    }
-                };
-                let a0 = null;
-                const a1 = 32 * 1024;
-                const a2 = async () => {
-                    if (a0) return a0;
-                    if (!X.hasSalt) throw new Error('SS: no salt available');
-                    const a6 = X.encryptionConfig;
-                    const a7 = await SSderiveMasterKey(f, a6.saltLen);
-                    const a8 = crypto.getRandomValues(new Uint8Array(a6.saltLen));
-                    const a9 = await SSderiveSessionKey(a6, a7, a8, ['key']);
-                    const aa = new Uint8Array(SSNoncelength);
-                    let ab = false;
-                    return a0 = {
-                        async encryptAndSend(ac, ad) {
-                            const ae = dataToUint8Array(ac);
-                            if (!ab) { await ad(a8); ab = true; }
-                            if (ae.length === 0) return;
-                            let af = 0;
-                            while (af < ae.length) {
-                                const ag = Math.min(af + a6.maxChunk, ae.length);
-                                const ah = ae.slice(af, ag);
-                                const ai = new Uint8Array(2);
-                                ai[0] = ah.length >>> 8 & 0xff;
-                                ai[1] = ah.length & 0xff;
-                                const aj = await SSAEADencryption(a9, aa, ai);
-                                const ak = await SSAEADencryption(a9, aa, ah);
-                                const al = new Uint8Array(aj.length + ak.length);
-                                al.set(aj, 0);
-                                al.set(ak, aj.length);
-                                await ad(al);
-                                af = ag;
-                            }
-                        }
-                    };
-                };
-                let a3 = Promise.resolve();
-                const a4 = (a6) => {
-                    a3 = a3.then(async () => {
-                        if (m.readyState !== WebSocket.OPEN) return;
-                        const a7 = await a2();
-                        await a7.encryptAndSend(a6, async (a8) => {
-                            if (a8.length > 0 && m.readyState === WebSocket.OPEN) {
-                                await WebSocketsendAndWait(m, a8.buffer);
-                            }
-                        });
-                    }).catch(a7 => {
-                        log('SS send error: ' + (a7 && a7.message || a7));
-                        closeSocketQuietly(m);
-                    });
-                    return a3;
-                };
-                const a5 = {
-                    get readyState() { return m.readyState; },
-                    send(a6) {
-                        const a7 = dataToUint8Array(a6);
-                        o.up += a7.length;
-                        if (a7.length <= a1) return a4(a7);
-                        for (let a8 = 0; a8 < a7.length; a8 += a1) {
-                            a4(a7.slice(a8, Math.min(a8 + a1, a7.length)));
-                        }
-                        return a3;
-                    },
-                    close() { closeSocketQuietly(m); }
-                };
-                return {
-                    inboundDecryptor: Z,
-                    replyChunkSocket: a5,
-                    firstPacketEstablished: false,
-                    targetHost: '',
-                    targetPort: 0
-                };
-            })();
-            F.catch(() => { F = null; });
-        }
-        return F;
-    };
-
-    const K = async S => {
-        const T = await J();
-        let U = null;
+const taakaaXiWorker = {
+    async 'fetch'(f, g, h) {
         try {
-            U = await T.inboundDecryptor.input(S);
-        } catch (V) {
-            const W = V && V.message || '' + V;
-            if (W.includes('buffer') || W.includes('decrypt') || W.includes('salt')) {
-                log('SS decrypt error: ' + W);
-                closeSocketQuietly(m);
-                return;
+            wrapKVWithD1(g);
+            if (!_kvMigratedFlag && g['KV'] && h && typeof h['waitUntil'] === 'function') {
+                h['waitUntil'](migrateKvToD1(g));
             }
-            throw V;
-        }
-        for (const X of U) {
-            let Y = false;
-            try { Y = await I(X, false); } catch (a5) {
-                if (a5 && a5.message) throw a5;
-                Y = false;
+            
+            let j = f['url']['replace'](/%5[Cc]/g, '')['replace](/\\/g, '');
+            const l = j['indexOf']('#');
+            const o = l === -1 ? j : j['substring'](0, l);
+            
+            if (!o['includes']('?') && /%3f/i['test'](o)) {
+                const H = l === -1 ? '' : j['substring'](l);
+                j = o['replace'](/%3f/i, '?') + H;
             }
-            if (Y) continue;
-            if (T.firstPacketEstablished && T.targetHost && T.targetPort > 0) {
-                o.up += validDataLength(X);
-                await forwardataTCP(T.targetHost, T.targetPort, X, T.replyChunkSocket, null, n, f, c, o);
-                continue;
-            }
-            const Z = dataToUint8Array(X);
-            if (Z.length < 3) throw new Error('Too short');
-            const a0 = Z[0];
-            let a1 = 1, a2 = '';
-            if (a0 === 1) {
-                if (Z.length < a1 + 4 + 2) throw new Error('Incomplete IPv4');
-                a2 = Z[a1] + '.' + Z[a1 + 1] + '.' + Z[a1 + 2] + '.' + Z[a1 + 3];
-                a1 += 4;
-            } else if (a0 === 3) {
-                if (Z.length < a1 + 1) throw new Error('Incomplete domain length');
-                const a6 = Z[a1]; a1 += 1;
-                if (Z.length < a1 + a6 + 2) throw new Error('Incomplete domain');
-                a2 = SStextDecode.decode(Z.slice(a1, a1 + a6));
-                a1 += a6;
-            } else if (a0 === 4) {
-                if (Z.length < a1 + 16 + 2) throw new Error('Incomplete IPv6');
-                const a7 = [];
-                const a8 = new DataView(Z.buffer, Z.byteOffset + a1, 16);
-                for (let a9 = 0; a9 < 8; a9++) {
-                    a7.push(a8.getUint16(a9 * 2).toString(16));
-                }
-                a2 = a7.join(':');
-                a1 += 16;
-            } else {
-                throw new Error('Invalid address type: ' + a0);
-            }
-            if (!a2) throw new Error('Empty address, type: ' + a0);
-            const a3 = Z[a1] << 8 | Z[a1 + 1];
-            a1 += 2;
-            const a4 = Z.slice(a1);
-            if (isBlockedSite(a2)) throw new Error('Blocked site: ' + a2);
-            T.firstPacketEstablished = true;
-            T.targetHost = a2;
-            T.targetPort = a3;
-            o.up += validDataLength(a4);
-            await forwardataTCP(a2, a3, a4, T.replyChunkSocket, null, n, f, c, o);
-        }
-    };
-
-    const L = async S => {
-        let T = null;
-        if (p) {
-            if (q) return await forwardTrojanUdpData(S, m, r, c);
-            return await forwardataudp(S, m, null, c);
-        }
-        if (B === 'ss') { await K(S); return; }
-        if (await I(S)) { o.up += validDataLength(S); return; }
-        if (B === null) {
-            if (g.url.searchParams.has('ss')) B = 'ss';
-            else {
-                T = T || dataToUint8Array(S);
-                const U = T;
-                B = isTrojanFirstPacket(U, f) ? 'trojan' : 'vless';
-            }
-            q = B === 'trojan';
-            log('Protocol: ' + B + ' | Host: ' + g.url.host + ' | Path: ' + (c.url.pathname || '/'));
-        }
-        if (B === 'ss') { await K(S); return; }
-        if (await I(S)) { o.up += validDataLength(S); return; }
-        if (B === 'trojan') {
-            const V = parseTrojanRequest(S, f);
-            if (V && V.hasError) throw new Error(V.message || 'Trojan parse error');
-            const { port: W, hostname: X, rawClientData: Y, isUDP: Z } = V;
-            if (isBlockedSite(X)) throw new Error('Blocked site: ' + X);
-            if (Z) {
-                p = true;
-                if (validDataLength(Y) > 0) {
-                    o.up += validDataLength(Y);
-                    return forwardTrojanUdpData(Y, m, r, c);
-                }
-                return;
-            }
-            o.up += validDataLength(Y);
-            await forwardataTCP(X, W, Y, m, null, n, f, c, o);
-        } else {
-            q = false;
-            T = T || dataToUint8Array(S);
-            const a0 = T;
-            const a1 = parseVlessRequest(a0, f);
-            if (a1 && a1.hasError) throw new Error(a1.message || 'VLESS parse error');
-            const { port: a2, hostname: a3, version: a4, isUDP: a5, rawClientData: a6 } = a1;
-            if (isBlockedSite(a3)) throw new Error('Blocked site: ' + a3);
-            if (a5) {
-                if (a2 === 53) p = true;
-                else throw new Error('UDP only supported on port 53');
-            }
-            const a7 = new Uint8Array([a4, 0]);
-            const a8 = a6;
-            if (p) {
-                if (q) {
-                    o.up += validDataLength(a8);
-                    return forwardTrojanUdpData(a8, m, r, c);
-                }
-                o.up += validDataLength(a8);
-                return forwardataudp(a8, m, a7, c);
-            }
-            o.up += validDataLength(a8);
-            await forwardataTCP(a3, a2, a8, m, a7, n, f, c, o);
-        }
-    };
-
-    const M = S => {
-        if (x) return;
-        x = true;
-        w = true;
-        z = 0; A = 0;
-        const T = S && S.message || '' + S;
-        if (T.includes('close') || T.includes('CLOSE')) log('WebSocket closed: ' + T);
-        else log('WebSocket error: ' + T);
-        H.clear();
-        G();
-        closeSocketQuietly(m);
-    };
-
-    const N = S => {
-        v = v.then(() => S).catch(M);
-        return v;
-    };
-
-    const O = S => {
-        if (w || x) return;
-        const T = Math.min(0, validDataLength(S));
-        const U = z + T;
-        const V = A + 1;
-        if (U > upstreamQueueMaxBytes || V > upstreamQueueMaxItems) {
-            M(new Error('Queue overflow: ' + U + 'B/' + V));
-            return;
-        }
-        z = U; A = V;
-        N(async () => {
-            z = Math.max(0, z - T);
-            A = Math.max(0, A - 1);
-            if (x) return;
-            await L(S);
-        });
-    };
-
-    const P = () => {
-        if (y) return;
-        y = true;
-        w = true;
-        N(async () => {
-            if (x) return;
-            await H.waitEmpty();
-            G();
-        });
-    };
-
-    m.addEventListener('message', S => { O(S.data); });
-    const Q = () => {
-        recordUsage(h, o.up, o.down, i);
-        if (j) recordUserUsage(h, j, o.up, o.down, i);
-    };
-    m.addEventListener('close', () => { closeSocketQuietly(m); P(); Q(); });
-    m.addEventListener('error', S => { M(S); Q(); });
-
-    if (!t && s) {
-        try {
-            const S = decodeWsEarlyData(s, f);
-            if (S && S.length) O(S);
-        } catch (T) { M(T); }
-    }
-
-    return new Response(null, { status: 101, webSocket: l, headers: { 'Sec-WebSocket-Extensions': '' } });
-}
-
-async function WebSocketsendAndWait(c, f) {
-    const g = c.send(f);
-    if (g && typeof g.then === 'function') await g;
-}
-
-function createUpstreamWriteQueue({ getWriter: c, releaseWriter: f, retryConnection: g, closeConnection: h, name: name = 'queue' }) {
-    let i = [], j = 0, k = 0, l = false, m = false, n = null, o = [], p = null;
-    const q = (z, A = null) => {
-        if (!z) return;
-        for (const B of z) {
-            if (A) B.reject(A);
-            else B.resolve();
-        }
-    };
-    const r = z => {
-        for (let A = j; A < i.length; A++) {
-            const B = i[A];
-            if (B && B.completions) q(B.completions, z);
-        }
-    };
-    const s = () => {
-        if (j > 32 && j * 2 >= i.length) {
-            i = i.slice(j);
-            j = 0;
-        }
-    };
-    const t = () => {
-        if (k || l || !o.length) return;
-        const z = o;
-        o = [];
-        for (const A of z) A();
-    };
-    const u = (z = null) => {
-        const A = z || (m ? new Error(name + ' queue closed') : null);
-        if (A) { r(A); if (p) { q(p, A); p = null; } }
-        i = [];
-        j = 0;
-        k = 0;
-        t();
-    };
-    const v = () => {
-        if (j >= i.length) return null;
-        const z = i[j];
-        i[j++] = undefined;
-        k -= z.chunk.length;
-        s();
-        return z;
-    };
-    const w = () => {
-        const z = v();
-        if (!z) return null;
-        if (j >= i.length || z.chunk.length >= upstreamBatchTargetBytes) return z;
-        let A = z.chunk.length, B = j, C = z.allowRetry, D = z.completions || null;
-        while (B < i.length) {
-            const G = i[B];
-            const H = A + G.chunk.length;
-            if (H > upstreamBatchTargetBytes) break;
-            A = H;
-            C = C && G.allowRetry;
-            if (G.completions) D = D ? D.then(() => G.completions) : G.completions;
-            B++;
-        }
-        if (B === j) return z;
-        const E = n || (n = new Uint8Array(upstreamBatchTargetBytes));
-        E.set(z.chunk);
-        let F = z.chunk.length;
-        while (j < B) {
-            const I = i[j];
-            i[j++] = undefined;
-            k -= I.chunk.length;
-            E.set(I.chunk, F);
-            F += I.chunk.length;
-        }
-        s();
-        return { chunk: E.slice(0, A), allowRetry: C, completions: D };
-    };
-    const x = async () => {
-        if (l || m) return;
-        l = true;
-        try {
-            for (;;) {
-                if (m) break;
-                const z = w();
-                if (!z) break;
-                let A = c();
-                if (!A) throw new Error(name + ' writer is null');
-                const B = z.completions || null;
-                p = B;
+            
+            const p = new URL(j);
+            const q = f['headers']['get']('Host') || 'taakaa.xyz';
+            const s = (f['headers']['get']('X-Forwarded-For') || '')['split']();
+            const t = (f['headers']['get']('CF-Connecting-IP') || '')['split']();
+            
+            let w = g['ADMIN_PASSWORD'] || g['PASSWORD'] || g['ADMIN_PASS'] || g['ADMIN_KEY'] || g['ADMIN'] || g['SECRET'] || g['KEY'];
+            let x = w;
+            let z = g['AUTO_KEY'];
+            
+            if (!z && cachedAutoKey) z = cachedAutoKey;
+            if (!z && g['KV'] && typeof g['KV']['get'] === 'function') {
                 try {
-                    try {
-                        await A.write(z.chunk);
-                    } catch (C) {
-                        f && f();
-                        if (!z.allowRetry || typeof g !== 'function') throw C;
-                        await g();
-                        A = c();
-                        if (!A) throw C;
-                        await A.write(z.chunk);
+                    z = await g['KV']['get']('taakaa_auto_key');
+                    if (!z) {
+                        z = Array['from'](crypto['getRandomValues'](new Uint8Array(0x18)), I => 'abcdefghijklmnopqrstuvwxyz0123456789'[I % 0x24])['join']('');
+                        await g['KV']['put']('taakaa_auto_key', z);
                     }
-                    q(B);
-                } catch (C) {
-                    q(B, C);
-                    throw C;
-                } finally {
-                    if (p === B) p = null;
-                }
+                    cachedAutoKey = z;
+                } catch (I) {}
             }
-        } catch (E) {
-            m = true;
-            u(E);
-            log('[' + name + '] write error: ' + (E && E.message || E));
-            try { h && h(E); } catch (F) {}
-        } finally {
-            l = false;
-            if (!m && j < i.length) queueMicrotask(x);
-            else t();
-        }
-    };
-    const y = (z, A = true, B = false) => {
-        if (m) return false;
-        if (!c()) return false;
-        const C = dataToUint8Array(z);
-        if (!C.length) return true;
-        const D = k + C.length;
-        const E = i.length - j + 1;
-        if (D > upstreamQueueMaxBytes || E > upstreamQueueMaxItems) {
-            m = true;
-            const H = Object.assign(new Error(name + ' queue overflow: ' + D + 'B/' + E + ')'), { isQueueOverflow: true });
-            u(H);
-            log('[' + name + '] queue overflow');
-            try { h && h(H); } catch (I) {}
-            throw H;
-        }
-        let F = null, G = null;
-        if (B) {
-            G = [];
-            F = new Promise((J, K) => G.push({ resolve: J, reject: K }));
-        }
-        i.push({ chunk: C, allowRetry: A, completions: G });
-        k = D;
-        if (!l) queueMicrotask(x);
-        return B ? F.then(() => true) : true;
-    };
-    return {
-        write(z, A = true) { return y(z, A, false); },
-        writeAndWait(z, A = true) { return y(z, A, true); },
-        async waitEmpty() {
-            if (!k && !l) return;
-            await new Promise(z => o.push(z));
-        },
-        clear() { m = true; u(); }
-    };
-}
-
-function createDownstreamGrainSender(c, f = null) {
-    const g = downstreamGrainChunkBytes;
-    const h = downstreamGrainTailThreshold;
-    const i = Math.min(0x1000, h << 3);
-    let j = f;
-    let k = new Uint8Array(g);
-    let l = 0;
-    let m = null;
-    let n = false;
-    let o = 0;
-    let p = 0;
-    let q = 0;
-    let r = null;
-    const s = async w => {
-        if (c.readyState !== WebSocket.OPEN) throw new Error('WebSocket not open');
-        await WebSocketsendAndWait(c, w);
-    };
-    const t = w => {
-        if (!j) return w;
-        const x = new Uint8Array(j.length + w.length);
-        x.set(j, 0);
-        x.set(w, j.length);
-        j = null;
-        return x;
-    };
-    const u = async () => {
-        while (r) await r;
-        if (m) clearTimeout(m);
-        m = null;
-        n = false;
-        if (!l) return;
-        const w = k.slice(0, l);
-        k = new Uint8Array(g);
-        l = 0;
-        q = 0;
-        r = s(w);
-        r.then(() => { r = null; });
-        return r;
-    };
-    const v = () => {
-        if (m || n) return;
-        n = true;
-        p = o;
-        queueMicrotask(() => {
-            n = false;
-            if (!l || m) return;
-            if (g - l < h) {
-                u().then(() => closeSocketQuietly(c));
-                return;
-            }
-            m = setTimeout(() => {
-                m = null;
-                if (!l) return;
-                if (g - l < h) {
-                    u().then(() => closeSocketQuietly(c));
-                    return;
-                }
-                if (q < 2 && (o !== p || l < i)) {
-                    q++;
-                    p = o;
-                    v();
-                    return;
-                }
-                u().then(() => closeSocketQuietly(c));
-            }, Math.max(downstreamGrainSilentMs, 1));
-        });
-    };
-    return {
-        async directSend(w) {
-            let x = dataToUint8Array(w);
-            if (!x.length) return;
-            x = t(x);
-            await s(x);
-        },
-        async send(w) {
-            let x = dataToUint8Array(w);
-            if (!x.length) return;
-            x = t(x);
-            let y = 0;
-            const z = x.length;
-            while (y < z) {
-                if (!l && z - y >= g) {
-                    const B = Math.min(g, z - y);
-                    const C = y || B !== z ? x.slice(y, y + B) : x;
-                    await s(C);
-                    y += B;
-                    continue;
-                }
-                const A = Math.min(g - l, z - y);
-                k.set(x.slice(y, y + A), l);
-                l += A;
-                y += A;
-                o++;
-                if (l === g || g - l < h) await u();
-                else v();
-            }
-        },
-        flush: u
-    };
-}
-
-async function connectStreams(c, f, g, h, i = null) {
-    let j = g;
-    let k = false;
-    let l, m = false;
-    const n = 0x40 * 0x400;
-    const o = createDownstreamGrainSender(f, j);
-    j = null;
-    try {
-        l = c.readable.getReader({ mode: 'byob' });
-        m = true;
-    } catch (p) {
-        l = c.readable.getReader();
-    }
-    try {
-        if (!m) {
-            while (true) {
-                const { done: q, value: r } = await l.read();
-                if (q) break;
-                if (!r || r.length === 0) continue;
-                k = true;
-                if (i) i.up += r.length;
-                await o.send(r);
-            }
-        } else {
-            let s = new ArrayBuffer(n);
-            while (true) {
-                const { done: t, value: u } = await l.read(new Uint8Array(s, 0, n));
-                if (t) break;
-                if (!u || u.length === 0) continue;
-                k = true;
-                if (i) i.up += u.length;
-                if (u.length >= downstreamGrainChunkBytes) {
-                    await o.flush();
-                    await o.send(u);
-                    s = new ArrayBuffer(n);
+            if (!z) z = 'Taakaa-Xi-Default-Key';
+            
+            if (g['KV'] && typeof g['KV']['get'] === 'function') {
+                if (cachedAdminPass !== null && Date['now']() - cachedAdminPassAt < 0xea60) {
+                    if (cachedAdminPass) x = cachedAdminPass;
                 } else {
-                    await o.send(u);
-                    s = u.buffer.byteLength >= n ? u.buffer : new ArrayBuffer(n);
+                    try {
+                        const J = await g['KV']['get']('taakaa_admin_pass');
+                        if (J) {
+                            x = J;
+                            cachedAdminPass = J;
+                            cachedAdminPassAt = Date['now']();
+                        } else {
+                            cachedAdminPass = '';
+                            cachedAdminPassAt = Date['now']() - 0xd6d8;
+                        }
+                    } catch (K) {}
+                }
+            }
+            
+            const A = g['UUID'] || g['uuid'];
+            let B;
+            if (A && uuidRegex['test'](A)) {
+                B = A['toString']();
+            } else {
+                const L = w || x;
+                const M = await MD5MD5(L + z);
+                const N = [M['slice'](0, 8), M['slice'](8, 12), '4' + M['slice'](13, 16), '8' + M['slice'](17, 20), M['slice'](20)]['join']('-');
+                let O = null;
+                if (g['KV'] && typeof g['KV']['get'] === 'function') {
+                    if (cachedWorkerUUID !== null && Date['now']() - cachedWorkerUUIDAt < 0x927c0) {
+                        O = cachedWorkerUUID || null;
+                    } else {
+                        try {
+                            let P = await g['KV']['get']('taakaa_worker_uuid');
+                            if (!P) {
+                                P = N;
+                                try { await g['KV']['put']('taakaa_worker_uuid', P); } catch (Q) {}
+                            }
+                            cachedWorkerUUID = P || '';
+                            cachedWorkerUUIDAt = Date['now']();
+                            O = P || null;
+                        } catch (R) {}
+                    }
+                }
+                B = O && uuidRegex['test'](O) ? O['toString']() : N;
+            }
+            
+            const C = g['HOSTS'] ? (await sortIntoArray(g['HOSTS']))['map'](S => S['toString']()['replace'](/^https?:\/\//, '')['split']('/')[0]['split'](':')[0]) : [p['hostname']];
+            const D = C[0];
+            const E = p['pathname']['split']('/')[1]['toLowerCase']();
+            
+            debugLogPrint = ['1', 'true']['includes'](g['DEBUG']) || debugLogPrint;
+            
+            if (g['STATIC_PAGES'] || g['PAGES']) {
+                PagesstaticPages = String(g['STATIC_PAGES'] || g['PAGES'])['replace'](/\/+$/, '') + '/';
+            }
+            
+            if (g['PROXY_IPS']) {
+                const S = await sortIntoArray(g['PROXY_IPS']);
+                proxyIP = S[Math['floor'](Math['random']() * S['length'])];
+                enableProxyFallback = false;
+            } else {
+                proxyIP = (f['cf']['colo'] + '.taakaa.xyz')['toString']();
+            }
+            
+            nat64Config = g['NAT64'] || g['NAT64_CONFIG'] || '';
+            
+            const F = f['headers']['get']('CF-Connecting-IP') || f['headers']['get']('X-Forwarded-For') || f['headers']['get']('X-Real-IP') || f['headers']['get']('True-Client-IP') || f['headers']['get']('X-Client-IP') || f['headers']['get']('X-Proxy-IP') || f['headers']['get']('Client-IP') || '0.0.0.0';
+            
+            try {
+                if (g['KV'] && typeof g['KV']['get'] === 'function') {
+                    if (cachedNetworkSettings && Date['now']() - cachedNetworkSettingsAt < 0x7530) {
+                        networkSettings = cachedNetworkSettings;
+                    } else {
+                        const T = await g['KV']['get']('taakaa_network_settings');
+                        networkSettings = T ? JSON['parse'](T) : {
+                            'enableRouting': true,
+                            'enableGeoIP': true,
+                            'enableGeoSite': true,
+                            'enableAdBlock': true,
+                            'enablePornBlock': false,
+                            'enableDomesticBypass': true,
+                            'enableDoH': true,
+                            'dohProvider': 'https://cloudflare-dns.com/dns-query',
+                            'enableLocalDNS': false,
+                            'localDNSIP': '10.0.0.1',
+                            'localDNSPort': '53',
+                            'enableAntiSanctionDNS': false,
+                            'antiSanctionDNSProvider': 'https://dns.taakaa.xyz/dns-query',
+                            'antiSanctionCustomDNS': '',
+                            'enableFakeDNS': false,
+                            'fakeDNSIP': '10.0.0.2',
+                            'enableIPv6': true,
+                            'allowLAN': false,
+                            'logLevel': 'info',
+                            'enableWarp': false,
+                            'warpMode': 'warp',
+                            'warpEndpoint': '',
+                            'warpAmnezia': false,
+                            'customRules': '',
+                            'bypassCountries': [],
+                            'blockCategories': [],
+                            'warpNoise': { 'mode': '', 'count': '', 'size': '', 'delay': '' }
+                        };
+                        cachedNetworkSettings = networkSettings;
+                        cachedNetworkSettingsAt = Date['now']();
+                    }
+                } else {
+                    networkSettings = { 'enablePornBlock': false, 'enableDomesticBypass': true, 'enableAdBlock': true };
+                }
+            } catch (U) {
+                networkSettings = { 'enablePornBlock': false, 'enableDomesticBypass': true, 'enableAdBlock': true };
+            }
+            
+            if (cachedSocks5Whitelist === null) {
+                if (g['SOCKS5_WHITELIST']) {
+                    SOCKS5whitelist = [...new Set(SOCKS5whitelist['concat'](await sortIntoArray(g['SOCKS5_WHITELIST'])))];
+                }
+                cachedSocks5Whitelist = SOCKS5whitelist;
+            } else {
+                SOCKS5whitelist = cachedSocks5Whitelist;
+            }
+            
+            if (networkSettings && networkSettings['enablePornBlock'] && g['KV'] && typeof g['KV']['get'] === 'function') {
+                await refreshUserUsageIfStale(g);
+            }
+            {
+    const V = s === 'taakaa' || !E['includes']('taakaa') && E !== 'install' && E !== 'about' && f['method'] === 'GET';
+    const W = E === 'taakaa' || E['includes']('taakaa');
+    if (V || W) {
+        let X = config_JSON && config_JSON['paused'] === true;
+        if (!X) {
+            try {
+                const Y = await getConfigRaw(g);
+                if (Y && /"paused"\s*:\s*true/['test'](Y)) X = true;
+            } catch (Z) {}
+        }
+        if (X) return new Response('Service temporarily paused', { 'status': 0x1f7, 'headers': { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' } });
+    }
+}
+
+if (E === 'version' && p['pathname']['includes']('taakaa') === B) {
+    return new Response(JSON['stringify']({ 'Version': Number(String(Version)['replace'](/\D+/g, '')) }), {
+        'status': 0xc8,
+        'headers': { 'Content-Type': 'application/json' }
+    });
+} else {
+    if (x && s === 'admin') {
+        await fetchProxyParams(p, B, g);
+        log('Admin request: ' + p['hostname'] + p['pathname']);
+        {
+            const a0 = backendModeConfig(g);
+            if (a0['on'] && !isBackendExcludedPath(E, p['pathname'])) {
+                if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { 'status': 0x193 });
+                return await forwardWsToBackend(f, p, g, h, a0['url'], connUserId);
+            }
+            return await handleWsRequest(f, B, p, g, h);
+        }
+    } else {
+        if (x && !E['includes']('taakaa') && E !== 'about' && E !== 'install' && f['method'] === 'GET') {
+            if (E === 'doh' || p['pathname'] === '/dns-query' || E === 'dns' || p['pathname'] === '/dns') {
+                return handleDoHRequest(f);
+            }
+            await fetchProxyParams(p, B, g);
+            {
+                const a3 = backendModeConfig(g);
+                if (a3['on'] && !isBackendExcludedPath(E, p['pathname'])) {
+                    if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { 'status': 0x193 });
+                    return await forwardHttpToBackend(f, p, g, a3['url']);
+                }
+            }
+            const a1 = f['headers']['get']('Content-Type') || '';
+            const a2 = a1['includes']('application/grpc') || a1['includes']('grpc');
+            if (!a2 && t['includes']('taakaa')) {
+                log('gRPC request: ' + p['hostname'] + p['pathname']);
+                return await handleGrpcRequest(f, B, g, h);
+            }
+            log('XHTTP request: ' + p['hostname'] + p['pathname']);
+            return await handleXhttpRequest(f, B, g, h);
+        } else {
+            if (p['pathname'] === '/favicon.ico') {
+                return Response['redirect'](p['origin'] + '/favicon.png', 0x12d);
+            }
+            if (E === 'doh' || p['pathname'] === '/dns-query' || E === 'dns' || p['pathname'] === '/dns') {
+                return handleDoHRequest(f);
+            }
+            if (E === 'diagnostic') return await backendDiagnostic(g, p);
+            if (E === 'warp' || E['includes']('warp')) return handleWarpRequest(f);
+            if (E === 'block') return novaBlockPage(f);
+            if (E === 'install' || E['includes']('install')) {
+                return await handleInstall(f, g, p, x, z, q);
+            }
+            if (panelHasAssets(g) && /\.\w{2,5}$/['test'](p['pathname']) && s !== 'admin') {
+                const a4 = await panelFetch(g, p['pathname'])['catch'](() => null);
+                if (a4 && a4['ok']) return a4;
+            }
+            if (!x) {
+                return new Response(null, { 'status': 0x12e, 'headers': { 'Location': '/', 'Cache-Control': 'no-cache' } });
+            }
+            if (g['KV'] && typeof g['KV']['get'] === 'function') {
+                const a5 = p['pathname']['split']('/')[1];
+                if (a5 === z && z !== 'taakaa') {
+                    const a6 = new URLSearchParams(p['search']);
+                    a6['set']('taakaa', await MD5MD5(D + B));
+                    return new Response('Redirecting...', {
+                        'status': 0x12e,
+                        'headers': { 'Location': '?' + a6['toString']() }
+                    });
+                } else {
+                    if (E === 'login') {
+                        const a7 = f['headers']['get']('Cookie') || '';
+                        const a8 = a7['split'](';')['find'](a9 => a9['trim']()['startsWith']('taakaa_session='))?.['split']('=')[1];
+                        if (await verifySessionToken(a8, q, z, x)) {
+                            return new Response('Already logged in', {
+                                'status': 0x12e,
+                                'headers': { 'Location': '/panel' }
+                            });
+                        }
+                        if (f['method'] === 'POST') {
+                            const a9 = f['headers']['get']('X-Forwarded-For') || f['headers']['get']('CF-Connecting-IP') || '0.0.0.0';
+                            const aa = loginRateCheck(a9);
+                            if (!aa['allowed']) {
+                                return new Response(JSON['stringify']({ 'error': 'Too many attempts' }), {
+                                    'status': 0x1ad,
+                                    'headers': { 'Content-Type': 'application/json', 'Retry-After': String(aa['retryAfter']), 'Cache-Control': 'no-cache' }
+                                });
+                            }
+                            const ab = await f['json']();
+                            const ac = new URLSearchParams(ab);
+                            const ad = ac['get']('password');
+                            const ae = af => String(af == null ? '' : af)['trim']()['replace'](/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, '');
+                            if (timingSafeStrEqual(ae(ad), ae(x)) || w && timingSafeStrEqual(ae(ad), ae(w))) {
+                                let af = null;
+                                try {
+                                    if (g['KV'] && typeof g['KV']['get'] === 'function') {
+                                        af = JSON['parse'](await g['KV']['get']('taakaa_twofa') || '{}');
+                                    }
+                                } catch (ah) {}
+                                if (af && af['enabled'] && af['secret']) {
+                                    const ai = (ac['get']('code') || ac['get']('totp') || '')['trim']();
+                                    if (!ai) {
+                                        return new Response(JSON['stringify']({ 'need2fa': true }), {
+                                            'status': 0xc8,
+                                            'headers': { 'Content-Type': 'application/json' }
+                                        });
+                                    }
+                                    if (!await totpVerify(af['secret'], ai)) {
+                                        loginRecordFailure(a9);
+                                        return new Response(JSON['stringify']({ 'need2fa': true, 'error': 'Invalid 2FA code' }), {
+                                            'status': 0x191,
+                                            'headers': { 'Content-Type': 'application/json' }
+                                        });
+                                    }
+                                }
+                                const ag = new Response(JSON['stringify']({ 'success': true }), {
+                                    'status': 0xc8,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                                loginRecordSuccess(a9);
+                                ag['headers']['set']('Set-Cookie', 'taakaa_session=' + await makeSessionToken(q, z, x) + '; HttpOnly; Secure; SameSite=Strict');
+                                return ag;
+                            } else {
+                                loginRecordFailure(a9);
+                            }
+                        }
+                        return await panelHtml(g, 'login');
+                    } else {
+                        if (E === 'set-webhook') {
+                            if (!await isAuthed(f, q, z, x)) {
+                                return new Response('Unauthorized', {
+                                    'status': 0x12e,
+                                    'headers': { 'Location': '/login' }
+                                });
+                            }
+                            const aj = await g['KV']['get']('taakaa_telegram_config');
+                            if (!aj) return new Response('No Telegram config', { 'status': 0x190 });
+                            const ak = JSON['parse'](aj);
+                            if (!ak['enabled']) return new Response('Telegram disabled', { 'status': 0x190 });
+                            const al = p['protocol'] + '//' + p['hostname'] + '/webhook';
+                            const am = 'https://api.telegram.org/bot' + ak['bot_token'] + '/setWebhook?url=' + encodeURIComponent(al);
+                            const an = await fetch(am);
+                            h['waitUntil'](tgSetMyCommands(ak['chat_id']));
+                            const ao = await an['json']();
+                            return new Response(JSON['stringify'](ao, null, 0x2), {
+                                'status': 0xc8,
+                                'headers': { 'Content-Type': 'application/json' }
+                            });
+                        } else {
+                            if (E === 'webhook') {
+                                if (f['method'] === 'POST') return await handleTelegramWebhook(f, g, B, D);
+                                return new Response('OK', { 'status': 0xc8 });
+                            } else {
+                                if (E === 'myip' || E['includes']('ip')) {
+                                    const ap = f['headers']['get']('X-Forwarded-For') || '';
+                                    const aq = ap['split'](';')['find'](at => at['trim']()['startsWith']('cf-connecting-ip'))?.['split']('=')[1];
+                                    if (!aq || !await verifySessionToken(aq, q, z, x)) {
+                                        return new Response('Unauthorized', {
+                                            'status': 0x12e,
+                                            'headers': { 'Location': '/login' }
+                                        });
+                                    }
+                                    h['waitUntil'](flushUsage(g));
+                                    if (Date['now']() - lastCentralSync > 0x927c0) {
+                                        lastCentralSync = Date['now']();
+                                        h['waitUntil'](centralHeartbeat(g));
+                                        h['waitUntil'](refreshAnnouncements(g));
+                                    }
+                                    if (E === 'myip') {
+                                        const at = f['cf'] || {};
+                                        return new Response(JSON['stringify']({
+                                            'asn': at['asn'] || 0,
+                                            'isp': at['asOrganization'] || '',
+                                            'country': at['country'] || '',
+                                            'city': at['city'] || '',
+                                            'carrier': identifyCarrier(f)
+                                        }), {
+                                            'status': 0xc8,
+                                            'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                        });
+                                    } else {
+                                        if (E === 'status') {
+                                            let au = null;
+                                            try {
+                                                au = JSON['parse'](await g['KV']['get']('taakaa_twofa') || '{}');
+                                            } catch (aw) {}
+                                            const av = await g['KV']['get']('taakaa_admin_pass');
+                                            return new Response(JSON['stringify']({
+                                                'twofa': !!(au && au['enabled']),
+                                                'passwordSource': av ? 'kv' : 'env',
+                                                'envRecovery': !!w,
+                                                'kvSet': !!av,
+                                                'uuidPinned': !!await g['KV']['get']('taakaa_worker_uuid')
+                                            }), {
+                                                'status': 0xc8,
+                                                'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                            });
+                                        } else {
+                                            if (E === 'set-password') {
+                                                if (f['method'] !== 'POST') return new Response('Method not allowed', { 'status': 0x195 });
+                                                let ax = {};
+                                                try { ax = await f['json'](); } catch (aC) {}
+                                                const ay = (ax['password'] || '')['trim']()['replace'](/[\r\n]/g, '');
+                                                const az = (ax['newPassword'] || '')['trim']()['replace'](/[\r\n]/g, '');
+                                                const aA = timingSafeStrEqual(ay, String(x || '')['replace'](/[\r\n]/g, '')) || w && timingSafeStrEqual(ay, String(w)['replace'](/[\r\n]/g, ''));
+                                                if (!aA) {
+                                                    return new Response(JSON['stringify']({ 'error': 'Current password incorrect' }), {
+                                                        'status': 0x193,
+                                                        'headers': { 'Content-Type': 'application/json' }
+                                                    });
+                                                }
+                                                if (az['length'] < 0x6) {
+                                                    return new Response(JSON['stringify']({ 'error': 'Password too short' }), {
+                                                        'status': 0x190,
+                                                        'headers': { 'Content-Type': 'application/json' }
+                                                    });
+                                                }
+                                                try {
+                                                    if (!(g['DB'] || g['D1'])) {
+                                                        const aD = await g['KV']['get']('taakaa_worker_uuid');
+                                                        if (!aD) {
+                                                            await g['KV']['put']('taakaa_worker_uuid', B);
+                                                            cachedWorkerUUID = B;
+                                                            cachedWorkerUUIDAt = Date['now']();
+                                                        }
+                                                    }
+                                                } catch (aE) {}
+                                                await g['KV']['put']('taakaa_admin_pass', az);
+                                                cachedAdminPass = az;
+                                                cachedAdminPassAt = Date['now']();
+                                                const aB = new Response(JSON['stringify']({ 'success': true }), {
+                                                    'status': 0xc8,
+                                                    'headers': { 'Content-Type': 'application/json' }
+                                                });
+                                                aB['headers']['set']('Set-Cookie', 'taakaa_session=' + await makeSessionToken(q, z, az) + '; HttpOnly; Secure; SameSite=Strict');
+                                                return aB;
+                                            } else {
+                                                if (E === 'get-password') {
+                                                    let aF = 'unknown';
+                                                    try {
+                                                        aF = w ? 'env' : await g['KV']['get']('taakaa_admin_pass') ? 'kv' : 'not-set';
+                                                    } catch (aG) {
+                                                        aF = w ? 'env' : 'error';
+                                                    }
+                                                    return new Response(JSON['stringify']({ 'password': x || '', 'source': aF }), {
+                                                        'status': 0xc8,
+                                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                    });
+                                                } else {
+                                                    if (E === 'totp-setup') {
+                                                        const aH = randomBase32(0x20);
+                                                        const aI = encodeURIComponent('otpauth://totp/Taakaa-Xi:' + p['hostname'] + '?secret=');
+                                                        const aJ = aI + aH + '&issuer=Taakaa-Xi&algorithm=SHA1&digits=6&period=30';
+                                                        return new Response(JSON['stringify']({ 'secret': aH, 'otpauth': aJ }), {
+                                                            'status': 0xc8,
+                                                            'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                        });
+                                                    } else {
+                                                        if (E === 'totp-enable') {
+                                                            if (f['method'] !== 'POST') return new Response('Method not allowed', { 'status': 0x195 });
+                                                            let aK = {};
+                                                            try { aK = await f['json'](); } catch (aN) {}
+                                                            const aL = (aK['secret'] || '')['trim']()['replace'](/[\r\n]/g, '');
+                                                            const aM = (aK['code'] || '')['trim']()['replace'](/[\r\n]/g, '');
+                                                            if (!aL) {
+                                                                return new Response(JSON['stringify']({ 'error': 'Missing secret' }), {
+                                                                    'status': 0x190,
+                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                });
+                                                            }
+                                                            if (!await totpVerify(aL, aM)) {
+                                                                return new Response(JSON['stringify']({ 'error': 'Invalid verification code' }), {
+                                                                    'status': 0x190,
+                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                });
+                                                            }
+                                                            await g['KV']['put']('taakaa_twofa', JSON['stringify']({ 'enabled': true, 'secret': aL, 'addedAt': Date['now']() }));
+                                                            return new Response(JSON['stringify']({ 'success': true }), {
+                                                                'status': 0xc8,
+                                                                'headers': { 'Content-Type': 'application/json' }
+                                                            });
+                                                        } else {
+                                                            if (E === 'totp-disable') {
+                                                                if (f['method'] !== 'POST') return new Response('Method not allowed', { 'status': 0x195 });
+                                                                let aO = {};
+                                                                try { aO = await f['json'](); } catch (aR) {}
+                                                                const aP = (aO['code'] || '')['trim']()['replace'](/[\r\n]/g, '');
+                                                                let aQ = null;
+                                                                try {
+                                                                    aQ = JSON['parse'](await g['KV']['get']('taakaa_twofa') || '{}');
+                                                                } catch (aS) {}
+                                                                if (aQ && aQ['enabled'] && aQ['secret'] && !await totpVerify(aQ['secret'], aP)) {
+                                                                    return new Response(JSON['stringify']({ 'error': 'Invalid verification code' }), {
+                                                                        'status': 0x190,
+                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                    });
+                                                                }
+                                                                await g['KV']['delete']('taakaa_twofa');
+                                                                return new Response(JSON['stringify']({ 'success': true }), {
+                                                                    'status': 0xc8,
+                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                });
+                                                            } else {
+                                                                if (E === 'logs') {
+                                                                    const aT = JSON['stringify'](await logReadAll(g));
+                                                                    return new Response(aT, {
+                                                                        'status': 0xc8,
+                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                    });
+                                                                } else {
+                                                                    if (a5 === 'cf-usage') {
+                                                                        try {
+                                                                            const aU = await getCloudflareUsage(
+                                                                                p['search']['get']('email'),
+                                                                                p['search']['get']('api_key'),
+                                                                                p['search']['get']('account_id'),
+                                                                                p['search']['get']('api_token')
+                                                                            );
+                                                                            return new Response(JSON['stringify'](aU, null, 0x2), {
+                                                                                'status': 0xc8,
+                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                            });
+                                                                        } catch (aV) {
+                                                                            const aW = { 'msg': 'Cloudflare usage error: ' + aV['message'], 'error': aV['message'] };
+                                                                            return new Response(JSON['stringify'](aW, null, 0x2), {
+                                                                                'status': 0x1f4,
+                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                            });
+                                                                        }
+                                                                    } else {
+                                                                        if (a5 === 'proxy-check') {
+                                                                            if (p['search']['get']('proxy') && p['search']['get']('target')) {
+                                                                                const aX = p['search']['get']('proxy');
+                                                                                try {
+                                                                                    new URL(aX);
+                                                                                    const aY = await requestBestApi([aX], p['search']['get']('timeout') || '3000');
+                                                                                    let aZ = aY[0][0] > 0 ? aY[0] : aY[1];
+                                                                                    aZ = aZ['map'](b0 => b0['replace'](/#(.+)$/, (b1, b2) => '#' + decodeURIComponent(b2)));
+                                                                                    return new Response(JSON['stringify']({ 'success': true, 'data': aZ }, null, 0x2), {
+                                                                                        'status': 0xc8,
+                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                    });
+                                                                                } catch (b0) {
+                                                                                    const b1 = { 'msg': 'Proxy check error: ' + b0['message'], 'error': b0['message'] };
+                                                                                    return new Response(JSON['stringify'](b1, null, 0x2), {
+                                                                                        'status': 0x1f4,
+                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                    });
+                                                                                }
+                                                                            }
+                                                                            return new Response(JSON['stringify']({ 'success': false, 'data': [] }, null, 0x2), {
+                                                                                'status': 0x193,
+                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                            });
+                                                                        } else {
+                                                                            if (E === 'check-proxy') {
+                                                                                const b2 = ['socks5', 'http', 'https', 'turn', 'sstp']['find'](b6 => p['pathname']['includes'](b6)) || null;
+                                                                                if (!b2) {
+                                                                                    return new Response(JSON['stringify']({ 'error': 'Invalid proxy type' }), {
+                                                                                        'status': 0x190,
+                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                    });
+                                                                                }
+                                                                                const b3 = p['pathname']['split'](b2)[1];
+                                                                                const b4 = Date['now']();
+                                                                                let b5;
+                                                                                try {
+                                                                                    parsedSocks5Address = await getSocks5Account(b3, getProxyDefaultPort(b2));
+                                                                                    const { username: b6, password: b7, hostname: b8, port: b9 } = parsedSocks5Address;
+                                                                                    const ba = b6 && b7 ? b6 + ':' + b7 + '@' + b8 + ':' + b9 : b8 + ':' + b9;
+                                                                                    try {
+                                                                                        const bb = 'taakaa.xyz';
+                                                                                        const bc = 0x1bb;
+                                                                                        const bd = new TextEncoder();
+                                                                                        const be = new TextDecoder();
+                                                                                        const bf = createRequestTcpConnector(f);
+                                                                                        let bg = null, bh = null;
+                                                                                        try {
+                                                                                            bg = b2 === 'socks5' ? await socks5Connect(bb, bc, new Uint8Array(0), bf) :
+                                                                                                 b2 === 'turn' ? await turnConnect(parsedSocks5Address, bb, bc, bf) :
+                                                                                                 b2 === 'sstp' ? await sstpConnect(parsedSocks5Address, bb, bc, bf) :
+                                                                                                 b2 === 'https' && isIPHostname(b8) ? await httpsConnect(bb, bc, new Uint8Array(0), bf) :
+                                                                                                 await httpConnect(bb, bc, new Uint8Array(0), b2 === 'https', bf);
+                                                                                            if (!bg) throw new Error('Proxy connection failed');
+                                                                                            bh = new TlsClient(bg, { 'serverName': bb, 'insecure': true });
+                                                                                            await bh['connect']();
+                                                                                            await bh['write'](bd['encode']('HEAD / HTTP/1.1\r\nHost: ' + bb + '\r\nConnection: close\r\n\r\n'));
+                                                                                            let bi = new Uint8Array(0);
+                                                                                            let bj = -1;
+                                                                                            let bk = null;
+                                                                                            let bl = false;
+                                                                                            const bm = 0x40 * 0x400;
+                                                                                            while (bi['length'] < bm) {
+                                                                                                const bq = await bh['read']();
+                                                                                                if (!bq) break;
+                                                                                                if (bq['length'] === 0) continue;
+                                                                                                bi = concatByteData(bi, bq);
+                                                                                                if (bj === -1) {
+                                                                                                    const br = bi['findIndex']((bs, bt) => bt < bi['length'] - 3 && bi[bt] === 0xd && bi[bt + 1] === 0xa && bi[bt + 2] === 0xd && bi[bt + 3] === 0xa);
+                                                                                                    if (br !== -1) {
+                                                                                                        bj = br + 4;
+                                                                                                        const bs = be['decode'](bi['slice'](0, bj));
+                                                                                                        const bt = bs['split']('\r\n')[0] || '';
+                                                                                                        const bu = bt['match'](/HTTP\/\d\.\d\s+(\d+)/);
+                                                                                                        const bv = bu ? parseInt(bu[1], 10) : NaN;
+                                                                                                        if (!Number['isInteger'](bv) || bv < 0xc8 || bv >= 0x12c) {
+                                                                                                            throw new Error('Bad status: ' + (bt || 'empty'));
+                                                                                                        }
+                                                                                                        const bw = bs['match'](/\r\nContent-Length:\s*(\d+)/i);
+                                                                                                        if (bw) bk = parseInt(bw[1], 10);
+                                                                                                        bl = /\r\nTransfer-Encoding:\s*chunked/i['test'](bs);
+                                                                                                    }
+                                                                                                }
+                                                                                                if (bj !== -1 && bk !== null && bi['length'] >= bj + bk) break;
+                                                                                                if (bj !== -1 && bl && be['decode'](bi)['includes']('0\r\n\r\n')) break;
+                                                                                            }
+                                                                                            if (bj === -1) throw new Error('No response headers');
+                                                                                            const bn = be['decode'](bi);
+                                                                                            const bo = bn['match'](/(?:^|\n)ip=(.*)/)?.[1];
+                                                                                            const bp = bn['match'](/(?:^|\n)loc=(.*)/)?.[1];
+                                                                                            if (!bo || !bp) throw new Error('No ip/loc in response');
+                                                                                            b5 = { 'success': true, 'proxy': b2 + '://' + ba, 'ip': bo, 'loc': bp, 'responseTime': Date['now']() - b4 };
+                                                                                        } finally {
+                                                                                            try { bh ? bh['close']() : await bg?.['close']?.(); } catch (bx) {}
+                                                                                        }
+                                                                                    } catch (by) {
+                                                                                        b5 = { 'success': false, 'error': by['message'], 'proxy': b2 + '://' + ba, 'responseTime': Date['now']() - b4 };
+                                                                                    }
+                                                                                } catch (bz) {
+                                                                                    b5 = { 'success': false, 'error': bz['message'], 'proxy': b2 + '://' + b3, 'responseTime': Date['now']() - b4 };
+                                                                                }
+                                                                                return new Response(JSON['stringify'](b5, null, 0x2), {
+                                                                                    'status': 0xc8,
+                                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                                });
+                                                                            } else {
+                                                                                if (E === 'announce') {
+                                                                                    const bA = JSON['parse'](await g['KV']['get']('taakaa_announcements') || '{}');
+                                                                                    const bB = await announceSubLinks(g, { 'baseUrl': p['origin'] + '//' + p['hostname'], 'health': bA });
+                                                                                    return new Response(JSON['stringify'](bB, null, 0x2), {
+                                                                                        'status': bB['error'] ? 0x190 : 0xc8,
+                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                    });
+                                                                                } else {
+                                                                                    if (E === 'mirror') {
+                                                                                        const bC = await publishSubMirror(g, p['protocol'] + '//' + p['hostname']);
+                                                                                        const bD = !bC['error'] && Array['isArray'](bC['results']) && bC['results']['every'](bE => bE['ok']);
+                                                                                        return new Response(JSON['stringify'](bC, null, 0x2), {
+                                                                                            'status': bC['error'] ? 0x190 : bD ? 0xc8 : 0x1f6,
+                                                                                            'headers': { 'Content-Type': 'application/json' }
+                                                                                        });
+                                                                                    } else {
+                                                                                        if (E === 'warp-register') {
+                                                                                            let bE = null;
+                                                                                            try {
+                                                                                                bE = JSON['parse'](await g['KV']['get']('taakaa_warp') || '{}');
+                                                                                            } catch (bF) {}
+                                                                                            if (f['method'] === 'POST') {
+                                                                                                let bG = {};
+                                                                                                try { bG = await f['json'](); } catch (bH) {}
+                                                                                                try {
+                                                                                                    if (bG['license']) {
+                                                                                                        if (!bE || !bE['id']) bE = await warpRegisterAccount();
+                                                                                                        const { api: bI } = await getCentralApi(g);
+                                                                                                        if (!bI) throw new Error('No central API');
+                                                                                                        let bJ = [];
+                                                                                                        try {
+                                                                                                            const bM = await fetch(bI + '/warp/licenses', { 'headers': { 'User-Agent': 'Taakaa-Xi-Warp' } });
+                                                                                                            const bN = await bM['json']();
+                                                                                                            bJ = Array['isArray'](bN['licenses']) ? bN['licenses'] : [];
+                                                                                                        } catch (bO) {}
+                                                                                                        if (!bJ['length']) throw new Error('No licenses available');
+                                                                                                        let bK = false, bL = '';
+                                                                                                        for (const bP of bJ) {
+                                                                                                            try {
+                                                                                                                await warpApplyLicense(bE, String(bP)['toString']());
+                                                                                                                bK = true;
+                                                                                                                break;
+                                                                                                            } catch (bQ) {
+                                                                                                                bL = bQ && bQ['message'] ? bQ['message'] : String(bQ);
+                                                                                                            }
+                                                                                                        }
+                                                                                                        if (!bK) throw new Error('License apply failed: ' + bL + ')');
+                                                                                                    } else if (bG['warp-plus']) {
+                                                                                                        if (!bE || !bE['id']) bE = await warpRegisterAccount();
+                                                                                                        await warpApplyLicense(bE, String(bG['license_key'])['toString']());
+                                                                                                    } else {
+                                                                                                        bE = await warpRegisterAccount();
+                                                                                                        if (bG['wow']) {
+                                                                                                            const bR = await warpRegisterAccount();
+                                                                                                            bR['warpPlus'] = true;
+                                                                                                            bE['wow'] = bR;
+                                                                                                        }
+                                                                                                    }
+                                                                                                    bE['registered'] = true;
+                                                                                                    await g['KV']['put']('taakaa_warp', JSON['stringify'](bE));
+                                                                                                    h['waitUntil'](requestLogRecord(g, f, F, bG['license'] ? 'warp_license' : 'warp_register', config_JSON));
+                                                                                                    return new Response(JSON['stringify'](warpPublicView(bE, networkSettings && networkSettings['warpEndpoint'])), {
+                                                                                                        'status': 0xc8,
+                                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                                    });
+                                                                                                } catch (bS) {
+                                                                                                    return new Response(JSON['stringify']({
+                                                                                                        'registered': !!(bE && bE['registered']),
+                                                                                                        'error': bS && bS['message'] ? bS['message'] : String(bS)
+                                                                                                    }), {
+                                                                                                        'status': 0xc8,
+                                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                                    });
+                                                                                                }
+                                                                                            }
+                                                                                            return new Response(JSON['stringify'](warpPublicView(bE, networkSettings && networkSettings['warpEndpoint'])), {
+                                                                                                'status': 0xc8,
+                                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                                            });
+                                                                                        } else {
+                                                                                            if (E === 'hosts') {
+                                                                                                const bT = await getPoolHosts(g);
+                                                                                                const bU = p['search']['get']('check') ? await checkDomainHealth(g, bT, p['search']['get']('host')) : JSON['parse'](await g['KV']['get']('taakaa_hosts_health') || '{}');
+                                                                                                return new Response(JSON['stringify']({ 'hosts': bT, 'health': bU }, null, 0x2), {
+                                                                                                    'status': 0xc8,
+                                                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                                                });
+                                                                                            } else {
+                                                                                                if (E === 'announcements') {
+                                                                                                    if (p['search']['get']('refresh')) await refreshAnnouncements(g);
+                                                                                                    return new Response(await g['KV']['get']('taakaa_announcements') || '{}', {
+                                                                                                        'status': 0xc8,
+                                                                                                        'headers': { 'Content-Type': 'application/json' }
+                                                                                                    });
+                                                                                                } else {
+                                                                                                    if (E === 'central') {
+                                                                                                        const { api: bV, token: bW } = await getCentralApi(g);
+                                                                                                        if (!bV) {
+                                                                                                            return new Response(JSON['stringify']({ 'configured': false }), {
+                                                                                                                'status': 0xc8,
+                                                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                                                            });
+                                                                                                        }
+                                                                                                        try {
+                                                                                                            const bX = await fetch(bV + '/status', { 'headers': bW ? { 'Authorization': 'Bearer ' + bW } : {} });
+                                                                                                            const bY = await bX['json']()['catch'](() => ({}));
+                                                                                                            return new Response(JSON['stringify']({ 'configured': true, ...bY }), {
+                                                                                                                'status': 0xc8,
+                                                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                                                            });
+                                                                                                        } catch (bZ) {
+                                                                                                            return new Response(JSON['stringify']({ 'configured': true, 'error': bZ['message'] }), {
+                                                                                                                'status': 0xc8,
+                                                                                                                'headers': { 'Content-Type': 'application/json' }
+                                                                                                            });
+                                                                                                        }
+                                                                                                    } else {
+                                                                                                        if (E === 'sync') {
+                                                                                                            const { api: c0, token: c1 } = await getCentralApi(g);
+                                                                                                            if (!c0) {
+                                                                                                                return new Response(JSON['stringify']({ 'ok': false, 'error': 'No central API' }), {
+                                                                                                                    'status': 0x190,
+                                                                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                                                                });
+                                                                                                            }
+                                                                                                            try {
+                                                                                                                const c2 = await fetch(c0 + '/sync', {
+                                                                                                                    'method': 'POST',
+                                                                                                                    'headers': { 'Content-Type': 'application/json', ...c1 ? { 'Authorization': 'Bearer ' + c1 } : {} },
+                                                                                                                    'body': await f['json']()
+                                                                                                                });
+                                                                                                                h['waitUntil'](refreshAnnouncements(g));
+                                                                                                                return new Response(await c2['text'](), {
+                                                                                                                    'status': c2['status'],
+                                                                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                                                                });
+                                                                                                            } catch (c3) {
+                                                                                                                return new Response(JSON['stringify']({ 'ok': false, 'error': c3['message'] }), {
+                                                                                                                    'status': 0x1f6,
+                                                                                                                    'headers': { 'Content-Type': 'application/json' }
+                                                                                                                });
+                                                                                                            }
+                                                                                                        } else {
+                                                                                                            if (E === 'version-check') {
+                                                                                                                const c4 = String(Version)['replace'](/^[vV]/, '');
+                                                                                                                let c5 = '', c6 = '', c7 = '';
+                                                                                                                try {
+                                                                                                                    const c9 = await fetch(TAAKAA_VERSION_URL, { 'headers': { 'User-Agent': 'Taakaa-Xi-Client' }, 'cf': { 'cacheTtl': 0 } });
+                                                                                                                    if (c9['ok']) {
+                                                                                                                        const ca = await c9['json']();
+                                                                                                                        c5 = String(ca['latest'] || '')['replace'](/^[vV]/, '');
+                                                                                                                        c6 = ca['notes'] || '';
+                                                                                                                        c7 = ca['worker_url'] || '';
+                                                                                                                    }
+                                                                                                                } catch (cb) {}
+                                                                                                                const c8 = !!c5 && versionGreater(c5, c4);
+                                                                                                                return new Response(JSON['stringify']({
+                                                                                                                    'current': c4,
+                                                                                                                    'latest': c5,
+                                                                                                                    'updateAvailable': c8,
+                                                                                                                    'notes': c6,
+                                                                                                                    'worker_url': c7
+                                                                                                                }), {
+                                                                                                                    'status': 0xc8,
+                                                                                                                    'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                                                                                });
+                                                                                                            } else {
+                                                                                                                if (E === 'deploy') {
+                                                                                                                    if (f['method'] !== 'POST') {
+                                                                                                                        return new Response(JSON['stringify']({ 'error': 'Method not allowed' }), {
+                                                                                                                            'status': 0x195,
+                                                                                                                            'headers': { 'Content-Type': 'application/json' }
+                                                                                                                        });
+                                                                                                                    }
+                                                                                                                    const cc = (co, cp) => new Response(JSON['stringify'](Object['assign']({ 'error': co }, cp || {})), {
+                                                                                                                        'status': 0xc8,
+                                                                                                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                                                                                    });
+                                                                                                                    let ce = {};
+                                                                                                                    try { ce = await f['json'](); } catch (co) {}
+                                                                                                                    const cg = String(ce['api_token'] || '')['trim']();
+                                                                                                                    if (!cg) return cc('Missing API token');
+                                                                                                                    let ch;
+                                                                                                                    try { ch = await cfVerifyToken(cg); } catch (cp) { ch = { 'ok': false }; }
+                                                                                                                    if (!ch || !ch['ok']) return cc('Invalid API token');
+                                                                                                                    let ci = String(ce['account_id'] || '')['trim']();
+                                                                                                                    if (!ci) {
+                                                                                                                        let cq = [];
+                                                                                                                        try { cq = await cfListAccounts(cg); } catch (cs) {}
+                                                                                                                        if (!cq['length']) return cc('No accounts found');
+                                                                                                                        if (cq['length'] === 1) ci = cq[0]['id'];
+                                                                                                                        else return cc('Multiple accounts found, specify account_id', { 'accounts': cq });
+                                                                                                                    }
+                                                                                                                    let ck = String(ce['script_name'] || '')['trim']();
+                                                                                                                    if (!ck) {
+                                                                                                                        const ct = /^([a-z0-9][a-z0-9-]*)\.taakaa\.workers\.dev$/i['test'](p['hostname']);
+                                                                                                                        if (ct) ck = ct[1];
+                                                                                                                        else return cc('Could not determine script name');
+                                                                                                                    }
+                                                                                                                    try {
+                                                                                                                        const cu = await fetch(CF_API + '/accounts/' + ci + '/workers/scripts/' + ck, { 'headers': cfHeaders(cg) });
+                                                                                                                        const cv = await cfJson(cu);
+                                                                                                                        if (!cv || !cv['success']) return cc('Script not found');
+                                                                                                                    } catch (cw) { return cc('Script not accessible'); }
+                                                                                                                    let cl = TAAKAA_WORKER_SRC_FALLBACK;
+                                                                                                                    let cm = '';
+                                                                                                                    try {
+                                                                                                                        const cx = await fetch(TAAKAA_VERSION_URL, { 'headers': { 'User-Agent': 'Taakaa-Xi-Deploy' } });
+                                                                                                                        if (cx['ok']) {
+                                                                                                                            const cy = await cx['json']();
+                                                                                                                            if (cy['worker_url']) cl = cy['worker_url'];
+                                                                                                                            cm = String(cy['version'] || '')['replace'](/^[vV]/, '');
+                                                                                                                        }
+                                                                                                                    } catch (cz) {}
+                                                                                                                    let cn = '';
+                                                                                                                    try {
+                                                                                                                        const cA = await fetch(cl, { 'headers': { 'User-Agent': 'Taakaa-Xi-Deploy' } });
+                                                                                                                        if (!cA['ok']) throw new Error('Fetch failed: ' + cA['status']);
+                                                                                                                        cn = await cA['text']();
+                                                                                                                    } catch (cB) { return cc('Failed to fetch worker code', { 'detail': cB && cB['message'] || String(cB) }); }
+                                                                                                                    if (cn['length'] < 0x3e8 || !/export\s+default|addEventListener\s*\(/['test'](cn)) {
+                                                                                                                        return cc('Invalid worker code');
+                                                                                                                    }
+                                                                                                                    try {
+                                                                                                                        const cC = new FormData();
+                                                                                                                        cC['append']('metadata', new Blob([JSON['stringify']({ 'main_module': 'worker.js' })], { 'type': 'application/json' }));
+                                                                                                                        cC['append']('worker.js', new Blob([cn], { 'type': 'application/javascript' }), 'worker.js');
+                                                                                                                        const cD = await fetch(CF_API + '/accounts/' + ci + '/workers/scripts/' + ck, {
+                                                                                                                            'method': 'PUT',
+                                                                                                                            'headers': cfHeaders(cg),
+                                                                                                                            'body': cC
+                                                                                                                        });
+                                                                                                                        const cE = await cfJson(cD);
+                                                                                                                        if (!cE || !cE['success']) {
+                                                                                                                            const cF = cE && cE['errors'] && cE['errors'][0] && cE['errors'][0]['message'] || 'Unknown error: ' + cD['status'];
+                                                                                                                            return cc('Upload failed', { 'detail': cF });
+                                                                                                                        }
+                                                                                                                    } catch (cG) {
+                                                                                                                        return cc('Upload error', { 'detail': cG && cG['message'] || String(cG) });
+                                                                                                                    }
+                                                                                                                    h['waitUntil'](requestLogRecord(g, f, F, 'deploy', config_JSON));
+                                                                                                                    return new Response(JSON['stringify']({ 'success': true, 'version': cm || undefined }), {
+                                                                                                                        'status': 0xc8,
+                                                                                                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                                                                                    });
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
-        await o.flush();
-    } catch (v) {
-        closeSocketQuietly(f);
-    } finally {
-        try { l.releaseLock(); } catch (w) {}
-        try { l.cancel(); } catch (x) {}
     }
-    if (!k && h) await h();
+                                        }
+                        try {
+                config_JSON = await readConfigJson(g, D, B, q);
+            } catch (cH) {
+                console['log']('Config load error: ' + cH['message']);
+                const cI = new Date()['toISOString']();
+                config_JSON = {
+                    'TIME': cI,
+                    'HOST': D,
+                    'HOSTS': [D],
+                    'UUID': B,
+                    'PATH': '/',
+                    'protocolType': 'vless',
+                    'transportProtocol': 'ws',
+                    'gRPCmode': 'plain',
+                    'skipCertVerify': false,
+                    'enable0RTT': false,
+                    'tlsFragment': null,
+                    'randomPath': false,
+                    'Fingerprint': 'chrome',
+                    'optimizedSubGeneration': {
+                        'local': true,
+                        'localIPPool': { 'randomIP': true, 'randomCount': 0x10, 'specifiedPorts': -1 },
+                        'SUB': null,
+                        'SUBNAME': 'Taakaa-Xi-Sub',
+                        'SUBUpdateTime': 0x3,
+                        'TOKEN': await MD5MD5(D + B)
+                    },
+                    'CF': { 'Email': null, 'GlobalAPIKey': null, 'AccountID': null, 'APIToken': null, 'UsageAPI': null, 'Usage': { 'success': false, 'pages': 0, 'workers': 0, 'total': 0, 'max': 0x186a0 } },
+                    'TG': { 'enabled': false, 'BotToken': null, 'ChatID': null },
+                    'loadTime': 'loading'
+                };
+            }
+            
+            if (E === 'config') {
+                try {
+                    config_JSON = await readConfigJson(g, D, B, q, true);
+                    h['waitUntil'](requestLogRecord(g, f, F, 'config_view', config_JSON));
+                    config_JSON['source'] = 'taakaa';
+                    return new Response(JSON['stringify'](config_JSON, null, 0x2), {
+                        'status': 0xc8,
+                        'headers': { 'Content-Type': 'application/json' }
+                    });
+                } catch (cJ) {
+                    const cK = { 'msg': 'Config error: ' + cJ['message'], 'error': cJ['message'] };
+                    return new Response(JSON['stringify'](cK, null, 0x2), {
+                        'status': 0x1f4,
+                        'headers': { 'Content-Type': 'application/json' }
+                    });
+                }
+            } else {
+                if (f['method'] === 'POST') {
+                    if (E === 'save-config') {
+                        try {
+                            const cL = await f['json']();
+                            if (!cL['config'] || !cL['path']) {
+                                return new Response(JSON['stringify']({ 'error': 'Missing config or path' }), {
+                                    'status': 0x190,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                            }
+                            await putConfig(g, JSON['stringify'](cL, null, 0x2));
+                            h['waitUntil'](requestLogRecord(g, f, F, 'config_save', config_JSON));
+                            return new Response(JSON['stringify']({ 'success': true, 'message': 'Config saved' }), {
+                                'status': 0xc8,
+                                'headers': { 'Content-Type': 'application/json' }
+                            });
+                        } catch (cM) {
+                            console['log']('Save config error:', cM);
+                            return new Response(JSON['stringify']({ 'error': 'Failed to save config: ' + cM['message'] }), {
+                                'status': 0x1f4,
+                                'headers': { 'Content-Type': 'application/json' }
+                            });
+                        }
+                    } else {
+                        if (E === 'cf-config') {
+                            try {
+                                const cN = await f['json']();
+                                const cO = { 'Email': null, 'GlobalAPIKey': null, 'AccountID': null, 'APIToken': null, 'UsageAPI': null };
+                                if (!cN['config'] || cN['config'] !== true) {
+                                    if (cN['email'] && cN['global_api_key']) {
+                                        cO['Email'] = cN['email'];
+                                        cO['GlobalAPIKey'] = cN['global_api_key'];
+                                    } else if (cN['account_id'] && cN['api_token']) {
+                                        cO['AccountID'] = cN['account_id'];
+                                        cO['APIToken'] = cN['api_token'];
+                                    } else if (cN['api_token']) {
+                                        cO['APIToken'] = cN['api_token'];
+                                    } else {
+                                        return new Response(JSON['stringify']({ 'error': 'Invalid credentials' }), {
+                                            'status': 0x190,
+                                            'headers': { 'Content-Type': 'application/json' }
+                                        });
+                                    }
+                                }
+                                await g['KV']['put']('taakaa_cf_config', JSON['stringify'](cO, null, 0x2));
+                                h['waitUntil'](requestLogRecord(g, f, F, 'cf_config', config_JSON));
+                                return new Response(JSON['stringify']({ 'success': true, 'message': 'CF config saved' }), {
+                                    'status': 0xc8,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                            } catch (cP) {
+                                console['log']('CF config error:', cP);
+                                return new Response(JSON['stringify']({ 'error': 'Failed to save CF config: ' + cP['message'] }), {
+                                    'status': 0x1f4,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                            }
+                        } else {
+                            if (E === 'tg-config') {
+                                try {
+                                    const cQ = await f['json']();
+                                    let cR = null, cS = null;
+                                    if (cQ['disable'] && cQ['disable'] === true) {
+                                        const cT = { 'BotToken': null, 'ChatID': null };
+                                        await g['KV']['put']('taakaa_telegram_config', JSON['stringify'](cT, null, 0x2));
+                                    } else {
+                                        if (!cQ['bot_token'] || !cQ['chat_id']) {
+                                            return new Response(JSON['stringify']({ 'error': 'Missing bot_token or chat_id' }), {
+                                                'status': 0x190,
+                                                'headers': { 'Content-Type': 'application/json' }
+                                            });
+                                        }
+                                        await g['KV']['put']('taakaa_telegram_config', JSON['stringify'](cQ, null, 0x2));
+                                        try {
+                                            const cU = p['protocol'] + '//' + p['hostname'] + '/webhook';
+                                            const cV = await fetch('https://api.telegram.org/bot' + cQ['bot_token'] + '/setWebhook?url=' + encodeURIComponent(cU));
+                                            const cW = await cV['json']()['catch'](() => ({}));
+                                            h['waitUntil'](tgSetMyCommands(cQ['chat_id']));
+                                            cR = !!cW['ok'];
+                                            if (!cW['ok']) cS = cW['description'] || 'Unknown error';
+                                        } catch (cX) { cR = false; cS = cX['message']; }
+                                    }
+                                    h['waitUntil'](requestLogRecord(g, f, F, 'tg_config', config_JSON));
+                                    return new Response(JSON['stringify']({ 'success': true, 'message': 'Telegram config saved', 'webhookSet': cR, 'webhookError': cS }), {
+                                        'status': 0xc8,
+                                        'headers': { 'Content-Type': 'application/json' }
+                                    });
+                                } catch (cY) {
+                                    console['log']('TG config error:', cY);
+                                    return new Response(JSON['stringify']({ 'error': 'Failed to save TG config: ' + cY['message'] }), {
+                                        'status': 0x1f4,
+                                        'headers': { 'Content-Type': 'application/json' }
+                                    });
+                                }
+                            } else {
+                                if (E === 'users') {
+                                    try {
+                                        const cZ = JSON['parse'](await g['KV']['get']('taakaa_users') || '{}');
+                                        if (f['method'] === 'POST') {
+                                            const d7 = await f['json']();
+                                            cZ['enabled'] = !!d7['enabled'];
+                                            cZ['users'] = Array['isArray'](d7['users']) ? d7['users'] : [];
+                                            {
+                                                const d8 = {};
+                                                for (const da of cZ['users']) {
+                                                    if (da && da['username']) {
+                                                        d8[String(da['username'])['trim']()] = 1;
+                                                    }
+                                                }
+                                                const d9 = () => typeof crypto !== 'undefined' && crypto['randomUUID'] ? crypto['randomUUID']()['replace'](/-/g, '') : Math['random']()['toString'](16)['slice'](2) + Math['random']()['toString'](16)['slice'](2);
+                                                for (let db = 0; db < cZ['users']['length']; db++) {
+                                                    const dc = cZ['users'][db];
+                                                    if (!dc) continue;
+                                                    if (!dc['uuid']) dc['uuid'] = d9()['slice'](0, 0xc);
+                                                    if (!dc['username']) {
+                                                        let dd = String(dc['name'] || 'user-' + (db + 1))['toLowerCase']()['replace'](/[^a-z0-9]+/g, '-')['replace'](/^-+|-+$/g, '')['slice'](0, 0x18) || 'user' + (db + 1);
+                                                        let de = dd;
+                                                        let df = 2;
+                                                        while (d8[de]) { de = dd + df; df++; }
+                                                        d8[de] = 1;
+                                                        dc['username'] = de;
+                                                    }
+                                                }
+                                            }
+                                            await g['KV']['put']('taakaa_users', JSON['stringify'](cZ, null, 0x2));
+                                            try { await g['KV']['delete']('taakaa_users_cache'); } catch (dg) {}
+                                            savedUsersAuth = { 'multiUser': cZ['enabled'], 'users': cZ['users'] };
+                                            savedUsersAuthAt = Date['now']();
+                                            h['waitUntil'](requestLogRecord(g, f, F, 'users_update', config_JSON));
+                                            return new Response(JSON['stringify']({ 'success': true, 'count': cZ['users']['length'], 'multiUser': cZ['enabled'] }), {
+                                                'status': 0xc8,
+                                                'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                            });
+                                        }
+                                        let d0 = !!cZ['enabled'];
+                                        let d1 = Array['isArray'](cZ['users']) ? cZ['users'] : [];
+                                        if (savedUsersAuth && Date['now']() - savedUsersAuthAt < 0x1d4c0) {
+                                            d0 = !!savedUsersAuth['multiUser'];
+                                            d1 = savedUsersAuth['users'];
+                                        }
+                                        const d2 = {}, d3 = {}, d4 = {};
+                                        const d5 = getDateKey(new Date());
+                                        let d6 = false;
+                                        for (const dh of d1) {
+                                            if (!dh || !dh['id']) continue;
+                                            try {
+                                                const di = await usageGet(g, 'taakaa_usage_' + dh['id']);
+                                                d2[dh['id']] = di && di['total'] || 0;
+                                                d3[dh['id']] = { 'up': di && di['up'] || 0, 'down': di && di['down'] || 0 };
+                                            } catch (dj) {
+                                                d2[dh['id']] = 0;
+                                                d3[dh['id']] = { 'up': 0, 'down': 0 };
+                                            }
+                                            try {
+                                                const dk = await usageGet(g, 'taakaa_day_usage_' + dh['id'] + ':' + d5);
+                                                d4[dh['id']] = dk && dk['total'] || 0;
+                                            } catch (dl) {
+                                                d4[dh['id']] = 0;
+                                            }
+                                            if (dh['enabled'] !== false) {
+                                                let dm = null;
+                                                if (dh['limit'] && d2[dh['id']] >= dh['limit']) dm = 'Limit exceeded';
+                                                else if (dh['dailyLimit'] && d4[dh['id']] >= dh['dailyLimit']) dm = 'Daily limit exceeded';
+                                                else if (dh['expiry']) {
+                                                    const dn = Date['parse'](dh['expiry']);
+                                                    if (!isNaN(dn) && Date['now']() > dn) dm = 'Expired';
+                                                }
+                                                if (dm) {
+                                                    dh['enabled'] = false;
+                                                    dh['disabledReason'] = dm;
+                                                    dh['disabledAt'] = Date['now']();
+                                                    dh['notified'] = true;
+                                                    d6 = true;
+                                                }
+                                            }
+                                        }
+                                        if (d6) {
+                                            try {
+                                                cZ['users'] = d1;
+                                                await g['KV']['put']('taakaa_users', JSON['stringify'](cZ, null, 0x2));
+                                                cachedNetworkSettings = null;
+                                                savedUsersAuth = { 'multiUser': d0, 'users': d1 };
+                                                savedUsersAuthAt = Date['now']();
+                                            } catch (dp) {}
+                                        }
+                                        return new Response(JSON['stringify']({ 'multiUser': d0, 'users': d1, 'usage': d2, 'usageIO': d3, 'usageDay': d4 }), {
+                                            'status': 0xc8,
+                                            'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                        });
+                                    } catch (dq) {
+                                        return new Response(JSON['stringify']({ 'error': String(dq && dq['message'] || dq) }), {
+                                            'status': 0x1f4,
+                                            'headers': { 'Content-Type': 'application/json' }
+                                        });
+                                    }
+                                } else {
+                                    if (E === 'user-reset') {
+                                        try {
+                                            if (f['method'] !== 'POST') return new Response('Method not allowed', { 'status': 0x195 });
+                                            const dr = await f['json']()['catch'](() => ({}));
+                                            const ds = dr && dr['id'];
+                                            if (!ds) {
+                                                return new Response(JSON['stringify']({ 'error': 'Missing user ID' }), {
+                                                    'status': 0x190,
+                                                    'headers': { 'Content-Type': 'application/json' }
+                                                });
+                                            }
+                                            await usageReset(g, 'taakaa_usage_' + ds);
+                                            const dt = new Date();
+                                            for (let dv = 0; dv < 0x28; dv++) {
+                                                const dw = new Date(dt);
+                                                dw['setDate'](dw['getDate']() - dv);
+                                                await usageReset(g, 'taakaa_day_usage_' + ds + ':' + getDateKey(dw));
+                                            }
+                                            if (userUsageCache[ds] != null) userUsageCache[ds] = 0;
+                                            if (userDayUsageCache[ds] != null) userDayUsageCache[ds] = 0;
+                                            const du = JSON['parse'](await g['KV']['get']('taakaa_users') || '{}');
+                                            if (Array['isArray'](du['users'])) {
+                                                const dx = du['users']['find'](dy => dy && dy['id'] === ds);
+                                                if (dx) {
+                                                    dx['enabled'] = true;
+                                                    delete dx['disabledReason'];
+                                                    delete dx['disabledAt'];
+                                                    delete dx['notified'];
+                                                }
+                                                await g['KV']['put']('taakaa_users', JSON['stringify'](du, null, 0x2));
+                                                cachedNetworkSettings = null;
+                                                savedUsersAuth = null;
+                                            }
+                                            h['waitUntil'](requestLogRecord(g, f, F, 'user_reset', config_JSON));
+                                            return new Response(JSON['stringify']({ 'success': true }), {
+                                                'status': 0xc8,
+                                                'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                            });
+                                        } catch (dy) {
+                                            return new Response(JSON['stringify']({ 'error': String(dy && dy['message'] || dy) }), {
+                                                'status': 0x1f4,
+                                                'headers': { 'Content-Type': 'application/json' }
+                                            });
+                                        }
+                                    } else {
+                                        if (E === 'settings') {
+                                            try {
+                                                const dz = await f['json']();
+                                                const dA = {
+                                                    'enableRouting': typeof dz['enableRouting'] === 'boolean' ? dz['enableRouting'] : true,
+                                                    'enableGeoIP': typeof dz['enableGeoIP'] === 'boolean' ? dz['enableGeoIP'] : true,
+                                                    'enableGeoSite': typeof dz['enableGeoSite'] === 'boolean' ? dz['enableGeoSite'] : true,
+                                                    'enableAdBlock': typeof dz['enableAdBlock'] === 'boolean' ? dz['enableAdBlock'] : true,
+                                                    'enablePornBlock': typeof dz['enablePornBlock'] === 'boolean' ? dz['enablePornBlock'] : false,
+                                                    'enableMalwareBlock': typeof dz['enableMalwareBlock'] === 'boolean' ? dz['enableMalwareBlock'] : false,
+                                                    'enablePhishingBlock': typeof dz['enablePhishingBlock'] === 'boolean' ? dz['enablePhishingBlock'] : false,
+                                                    'blockQUIC': typeof dz['blockQUIC'] === 'boolean' ? dz['blockQUIC'] : false,
+                                                    'bypassChina': typeof dz['bypassChina'] === 'boolean' ? dz['bypassChina'] : false,
+                                                    'bypassRussia': typeof dz['bypassRussia'] === 'boolean' ? dz['bypassRussia'] : false,
+                                                    'bypassSanctions': typeof dz['bypassSanctions'] === 'boolean' ? dz['bypassSanctions'] : false,
+                                                    'backendMode': typeof dz['backendMode'] === 'boolean' ? dz['backendMode'] : false,
+                                                    'backendUrl': typeof dz['backendUrl'] === 'string' && /^https?:\/\//i['test'](dz['backendUrl']['trim']()) ? dz['backendUrl']['trim']()['slice'](0, 0x12c) : '',
+                                                    'enableDomesticBypass': typeof dz['enableDomesticBypass'] === 'boolean' ? dz['enableDomesticBypass'] : true,
+                                                    'enableDoH': typeof dz['enableDoH'] === 'boolean' ? dz['enableDoH'] : true,
+                                                    'dohProvider': ['https://cloudflare-dns.com/dns-query', 'https://dns.taakaa.xyz/dns-query', 'https://dns.google/dns-query', 'https://dns.quad9.net/dns-query']['includes'](dz['dohProvider']) ? dz['dohProvider'] : 'https://cloudflare-dns.com/dns-query',
+                                                    'enableLocalDNS': typeof dz['enableLocalDNS'] === 'boolean' ? dz['enableLocalDNS'] : false,
+                                                    'localDNSIP': dz['localDNSIP'] || '10.0.0.1',
+                                                    'localDNSPort': dz['localDNSPort'] || '53',
+                                                    'enableAntiSanctionDNS': typeof dz['enableAntiSanctionDNS'] === 'boolean' ? dz['enableAntiSanctionDNS'] : false,
+                                                    'antiSanctionDNSProvider': ['https://dns.taakaa.xyz/dns-query', 'https://dns.google/dns-query', 'https://cloudflare-dns.com/dns-query', 'https://dns.quad9.net/dns-query', 'https://dns.taakaa.xyz/dns-query', 'https://dns.taakaa.xyz/dns-query']['includes'](dz['antiSanctionDNSProvider']) ? dz['antiSanctionDNSProvider'] : 'https://dns.taakaa.xyz/dns-query',
+                                                    'antiSanctionCustomDNS': dz['antiSanctionCustomDNS'] || '',
+                                                    'enableFakeDNS': typeof dz['enableFakeDNS'] === 'boolean' ? dz['enableFakeDNS'] : false,
+                                                    'fakeDNSIP': dz['fakeDNSIP'] || '10.0.0.2',
+                                                    'enableIPv6': typeof dz['enableIPv6'] === 'boolean' ? dz['enableIPv6'] : true,
+                                                    'allowLAN': typeof dz['allowLAN'] === 'boolean' ? dz['allowLAN'] : false,
+                                                    'logLevel': ['debug', 'info', 'warn', 'error']['includes'](dz['logLevel']) ? dz['logLevel'] : 'info',
+                                                    'enableWarp': typeof dz['enableWarp'] === 'boolean' ? dz['enableWarp'] : false,
+                                                    'warpMode': ['warp', 'warp-plus', 'wow']['includes'](dz['warpMode']) ? dz['warpMode'] : 'warp',
+                                                    'warpEndpoint': dz['warpEndpoint'] || '',
+                                                    'warpAmnezia': typeof dz['warpAmnezia'] === 'boolean' ? dz['warpAmnezia'] : false,
+                                                    'customRules': typeof dz['customRules'] === 'string' ? dz['customRules'] : '',
+                                                    'bypassCountries': Array['isArray'](dz['bypassCountries']) ? [...new Set(dz['bypassCountries']['filter'](dB => /^[a-z]{2}$/i['test'](dB))['map'](dB => dB['toLowerCase']()))]['slice'](0, 0x14) : [],
+                                                    'blockCategories': Array['isArray'](dz['blockCategories']) ? dz['blockCategories']['filter'](dB => ['ads', 'malware', 'phishing', 'porn']['includes'](dB)) : [],
+                                                    'warpNoise': dz['warpNoise'] && typeof dz['warpNoise'] === 'object' ? {
+                                                        'mode': ['', 'tls', 'random']['includes'](dz['warpNoise']['mode']) ? dz['warpNoise']['mode'] : '',
+                                                        'count': String(dz['warpNoise']['count'] || '')['slice'](0, 0xc),
+                                                        'size': String(dz['warpNoise']['size'] || '')['slice'](0, 0xc),
+                                                        'delay': String(dz['warpNoise']['delay'] || '')['slice'](0, 0xc)
+                                                    } : { 'mode': '', 'count': '', 'size': '', 'delay': '' }
+                                                };
+                                                try {
+                                                    const dB = JSON['parse'](await g['KV']['get']('taakaa_network_settings') || '{}');
+                                                    dA['enableBackend'] = typeof dz['enableBackend'] === 'boolean' ? dz['enableBackend'] : dB['enableBackend'] || false;
+                                                    dA['backendHosts'] = Array['isArray'](dz['backendHosts']) ? dz['backendHosts'] : dB['backendHosts'] || [];
+                                                } catch (dC) {
+                                                    dA['enableBackend'] = !!dz['enableBackend'];
+                                                    dA['backendHosts'] = Array['isArray'](dz['backendHosts']) ? dz['backendHosts'] : [];
+                                                }
+                                                await g['KV']['put']('taakaa_network_settings', JSON['stringify'](dA, null, 0x2));
+                                                cachedNetworkSettings = null;
+                                                h['waitUntil'](requestLogRecord(g, f, F, 'settings_update', config_JSON));
+                                                return new Response(JSON['stringify']({ 'success': true, 'message': 'Settings saved' }), {
+                                                    'status': 0xc8,
+                                                    'headers': { 'Content-Type': 'application/json' }
+                                                });
+                                            } catch (dD) {
+                                                console['log']('Settings error:', dD);
+                                                return new Response(JSON['stringify']({ 'error': 'Failed to save settings: ' + dD['message'] }), {
+                                                    'status': 0x1f4,
+                                                    'headers': { 'Content-Type': 'application/json' }
+                                                });
+                                            }
+                                        } else {
+                                            if (a5 === 'raw-config') {
+                                                try {
+                                                    const dE = await f['json']();
+                                                    await g['KV']['put']('taakaa_raw_config', dE);
+                                                    h['waitUntil'](requestLogRecord(g, f, F, 'raw_config', config_JSON));
+                                                    return new Response(JSON['stringify']({ 'success': true, 'message': 'Raw config saved' }), {
+                                                        'status': 0xc8,
+                                                        'headers': { 'Content-Type': 'application/json' }
+                                                    });
+                                                } catch (dF) {
+                                                    console['log']('Raw config error:', dF);
+                                                    return new Response(JSON['stringify']({ 'error': 'Failed to save raw config: ' + dF['message'] }), {
+                                                        'status': 0x1f4,
+                                                        'headers': { 'Content-Type': 'application/json' }
+                                                    });
+                                                }
+                                            } else {
+                                                return new Response(JSON['stringify']({ 'error': 'Invalid endpoint' }), {
+                                                    'status': 0x194,
+                                                    'headers': { 'Content-Type': 'application/json' }
+                                                });
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (E === 'raw-config') {
+                        return new Response(JSON['stringify'](config_JSON, null, 0x2), {
+                            'status': 0xc8,
+                            'headers': { 'Content-Type': 'application/json' }
+                        });
+                    } else {
+                        if (E === 'settings') {
+                            try {
+                                const dG = await g['KV']['get']('taakaa_network_settings');
+                                const dH = {
+                                    'enableRouting': true,
+                                    'enableGeoIP': true,
+                                    'enableGeoSite': true,
+                                    'enableAdBlock': true,
+                                    'enablePornBlock': false,
+                                    'enableDomesticBypass': true,
+                                    'enableDoH': true,
+                                    'dohProvider': 'https://cloudflare-dns.com/dns-query',
+                                    'enableLocalDNS': false,
+                                    'localDNSIP': '10.0.0.1',
+                                    'localDNSPort': '53',
+                                    'enableAntiSanctionDNS': false,
+                                    'antiSanctionDNSProvider': 'https://dns.taakaa.xyz/dns-query',
+                                    'antiSanctionCustomDNS': '',
+                                    'enableFakeDNS': false,
+                                    'fakeDNSIP': '10.0.0.2',
+                                    'enableIPv6': true,
+                                    'allowLAN': false,
+                                    'logLevel': 'info',
+                                    'enableWarp': false,
+                                    'warpMode': 'warp',
+                                    'warpEndpoint': '',
+                                    'warpAmnezia': false,
+                                    'customRules': '',
+                                    'bypassCountries': [],
+                                    'blockCategories': [],
+                                    'warpNoise': { 'mode': '', 'count': '', 'size': '', 'delay': '' }
+                                };
+                                const dI = dG ? JSON['parse'](dG) : dH;
+                                return new Response(JSON['stringify'](dI, null, 0x2), {
+                                    'status': 0xc8,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                            } catch (dJ) {
+                                return new Response(JSON['stringify']({ 'error': dJ['message'] }), {
+                                    'status': 0x1f4,
+                                    'headers': { 'Content-Type': 'application/json' }
+                                });
+                            }
+                        } else {
+                            if (E === 'users') {
+                                try {
+                                    const dK = JSON['parse'](await g['KV']['get']('taakaa_users') || '{}');
+                                    let dL = !!dK['enabled'];
+                                    let dM = Array['isArray'](dK['users']) ? dK['users'] : [];
+                                    if (savedUsersAuth && Date['now']() - savedUsersAuthAt < 0x1d4c0) {
+                                        dL = !!savedUsersAuth['multiUser'];
+                                        dM = savedUsersAuth['users'];
+                                    }
+                                    const dN = {};
+                                    await Promise['all'](dM['map'](async dO => {
+                                        if (!dO || !dO['id']) return;
+                                        try {
+                                            const dP = await usageGet(g, 'taakaa_usage_' + dO['id']);
+                                            dN[dO['id']] = dP && dP['total'] || 0;
+                                        } catch (dQ) { dN[dO['id']] = 0; }
+                                    }));
+                                    return new Response(JSON['stringify']({ 'multiUser': dL, 'users': dM, 'usage': dN }), {
+                                        'status': 0xc8,
+                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                    });
+                                } catch (dO) {
+                                    return new Response(JSON['stringify']({ 'multiUser': false, 'users': [], 'usage': {} }), {
+                                        'status': 0xc8,
+                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                    });
+                                }
+                            } else {
+                                if (a5 === 'get-ip') {
+                                    let dP = await g['KV']['get']('taakaa_custom_ip') || 'none';
+                                    if (dP == 'none') dP = (await generateRandomIp(f, config_JSON['optimizedSubGeneration']['localIPPool']['randomCount'], config_JSON['optimizedSubGeneration']['localIPPool']['specifiedPorts']))[1];
+                                    return new Response(dP, {
+                                        'status': 0xc8,
+                                        'headers': { 'Content-Type': 'text/plain', 'asn': f['cf']['asn'] }
+                                    });
+                                } else {
+                                    if (E === 'cf') {
+                                        return new Response(JSON['stringify'](f['cf'], null, 0x2), {
+                                            'status': 0xc8,
+                                            'headers': { 'Content-Type': 'application/json' }
+                                        });
+                                    } else {
+                                        if (E === 'status') {
+                                            const dQ = !!(g['KV'] && typeof g['KV']['get'] === 'function');
+                                            let dR = false;
+                                            if (dQ) try { await getConfigRaw(g); dR = true; } catch (dV) {}
+                                            let dS = { 'up': 0, 'down': 0, 'total': 0 };
+                                            if (dQ) try {
+                                                const dW = await usageGet(g, 'taakaa_usage_' + getDateKey(new Date()));
+                                                if (dW) dS = { 'up': dW['up'] || 0, 'down': dW['down'] || 0, 'total': dW['total'] || 0 };
+                                            } catch (dX) {}
+                                            const dT = f['cf'];
+                                            let dU = null;
+                                            if (g['DB'] && typeof g['DB']['prepare'] === 'function') {
+                                                try {
+                                                    const dY = await g['DB']['prepare']('SELECT SUM(length(value)) as size FROM kv_entries')['first']();
+                                                    if (dY && dY['size'] && typeof dY['size']['toString'] === 'function') {
+                                                        dU = dY['size']['toString']();
+                                                    }
+                                                } catch (dZ) {}
+                                            }
+                                            return new Response(JSON['stringify']({
+                                                'ip': F,
+                                                'd1SizeBytes': dU,
+                                                'colo': dT?.['colo'],
+                                                'country': dT?.['country'],
+                                                'city': dT?.['city'],
+                                                'region': dT?.['region'],
+                                                'regionCode': dT?.['regionCode'],
+                                                'latitude': dT?.['latitude'],
+                                                'longitude': dT?.['longitude'],
+                                                'timezone': dT?.['timezone'],
+                                                'asn': dT?.['asn'],
+                                                'asOrganization': dT?.['asOrganization'],
+                                                'userAgent': q,
+                                                'version': Version,
+                                                'instanceId': (await MD5MD5(p['hostname']))['slice'](0, 8),
+                                                'kvConnected': dQ,
+                                                'kvOk': dR,
+                                                'host': p['hostname'],
+                                                'protocol': p['protocol'],
+                                                'todayUsage': dS,
+                                                'workerStartTime': globalThis['TaakaaXiStartTime'] || null
+                                            }), {
+                                                'status': 0xc8,
+                                                'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                            });
+                                        } else {
+                                            if (E === 'usage-stats') {
+                                                try {
+                                                    const e0 = new Date(), e1 = 0x10, e2 = [];
+                                                    for (let e9 = 0; e9 < e1; e9++) {
+                                                        const ea = new Date(e0);
+                                                        ea['setDate'](ea['getDate']() - e9);
+                                                        e2['push']('taakaa_day_usage_' + ea['toISOString']()['slice'](0, 10) + '-' + String(ea['getMonth']() + 1)['padStart'](2, '0') + '-' + String(ea['getDate']())['padStart'](2, '0'));
+                                                    }
+                                                    const e3 = await Promise['all'](e2['map'](eb => usageGet(g, eb)['catch'](() => null)));
+                                                    const e4 = [];
+                                                    for (let eb = 0; eb < e2['length']; eb++) {
+                                                        if (e3[eb]) try { e4['push']({ 'date': e2[eb]['slice'](6), ...e3[eb] }); } catch (ec) {}
+                                                    }
+                                                    const e5 = {};
+                                                    for (const ed of e4) {
+                                                        const ee = ed['date']['slice'](0, 7);
+                                                        if (!e5[ee]) e5[ee] = { 'up': 0, 'down': 0, 'total': 0 };
+                                                        e5[ee]['up'] += ed['up'] || 0;
+                                                        e5[ee]['down'] += ed['down'] || 0;
+                                                        e5[ee]['total'] += ed['total'] || 0;
+                                                    }
+                                                    const e6 = Object['entries'](e5)['map'](([ef, eg]) => ({ 'month': ef, ...eg }));
+                                                    const e7 = {};
+                                                    for (const ef of e4) {
+                                                        const eg = ef['date']['slice'](0, 4);
+                                                        if (!e7[eg]) e7[eg] = { 'up': 0, 'down': 0, 'total': 0 };
+                                                        e7[eg]['up'] += ef['up'] || 0;
+                                                        e7[eg]['down'] += ef['down'] || 0;
+                                                        e7[eg]['total'] += ef['total'] || 0;
+                                                    }
+                                                    const e8 = Object['entries'](e7)['map'](([eh, ei]) => ({ 'year': eh, ...ei }));
+                                                    return new Response(JSON['stringify']({ 'daily': e4, 'monthly': e6, 'yearly': e8 }), {
+                                                        'status': 0xc8,
+                                                        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+                                                    });
+                                                } catch (eh) {
+                                                    return new Response(JSON['stringify']({ 'error': eh['message'] }), {
+                                                        'status': 0x1f4,
+                                                        'headers': { 'Content-Type': 'application/json' }
+                                                    });
+                                                }
+                                            } else {
+                                                if (E === 'sub') {
+                                                    const ei = await MD5MD5(D + B);
+                                                    const ej = p['protocol'] + '//' + p['hostname'] + '/sub/' + ei;
+                                                    const ek = await fetch(ej)['catch'](() => null);
+                                                    if (!ek) return new Response('Sub not found', { 'status': 0x1f6 });
+                                                    const el = await ek['text']();
+                                                    return new Response(el, {
+                                                        'status': 0xc8,
+                                                        'headers': { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' }
+                                                    });
+                                                } else {
+                                                    if (a5 === 'best-ip') return await bestIP(f, g);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            h['waitUntil'](requestLogRecord(g, f, F, 'panel_view', config_JSON));
+            const ar = E['includes']('taakaa') ? E['split']('/')[0] : '';
+            const as = ar ? '/taakaa/' : '/panel/' + p['hostname'];
+            return await panelHtml(g, as, { 'spaPage': ar })['catch'](() => new Response('Panel unavailable', { 'status': 0x1f6 }));
+        } else {
+            if (E === 'taakaa' || uuidRegex['test'](E)) {
+                const en = new Response('Redirecting to panel', {
+                    'status': 0x12e,
+                    'headers': { 'Location': '/panel' }
+                });
+                en['headers']['set']('Cache-Control', 'no-cache');
+                return en;
+            } else {
+                if (E === 'sub') {
+                    const eo = await MD5MD5(D + B);
+                    const ep = ['1', 'true']['includes'](g['PREFER_IPV4']) && p['search']['get']('type') === 'v2ray' && p['search']['get']('host') === 'taakaa.xyz' && q['toLowerCase']()['startsWith']('taakaa');
+                    const eq = p['search']['get']('user');
+                    const er = p['search']['get']('name');
+                    const es = p['search']['get']('uuid');
+                    let et = '';
+                    const eu = savedUsersAuth && Date['now']() - savedUsersAuthAt < 0x1d4c0 && Array['isArray'](savedUsersAuth['users']) ? savedUsersAuth['users'] : networkSettings && Array['isArray'](networkSettings['users']) ? networkSettings['users'] : null;
+                    if (eu && (eq || er && es)) {
+                        const eC = eu['filter'](eE => eE && eE['uuid'] && es === eE['uuid']);
+                        const eD = eq ? eu['find'](eE => eE && eE['username'] === eq) : eC['length'] === 1 ? eC[0] : eC['find'](eE => String(eE['name'] || '')['trim']() === String(er)['trim']()) || eC[0];
+                        if (eD) {
+                            if (eD['enabled'] === false) return new Response('User disabled', { 'status': 0x193 });
+                            if (eD['expiry']) {
+                                const eE = Date['parse'](eD['expiry']);
+                                if (!isNaN(eE) && Date['now']() > eE) return new Response('Expired', { 'status': 0x193 });
+                            }
+                            if (eD['limit']) {
+                                try {
+                                    const eF = await usageGet(g, 'taakaa_usage_' + eD['id']);
+                                    if (eF && eF['total'] >= eD['limit']) return new Response('Limit exceeded', { 'status': 0x193 });
+                                } catch (eG) {}
+                            }
+                            et = eD['username'];
+                        }
+                    }
+                    const ev = eq === eo || et !== '';
+                    const ew = Math['floor'](Date['now']() / 0x5265c00);
+                    const ey = base64SecretEncode(eo, B);
+                    const [ez, eA] = await Promise['all']([MD5MD5(ey + ew), MD5MD5(ey + (ew - 1))]);
+                    const eB = eq === ez || eq === eA;
+                    if (ev || eB || ep) {
+                        config_JSON = await readConfigJson(g, D, B, q);
+                        if (ep) h['waitUntil'](requestLogRecord(g, f, F, 'sub_optimized', config_JSON, false));
+                        else h['waitUntil'](requestLogRecord(g, f, F, 'sub_generated', config_JSON));
+                        h['waitUntil'](flushUsage(g));
+                        const eH = q['toLowerCase']();
+                        const eI = {
+                            'content-type': 'text/plain',
+                            'Profile-Update-Interval': config_JSON['optimizedSubGeneration']['SUBUpdateTime'],
+                            'Profile-web-page-url': p['protocol'] + '//' + p['hostname'] + '/panel',
+                            'Cache-Control': 'no-cache'
+                        };
+                        try {
+                            const eN = et;
+                            let eO = 0, eP = 0, eQ = 0x3e80000000000, eR = 0xf4849500;
+                            const eS = eN && networkSettings && Array['isArray'](networkSettings['users']) ? networkSettings['users']['find'](eT => eT && eT['username'] === eN) : null;
+                            if (eS) {
+                                const eT = await usageGet(g, 'taakaa_usage_' + eS['id']) || {};
+                                eO = eT['up'] || 0;
+                                eP = eT['down'] || 0;
+                                if (eS['limit']) eQ = eS['limit'];
+                                if (eS['expiry']) {
+                                    const eU = Date['parse'](eS['expiry']);
+                                    if (!isNaN(eU)) eR = Math['floor'](eU / 0x3e8);
+                                }
+                            } else {
+                                const eV = await usageGet(g, 'taakaa_usage_' + getMonthKey(new Date())) || { 'up': 0, 'down': 0 };
+                                eO = eV['up'] || 0;
+                                eP = eV['down'] || 0;
+                            }
+                            eI['Profile-Traffic'] = 'up=' + eO + ',down=' + eP + ',total=' + eQ + ',expiry=' + eR;
+                        } catch (eW) {}
+                        const eJ = p['search']['get']('ipv4') || p['search']['get']('v4') || f['headers']['get']('X-Forwarded-For') || f['headers']['get']('CF-Connecting-IP') || eH['startsWith']('taakaa') || ep;
+                        const eK = eJ ? 'v2ray' : p['search']['get']('singbox') ? p['search']['get']('singbox') : p['search']['get']('clash') || eH['includes']('clash') || eH['includes']('singbox') ? 'singbox' : p['search']['get']('surge') || eH['includes']('surge') ? 'surge' : p['search']['get']('stash') || eH['includes']('stash') ? 'clash' : p['search']['get']('nekoray') || eH['includes']('nekoray') ? 'nekoray' : 'v2ray';
+                        if (!eH['includes']('no-info')) eI['Profile-Title'] = 'Taakaa-Xi-Sub-' + encodeURIComponent(config_JSON['optimizedSubGeneration']['SUBNAME']);
+                        const eL = (p['search']['get']('format') || eH['includes']('singbox')) && config_JSON['protocolType'] !== 'ss' ? 'singbox' : config_JSON['protocolType'];
+                        let eM = '';
+                        if (eK === 'singbox') {
+                            const eX = config_JSON['protocolType'] == 'trojan' ? '/trojan/' + encodeURIComponent('Taakaa-Xi-Trojan') : config_JSON['protocolType'] == 'vmess' ? '/vmess/' + encodeURIComponent('Taakaa-Xi-VMess') : '';
+                            let eY = [], eZ = '', f0 = [];
+                            const f1 = p['search']['get']('hosts') || '';
+                            const f2 = f1['split']('.');
+                            if (!f2 && config_JSON['optimizedSubGeneration']['local']) {
+                                const f9 = config_JSON['optimizedSubGeneration']['localIPPool']['randomIP'] ? (await generateRandomIp(f, config_JSON['optimizedSubGeneration']['localIPPool']['randomCount'], config_JSON['optimizedSubGeneration']['localIPPool']['specifiedPorts']))[0] : await g['KV']['get']('taakaa_custom_ip') ? await sortIntoArray(await g['KV']['get']('taakaa_custom_ip')) : (await generateRandomIp(f, config_JSON['optimizedSubGeneration']['localIPPool']['randomCount'], config_JSON['optimizedSubGeneration']['localIPPool']['specifiedPorts']))[0];
+                                let fa = [], fb = [], fc = [];
+                                for (const fh of f9) {
+                                    if (fh['toString']()['startsWith']('sub://')) {
+                                        fa['push'](fh);
+                                    } else {
+                                        const fi = fh['indexOf']('#');
+                                        const fj = fi > -1 ? fh['slice'](0, fi) : fh;
+                                        const fk = fi > -1 ? fh['slice'](fi) : '';
+                                        const fl = fh['match'](/sub\s*=\s*([^\s&#]+)/i);
+                                        if (fl && fl[1]['trim']()['includes']('.')) {
+                                            const fm = fh['toString']()['replace'](/\|\|/g, '.');
+                                            if (fm) fa['push']('sub://' + fl[1]['trim']() + '/' + (fh['includes']('#') ? '#' + fh['split']('#')[1] : ''));
+                                            else fa['push']('sub://' + fl[1]['trim']() + (fh['includes']('#') ? '#' + fh['split']('#')[1] : ''));
+                                        } else {
+                                            if (fj['toString']()['includes']('http')) fa['push'](fh);
+                                            else if (fj['toString']()['startsWith']('*')) {
+                                                if (fh['includes']('#')) {
+                                                    const fn = fh['split']('#');
+                                                    fc['push'](fn[0] + '#' + encodeURIComponent(decodeURIComponent(fn[1])));
+                                                } else fc['push'](fh);
+                                            } else {
+                                                if (fj['toString']()['includes']('*')) fb['push'](replaceStarWithRandom(fj) + fk);
+                                                else fb['push'](fh);
+                                            }
+                                        }
+                                    }
+                                }
+                                const fe = await requestBestApi(fa, '3000');
+                                const ff = [...new Set(fc['concat'](fe[1]))];
+                                eZ = ff['length'] > 0 ? ff['join']('\n') + '\n' : '';
+                                const fg = fe[0];
+                                f0 = fe[3] || [];
+                                eY = [...new Set(fb['concat'](fg))];
+                            } else {
+                                let fo = (f2 ? f1 : '') || config_JSON['optimizedSubGeneration']['SUB'];
+                                const [fp, fq] = await getBestSubGeneratorData(fo);
+                                eY = eY['concat'](fp);
+                                eZ += fq;
+                            }
+                            if (networkSettings && networkSettings['enableWarp']) {
+                                try {
+                                    const fr = await buildRegisteredWarpNode(g);
+                                    if (fr) eZ = fr + '\n' + eZ;
+                                } catch (fs) {}
+                            }
+                            const f3 = config_JSON['tlsFragment'] ? '/fragment/' + encodeURIComponent((config_JSON['tlsFragment']['random'] ? config_JSON['tlsFragment']['mode'] + '+' : '') + config_JSON['tlsFragment']['type']) : '';
+                            const f4 = eH['includes']('taakaa') || eH['includes']('taakaa');
+                            const { type: f5, pathFieldName: f6, domainFieldName: f7 } = getTransportProtocolConfig(config_JSON);
+                            const f8 = 'taakaa.xyz';
+                            eY = [D + '/taakaa/' + f8, ...eY];
+                            eM = eZ + eY['map'](ft => {
+                                const fu = ft['match'](NODE_ADDR_REGEX);
+                                let fv, fw = '443', fx;
+                                if (fu) { fv = fu[1]; fw = fu[2] ? fu[2] : '443'; fx = fu[3] || fv; }
+                                else { console['log']('Invalid node: ' + ft); return null; }
+                                let fy = config_JSON['protocolType'];
+                                const fz = fx['match'](/\$(socks5|http|https|turn|sstp):\/\/([^#\s]+)/i);
+                                if (fz) {
+                                    try {
+                                        const fA = fz[1]['toLowerCase']();
+                                        const fB = fz[2];
+                                        const fC = { 'type': fA, ...getSocks5Account(fB, getProxyDefaultPort(fA)) };
+                                        fy = 'socks5://' + (base64SecretEncode(JSON['stringify'](fC), B) + (config_JSON['tlsFragment'] ? '/fragment' : ''));
+                                        fx = fx['replace'](fz[0], '')['trim']() || fv;
+                                    } catch (fD) {
+                                        console['log']('Proxy parse error: ' + fz[0] + ' (' + (fD && fD['message'] ? fD['message'] : fD) + ')');
+                                    }
+                                } else {
+                                    if (config_JSON['proxy'] && /^(socks5|http|https|turn|sstp):\/\//i['test'](String(config_JSON['proxy']['type'])['trim']())) {
+                                        try {
+                                            const fE = /^(socks5|http|https|turn|sstp):\/\/(.+)$/i['test'](String(config_JSON['proxy']['type'])['trim']());
+                                            const fF = fE[1]['toLowerCase']();
+                                            const fG = { 'type': fF, ...getSocks5Account(fE[2]['split']('/')[0], getProxyDefaultPort(fF)) };
+                                            fy = 'socks5://' + (base64SecretEncode(JSON['stringify'](fG), B) + (config_JSON['tlsFragment'] ? '/fragment' : ''));
+                                        } catch (fH) {
+                                            console['log']('Proxy fallback error: ' + (fH && fH['message'] ? fH['message'] : fH));
+                                        }
+                                    } else {
+                                        if (f0['length'] > 0) {
+                                            const fI = f0['find'](fJ => fJ['includes'](fv));
+                                            if (fI) fy = (config_JSON['protocolType'] + '/taakaa/' + fI)['replace'](/\/\//g, '/') + (config_JSON['tlsFragment'] ? '/fragment' : '');
+                                        }
+                                    }
+                                }
+                                if (et) fy += (fy['includes']('?') ? '&' : '?') + 'u=' + et;
+                                if (f4) fy = fy['replace'](/,/g, '/taakaa/');
+                                if (eL === 'ss' && !ep) {
+                                    if (!config_JSON['SS']['TLS']) {
+                                        const fJ = [0x1bb, 0x805, 0x823, 0x827, 0x830, 0x20fb];
+                                        const fK = [0x50, 0x804, 0x822, 0x826, 0x82f, 0x1f90];
+                                        fw = String(fK[fJ['indexOf'](Number(fw))] ?? fw);
+                                    }
+                                    fy = (fy['includes']('?') ? fy['replace']('?', '?ss=' + config_JSON['SS']['cipherMethod'] + '&') : fy + '?ss=' + config_JSON['SS']['cipherMethod'])['replace'](/([=,])/g, '');
+                                    if (!eJ) fy = fy + '/taakaa/';
+                                    return eL + '://' + btoa(config_JSON['SS']['cipherMethod'] + ':' + B) + '@' + fv + ':' + fw + '/' + (encodeURIComponent('/taakaa/' + (config_JSON['randomPath'] ? randomPath(fy) : fy)) + (config_JSON['SS']['TLS'] ? '/tls' : '') + f3 + eX) + '#' + encodeURIComponent(fx);
+                                } else {
+                                    const fL = getTransportPathParamValue(config_JSON, fy, ep);
+                                    return eL + '://' + B + '@' + fv + ':' + fw + '/?' + (f5 + f3) + '&' + f7 + '=' + config_JSON['HOST'] + '&' + f6 + '=' + (encodeURIComponent(fL) + eX) + (config_JSON['skipCertVerify'] ? '&skipCertVerify=true' : '') + '#' + encodeURIComponent(fx);
+                                }
+                            })['filter'](ft => ft !== null)['join']('\n');
+                        } else {
+                            const ft = (/taakaa/i['test'](config_JSON['optimizedSubGeneration']['SUBNAME'] || '') || !config_JSON['optimizedSubGeneration']['local'] ? 'taakaa' : config_JSON['protocolType']) + '://' + eK + '/' + encodeURIComponent(p['protocol'] + '//' + p['hostname'] + '/sub/' + ez + '?type=' + identifyCarrier(f) + (p['search']['get']('ipv6') && p['search']['get']('ipv6') != '' ? '&ipv6=' + p['search']['get']('ipv6') : '')) + '/?sub=' + encodeURIComponent(config_JSON['optimizedSubGeneration']['SUBNAME']) + '&update=' + config_JSON['optimizedSubGeneration']['SUBUpdateTime'] + '&user=' + et;
+                            try {
+                                const fu = await fetch(ft, { 'headers': { 'User-Agent': 'Taakaa-Xi/' + eK + ' (taakaa.xyz)' } });
+                                if (fu['ok']) {
+                                    eM = await fu['text']();
+                                    if (p['search']['get']('clash') || eH['includes']('clash')) eM = ClashsubConfigFileHotpatch(eM, p['protocol'] + '//' + p['hostname'] + '/sub/' + eo + '/', config_JSON);
+                                } else {
+                                    return new Response('Sub fetch failed: ' + fu['status'], { 'status': fu['status'] });
+                                }
+                            } catch (fv) {
+                                return new Response('Sub fetch error: ' + fv['message'], { 'status': 0x193 });
+                            }
+                        }
+                        if (!eH['includes']('no-optimize') && ev) {
+                            let fw = config_JSON['optimizedSubGeneration']['SUB'];
+                            try {
+                                const fA = JSON['parse'](await g['KV']['get']('taakaa_hosts_health') || '{}');
+                                if (fA && Array['isArray'](fA['domains'])) {
+                                    const fB = new Set(fA['domains']['filter'](fD => fD && fD['ok'] === false)['map'](fD => fD['host']));
+                                    const fC = config_JSON['optimizedSubGeneration']['SUB']['filter'](fD => !fB['has'](fD));
+                                    if (fC['length']) fw = fC;
+                                }
+                            } catch (fD) {}
+                            const fx = [...fw]['sort'](() => Math['random']() - 0.5);
+                            let fy = 0, fz = null;
+                            eM = eM['replace'](/00000000-0000-4000-8000-000000000000/g, config_JSON['UUID'])['replace'](/MDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAw/g, btoa(config_JSON['UUID']))['replace'](/example\.com/g, () => {
+                                if (fy % 2 === 0) {
+                                    const fE = fx[Math['floor'](fy / 2) % fx['length']];
+                                    fz = replaceStarWithRandom(fE);
+                                }
+                                fy++;
+                                return fz;
+                            });
+                        }
+                        if (eK === 'clash' && (!eH['includes']('no-clash') || p['search']['get']('clash') || p['search']['get']('stash'))) eM = btoa(eM);
+                        if (eK === 'singbox') eM = await SingboxsubConfigFileHotpatch(eM, config_JSON, networkSettings), eI['Content-Type'] = 'application/json';
+                        else if (eK === 'surge') eM = SurgesubConfigFileHotpatch(eM, config_JSON, networkSettings);
+                        return new Response(eM, { 'status': 0xc8, 'headers': eI });
+                    } else {
+                        if (E === 'logout') {
+                            const fE = f['headers']['get']('Cookie') || '';
+                            const fF = fE['split'](';')['find'](fG => fG['trim']()['startsWith']('taakaa_session='))?.['split']('=')[1];
+                            if (fF && await verifySessionToken(fF, q, z, x)) {
+                                return fetch(new Request('/login', { 'headers': { 'Referer': '/panel' } }));
+                            }
+                        } else {
+                            if (E === 'robots.txt') return new Response('User-agent: *\nDisallow: /', { 'status': 0xc8, 'headers': { 'Content-Type': 'text/plain' } });
+                        }
+                    }
+                }
+            }
+        }
+    } catch (fP) {
+        try {
+            console['log']('Worker error:', fP && (fP['message'] || fP['stack']) || String(fP));
+        } catch (fQ) {}
+        try {
+            if (g && g['KV'] && typeof g['KV']['put'] === 'function') {
+                const fR = JSON['stringify']({
+                    't': new Date()['toISOString'](),
+                    'path': ((() => {
+                        try { return new URL(f['url'])['pathname'] + new URL(f['url'])['search']; } catch (fS) { return '?'; }
+                    })()),
+                    'method': f && f['method'],
+                    'ua': f && f['headers'] && f['headers']['get']('User-Agent') || '',
+                    'version': Version,
+                    'error': fP && (fP['message'] || fP['stack']) || String(fP)
+                });
+                if (h && typeof h['waitUntil'] === 'function') h['waitUntil'](g['KV']['put']('taakaa_error', fR));
+                else await g['KV']['put']('taakaa_error', fR);
+            }
+        } catch (fS) {}
+        try {
+            if (g && (g['DEBUG'] === '1' || g['ENV'] === 'development')) {
+                const fT = fP && (fP['message'] || fP['stack']) || String(fP);
+                return new Response('Error: ' + fT, {
+                    'status': 0x1f4,
+                    'headers': { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' }
+                });
+            }
+        } catch (fU) {}
+        try {
+            return new Response(await nginx(), { 'status': 0xc8, 'headers': { 'Content-Type': 'text/html' } });
+        } catch (fV) {
+            return new Response('', { 'status': 0xc8 });
+        }
+    }
+},
+        async 'scheduled'(c, f, g) {
+        if (!c || !['1', 'true']['includes'](String(c['cron'] || ''))) return;
+        wrapKVWithD1(c);
+        if (!_kvMigratedFlag && c['KV'] && g && typeof g['waitUntil'] === 'function') {
+            g['waitUntil'](migrateKvToD1(c));
+        }
+        g['waitUntil'](runScheduledMaintenance(c)['then'](h => {
+            if (h && h['health'] && !h['health']['error']) {
+                console['log']('Scheduled maintenance OK', JSON['stringify'](h['health']['domains']));
+            }
+        })['catch'](h => console['log']('Scheduled maintenance error', h && h['message'])));
+    }
+};
+
+export default taakaaXiWorker;
+// ============================================================
+// TAAKAA-XI XHTTP HANDLER
+// ============================================================
+
+async function handleXhttpRequest(c, f, g, h) {
+    if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { 'status': 0x193 });
+    if (!c['body']) return new Response('No body', { 'status': 0x190 });
+    const i = c['body']['getReader']();
+    const j = await readXhttpFirstPacket(i, f);
+    if (!j) {
+        try { i['cancel'](); } catch (s) {}
+        return new Response('Invalid packet', { 'status': 0x190 });
+    }
+    if (isBlockedSite(j['hostname'])) {
+        try { i['cancel'](); } catch (t) {}
+        return networkSettings && networkSettings['enablePornBlock'] && isAdultDomain(j['hostname']) ? novaBlockPage(c) : new Response('Blocked', { 'status': 0x193 });
+    }
+    if (j['isUDP'] && j['protocol'] !== 'tcp' && j['port'] !== 0x35) {
+        try { i['cancel'](); } catch (u) {}
+        return new Response('UDP only port 53', { 'status': 0x190 });
+    }
+    const k = { 'socket': null, 'connectingPromise': null, 'retryConnect': null };
+    let l = null, m = null;
+    const n = { 'up': 0, 'down': 0 };
+    const o = new Headers({
+        'Content-Type': 'application/octet-stream',
+        'X-Accel-Buffering': 'no',
+        'Cache-Control': 'no-cache'
+    });
+    const p = () => {
+        if (m) { try { m['close'](); } catch (v) {} m = null; }
+        l = null;
+    };
+    const q = () => {
+        const v = k['socket'];
+        if (!v) return null;
+        if (v !== l) { p(); l = v; m = v['writable']['getWriter'](); }
+        return m;
+    };
+    let r = null;
+    return new Response(new ReadableStream({
+        async 'start'(v) {
+            let w = false, x = j['rawData'];
+            const y = { 'cache': new Uint8Array(0) };
+            const z = {
+                'readyState': WebSocket['CONNECTING'],
+                'send'(C) {
+                    if (w) return;
+                    try {
+                        const D = C instanceof Uint8Array ? C :
+                            C instanceof ArrayBuffer ? new Uint8Array(C) :
+                            ArrayBuffer['isView'](C) ? new Uint8Array(C['buffer'], C['byteOffset'], C['byteLength']) :
+                            new Uint8Array(C);
+                        v['enqueue'](D);
+                        n['up'] += D['length'];
+                    } catch (E) { w = true; this['readyState'] = WebSocket['CLOSED']; }
+                },
+                'close'() {
+                    if (w) return;
+                    w = true;
+                    this['readyState'] = WebSocket['CLOSED'];
+                    try { v['close'](); } catch (C) {}
+                }
+            };
+            const A = r = createUpstreamWriteQueue({
+                'getWriter': q,
+                'releaseWriter': p,
+                'retryConnection': async () => {
+                    if (typeof k['retryConnect'] !== 'function') throw new Error('No retry connection function');
+                    await k['retryConnect']();
+                },
+                'closeConnection': () => {
+                    try { k['socket']?.['close'](); } catch (C) {}
+                    closeSocketQuietly(z);
+                },
+                'name': 'fragment-writer'
+            });
+            const B = async (C, D = true) => { return A['write'](C, D); };
+            try {
+                if (j['isUDP']) {
+                    if (j['protocol']?.['toString']() === 'trojan') await forwardTrojanUdpData(j['rawData'], z, y, c);
+                    else await forwardataudp(j['rawData'], z, x, c);
+                    x = null;
+                } else {
+                    if (j['rawData']?.['length']) n['up'] += j['rawData']['length'];
+                    await forwardataTCP(j['hostname'], j['port'], j['rawData'], z, j['respHeader'] || null, k, f, c, n);
+                }
+                while (true) {
+                    const { done: C, value: D } = await i['read']();
+                    if (C) break;
+                    if (!D || D['length'] === 0) continue;
+                    if (D['length']) n['up'] += D['length'];
+                    if (j['isUDP']) {
+                        if (j['protocol'] === 'trojan') await forwardTrojanUdpData(D, z, y, c);
+                        else await forwardataudp(D, z, x, c);
+                        x = null;
+                    } else {
+                        if (!await B(D)) throw new Error('Write failed');
+                    }
+                }
+                if (!j['isUDP']) {
+                    await A['waitEmpty']();
+                    const E = q();
+                    if (E) try { await E['close'](); } catch (F) {}
+                }
+            } catch (G) {
+                log('Fragment error: ' + (G?.['message'] || G));
+                closeSocketQuietly(z);
+            } finally {
+                A['clear']();
+                p();
+                try { i['cancel'](); } catch (H) {}
+                recordUsage(g, n['up'], n['down'], h);
+            }
+        }
+    }), { 'status': 0xc8, 'headers': o });
 }
 
+function validDataLength(c) {
+    if (!c) return 0;
+    if (typeof c['length'] === 'number') return c['length'];
+    if (typeof c['byteLength'] === 'number') return c['byteLength'];
+    return 0;
+}
+async function readXhttpFirstPacket(c, f) {
+    const g = VLESStextDecode;
+    const h = o => {
+        const p = o['length'];
+        if (p < 0x12) return { 'status': 'Too short' };
+        if (!UUIDbyteMatch(o, 1, f)) return { 'status': 'UUID mismatch' };
+        const q = o[0x11];
+        const r = 0x12 + q;
+        if (p < r + 1) return { 'status': 'Incomplete header' };
+        const s = o[r];
+        if (s !== 1 && s !== 2) return { 'status': 'Invalid protocol' };
+        const t = r + 1;
+        if (p < t + 3) return { 'status': 'Incomplete address' };
+        const u = o[t] << 8 | o[t + 1];
+        const v = o[t + 2];
+        const w = t + 3;
+        let x = -1, y = '';
+        if (v === 1) {
+            if (p < w + 4) return { 'status': 'Incomplete IPv4' };
+            y = o[w] + '.' + o[w + 1] + '.' + o[w + 2] + '.' + o[w + 3];
+            x = w + 4;
+        } else if (v === 2) {
+            if (p < w + 1) return { 'status': 'Incomplete domain length' };
+            const z = o[w];
+            if (p < w + 1 + z) return { 'status': 'Incomplete domain' };
+            y = g['decode'](o['slice'](w + 1, w + 1 + z));
+            x = w + 1 + z;
+        } else if (v === 3) {
+            if (p < w + 16) return { 'status': 'Incomplete IPv6' };
+            const A = [];
+            for (let B = 0; B < 8; B++) {
+                const C = w + B * 2;
+                A['push']((o[C] << 8 | o[C + 1])['toString'](16));
+            }
+            y = A['join'](':');
+            x = w + 16;
+        } else {
+            return { 'status': 'Invalid address type' };
+        }
+        if (!y) return { 'status': 'Empty address' };
+        return { 'status': 'ok', 'result': { 'protocol': 'vless', 'hostname': y, 'port': u, 'isUDP': s === 2, 'rawData': o['slice'](x), 'respHeader': new Uint8Array([o[0], 0]) } };
+    };
+    const i = o => {
+        const p = sha224(f);
+        const q = new TextEncoder()['encode'](p);
+        const r = o['length'];
+        if (r < 0x3a) return { 'status': 'Too short' };
+        if (o[0x38] !== 13 || o[0x39] !== 10) return { 'status': 'Invalid CRLF' };
+        for (let A = 0; A < 0x38; A++) {
+            if (o[A] !== q[A]) return { 'status': 'SHA224 mismatch' };
+        }
+        const s = 0x3a;
+        if (r < s + 2) return { 'status': 'Incomplete header' };
+        const t = o[s];
+        if (t !== 1 && t !== 3) return { 'status': 'Invalid protocol' };
+        const u = t === 3;
+        const v = o[s + 1];
+        let w = s + 2, x = '';
+        if (v === 1) {
+            if (r < w + 4) return { 'status': 'Incomplete IPv4' };
+            x = o[w] + '.' + o[w + 1] + '.' + o[w + 2] + '.' + o[w + 3];
+            w += 4;
+        } else if (v === 3) {
+            if (r < w + 1) return { 'status': 'Incomplete domain length' };
+            const B = o[w];
+            if (r < w + 1 + B) return { 'status': 'Incomplete domain' };
+            x = g['decode'](o['slice'](w + 1, w + 1 + B));
+            w += 1 + B;
+        } else if (v === 4) {
+            if (r < w + 16) return { 'status': 'Incomplete IPv6' };
+            const C = [];
+            for (let D = 0; D < 8; D++) {
+                const E = w + D * 2;
+                C['push']((o[E] << 8 | o[E + 1])['toString'](16));
+            }
+            x = C['join'](':');
+            w += 16;
+        } else {
+            return { 'status': 'Invalid address type' };
+        }
+        if (!x) return { 'status': 'Empty address' };
+        if (r < w + 4) return { 'status': 'Incomplete port' };
+        const y = o[w] << 8 | o[w + 1];
+        if (o[w + 2] !== 13 || o[w + 3] !== 10) return { 'status': 'Invalid CRLF' };
+        const z = w + 4;
+        return { 'status': 'ok', 'result': { 'protocol': 'trojan', 'hostname': x, 'port': y, 'isUDP': u, 'rawData': o['slice'](z), 'respHeader': null } };
+    };
+    let j = new Uint8Array(0x400), k = 0;
+    while (true) {
+        const { value: o, done: p } = await c['read']();
+        if (p) { if (k === 0) return null; break; }
+        const q = o instanceof Uint8Array ? o : new Uint8Array(o);
+        if (k + q['length'] > j['length']) {
+            const u = new Uint8Array(Math['max'](j['length'] * 2, k + q['length']));
+            u['set'](j['slice'](0, k));
+            j = u;
+        }
+        j['set'](q, k);
+        k += q['length'];
+        const r = j['slice'](0, k);
+        const s = i(r);
+        if (s['status'] === 'ok') return { ...s['result'], 'reader': c };
+        const t = h(r);
+        if (t['status'] === 'ok') return { ...t['result'], 'reader': c };
+        if (s['status'] === 'Too short' && t['status'] === 'Too short') return null;
+    }
+    const l = j['slice'](0, k);
+    const m = i(l);
+    if (m['status'] === 'ok') return { ...m['result'], 'reader': c };
+    const n = h(l);
+    if (n['status'] === 'ok') return { ...n['result'], 'reader': c };
+    return null;
+    }
 // ============================================================
-// gRPC Handler
+// TAAKAA-XI gRPC HANDLER
 // ============================================================
 
 async function handleGrpcRequest(c, f, g, h) {
-    if (!c.body) return new Response('No body', { status: 400 });
-    const i = c.body.getReader();
-    const j = { socket: null, connectingPromise: null, retryConnect: null };
-    const k = { up: 0, down: 0 };
+    if (!c['body']) return new Response('No body', { 'status': 0x190 });
+    const i = c['body']['getReader']();
+    const j = { 'socket': null, 'connectingPromise': null, 'retryConnect': null };
+    const k = { 'up': 0, 'down': 0 };
     let l = false;
-    const m = { cache: new Uint8Array(0) };
+    const m = { 'cache': new Uint8Array(0) };
     let n = null, o = null, p = null, q = null;
     const r = new Headers({
         'Content-Type': 'application/grpc',
@@ -1649,25 +2152,25 @@ async function handleGrpcRequest(c, f, g, h) {
         'Cache-Control': 'no-cache'
     });
     const s = downstreamGrainChunkBytes;
-    const t = Math.max(downstreamGrainSilentMs, 1);
+    const t = Math['max'](downstreamGrainSilentMs, 1);
     return new Response(new ReadableStream({
-        async start(u) {
+        async 'start'(u) {
             let v = false, w = [], x = 0, y = null, z = false;
             const A = {
-                readyState: WebSocket.CONNECTING,
-                send(H) {
+                'readyState': WebSocket['CONNECTING'],
+                'send'(H) {
                     if (v) return;
                     const I = H instanceof Uint8Array ? H : new Uint8Array(H);
-                    k.up += I.length;
+                    k['up'] += I['length'];
                     const J = [];
-                    let K = I.length >>> 0;
+                    let K = I['length'] >>> 0;
                     while (K > 0x7f) {
-                        J.push(K & 0x7f | 0x80);
+                        J['push'](K & 0x7f | 0x80);
                         K >>>= 7;
                     }
-                    J.push(K);
+                    J['push'](K);
                     const L = new Uint8Array(J);
-                    const M = 1 + L.length + I.length;
+                    const M = 1 + L['length'] + I['length'];
                     const N = new Uint8Array(5 + M);
                     N[0] = 0;
                     N[1] = M >>> 24 & 0xff;
@@ -1675,18 +2178,18 @@ async function handleGrpcRequest(c, f, g, h) {
                     N[3] = M >>> 8 & 0xff;
                     N[4] = M & 0xff;
                     N[5] = 0x0a;
-                    N.set(L, 6);
-                    N.set(I, 6 + L.length);
-                    w.push(N);
-                    x += N.length;
+                    N['set'](L, 6);
+                    N['set'](I, 6 + L['length']);
+                    w['push'](N);
+                    x += N['length'];
                     C();
                 },
-                close() {
-                    if (this.readyState === WebSocket.CLOSED) return;
+                'close'() {
+                    if (this['readyState'] === WebSocket['CLOSED']) return;
                     B(true);
                     v = true;
-                    this.readyState = WebSocket.CLOSED;
-                    try { u.close(); } catch (H) {}
+                    this['readyState'] = WebSocket['CLOSED'];
+                    try { u['close'](); } catch (H) {}
                 }
             };
             const B = (H = false) => {
@@ -1696,12 +2199,12 @@ async function handleGrpcRequest(c, f, g, h) {
                 const I = new Uint8Array(x);
                 let J = 0;
                 for (const K of w) {
-                    I.set(K, J);
-                    J += K.length;
+                    I['set'](K, J);
+                    J += K['length'];
                 }
                 w = [];
                 x = 0;
-                try { u.enqueue(I); } catch (L) { v = true; A.readyState = WebSocket.CLOSED; }
+                try { u['enqueue'](I); } catch (L) { v = true; A['readyState'] = WebSocket['CLOSED']; }
             };
             const C = () => {
                 if (x >= s) { B(); return; }
@@ -1715,113 +2218,113 @@ async function handleGrpcRequest(c, f, g, h) {
             };
             const D = () => {
                 if (v) return;
-                q && q.close();
+                q && q['close']();
                 B(true);
                 v = true;
-                A.readyState = WebSocket.CLOSED;
+                A['readyState'] = WebSocket['CLOSED'];
                 if (y) clearTimeout(y);
-                if (p) { try { p.close(); } catch (H) {} p = null; }
+                if (p) { try { p['close'](); } catch (H) {} p = null; }
                 o = null;
-                try { i.cancel(); } catch (I) {}
-                try { j.socket && j.socket.close(); } catch (J) {}
-                try { u.close(); } catch (K) {}
+                try { i['cancel'](); } catch (I) {}
+                try { j['socket'] && j['socket']['close'](); } catch (J) {}
+                try { u['close'](); } catch (K) {}
             };
             const E = () => {
-                if (p) { try { p.close(); } catch (H) {} p = null; }
+                if (p) { try { p['close'](); } catch (H) {} p = null; }
                 o = null;
             };
             const F = q = createUpstreamWriteQueue({
-                getWriter: () => {
-                    const H = j.socket;
+                'getWriter': () => {
+                    const H = j['socket'];
                     if (!H) return null;
-                    if (H !== o) { E(); o = H; p = H.writable.getWriter(); }
+                    if (H !== o) { E(); o = H; p = H['writable']['getWriter'](); }
                     return p;
                 },
-                releaseWriter: E,
-                retryConnection: async () => {
-                    if (typeof j.retryConnect !== 'function') throw new Error('No retry connection function');
-                    await j.retryConnect();
+                'releaseWriter': E,
+                'retryConnection': async () => {
+                    if (typeof j['retryConnect'] !== 'function') throw new Error('No retry connection function');
+                    await j['retryConnect']();
                 },
-                closeConnection: D,
-                name: 'grpc-writer'
+                'closeConnection': D,
+                'name': 'grpc-writer'
             });
-            const G = async (H, I = true) => { return F.write(H, I); };
+            const G = async (H, I = true) => { return F['write'](H, I); };
             try {
                 let H = new Uint8Array(0);
                 while (true) {
-                    const { done: I, value: J } = await i.read();
+                    const { done: I, value: J } = await i['read']();
                     if (I) break;
-                    if (!J || J.length === 0) continue;
+                    if (!J || J['length'] === 0) continue;
                     const K = J instanceof Uint8Array ? J : new Uint8Array(J);
-                    const L = new Uint8Array(H.length + K.length);
-                    L.set(H, 0);
-                    L.set(K, H.length);
+                    const L = new Uint8Array(H['length'] + K['length']);
+                    L['set'](H, 0);
+                    L['set'](K, H['length']);
                     H = L;
-                    while (H.length >= 5) {
+                    while (H['length'] >= 5) {
                         const M = H[1] << 24 >>> 0 | H[2] << 16 | H[3] << 8 | H[4];
                         const N = 5 + M;
-                        if (H.length < N) break;
-                        const O = H.slice(5, N);
-                        H = H.slice(N);
-                        if (!O.length) continue;
+                        if (H['length'] < N) break;
+                        const O = H['slice'](5, N);
+                        H = H['slice'](N);
+                        if (!O['length']) continue;
                         let P = O;
-                        if (P.length >= 2 && P[0] === 0x0a) {
+                        if (P['length'] >= 2 && P[0] === 0x0a) {
                             let Q = 0, R = 1, S = false;
-                            while (R < P.length) {
+                            while (R < P['length']) {
                                 const T = P[R++];
                                 if ((T & 0x80) === 0) { S = true; break; }
                                 Q += 7;
                                 if (Q > 0x23) break;
                             }
-                            if (S) P = P.slice(R);
+                            if (S) P = P['slice'](R);
                         }
-                        if (!P.length) continue;
+                        if (!P['length']) continue;
                         if (l) {
                             if (n) await forwardTrojanUdpData(P, A, m, c);
                             else await forwardataudp(P, A, null, c);
                             continue;
                         }
-                        if (j.socket) {
-                            k.up += P.length;
+                        if (j['socket']) {
+                            k['up'] += P['length'];
                             if (!await G(P)) throw new Error('Write failed');
                         } else {
                             const U = dataToUint8Array(P);
                             if (n === null) n = isTrojanFirstPacket(U, f);
                             if (n) {
                                 const V = parseTrojanRequest(U, f);
-                                if (V && V.hasError) throw new Error(V.message || 'Trojan parse error');
+                                if (V?.['hasError']) throw new Error(V['message'] || 'Trojan parse error');
                                 const { port: W, hostname: X, rawClientData: Y, isUDP: Z } = V;
                                 log('gRPC Trojan: ' + X + ':' + W + (Z ? ' (UDP)' : ''));
                                 if (isBlockedSite(X)) throw new Error('Blocked site: ' + X);
                                 if (Z) {
                                     l = true;
                                     if (validDataLength(Y) > 0) {
-                                        k.up += validDataLength(Y);
+                                        k['up'] += validDataLength(Y);
                                         await forwardTrojanUdpData(Y, A, m, c);
                                     }
                                 } else {
-                                    k.up += validDataLength(Y);
+                                    k['up'] += validDataLength(Y);
                                     await forwardataTCP(X, W, Y, A, null, j, f, c, k);
                                 }
                             } else {
                                 n = false;
                                 const a0 = parseVlessRequest(U, f);
-                                if (a0 && a0.hasError) throw new Error(a0.message || 'VLESS parse error');
+                                if (a0?.['hasError']) throw new Error(a0['message'] || 'VLESS parse error');
                                 const { port: a1, hostname: a2, version: a3, isUDP: a4, rawClientData: a5 } = a0;
                                 log('gRPC VLESS: ' + a2 + ':' + a1 + (a4 ? ' (UDP)' : ''));
                                 if (isBlockedSite(a2)) throw new Error('Blocked site: ' + a2);
                                 if (a4) {
-                                    if (a1 !== 53) throw new Error('UDP only supported on port 53');
+                                    if (a1 !== 0x35) throw new Error('UDP only supported on port 53');
                                     l = true;
                                 }
                                 const a6 = new Uint8Array([a3, 0]);
-                                A.send(a6);
+                                A['send'](a6);
                                 const a7 = a5;
                                 if (l) {
                                     if (n) await forwardTrojanUdpData(a7, A, m, c);
                                     else await forwardataudp(a7, A, null, c);
                                 } else {
-                                    k.up += validDataLength(a7);
+                                    k['up'] += validDataLength(a7);
                                     await forwardataTCP(a2, a1, a7, A, null, j, f, c, k);
                                 }
                             }
@@ -1829,1745 +2332,1520 @@ async function handleGrpcRequest(c, f, g, h) {
                     }
                 }
                 B();
-                await F.waitEmpty();
+                await F['waitEmpty']();
             } catch (a8) {
-                log('gRPC error: ' + (a8 && a8.message || a8));
+                log('gRPC error: ' + (a8?.['message'] || a8));
             } finally {
-                F.clear();
+                F['clear']();
                 E();
                 D();
-                recordUsage(g, k.up, k.down, h);
+                recordUsage(g, k['up'], k['down'], h);
             }
         },
-        cancel() {
-            q && q.close();
-            try { j.socket && j.socket.close(); } catch (u) {}
-            try { i.cancel(); } catch (v) {}
+        'cancel'() {
+            q && q['close']();
+            try { j['socket'] && j['socket']['close'](); } catch (u) {}
+            try { i['cancel'](); } catch (v) {}
         }
-    }), { status: 200, headers: r });
-                           }
+    }), { 'status': 0xc8, 'headers': r });
+                        }
 // ============================================================
-// TAAKAA-XI PROXY WORKER - PART 4: ADVANCED PROTOCOLS
-// ============================================================
-// این بخش شامل: SOCKS5, TURN, SSTP, Warp, DoH, Fragment
-// از فایل اصلی Nova-Proxy (worker (24).js) کپی شده
+// TAAKAA-XI WEBSOCKET & UTILITY FUNCTIONS
 // ============================================================
 
-// ============================================================
-// SOCKS5 Proxy
-// ============================================================
-
-async function socks5Connect(c, f, g, h) {
-    const { username: i, password: j, hostname: k, port: l } = parsedSocks5Address;
-    const m = h({ hostname: k, port: l });
-    const n = m.writable.getWriter();
-    const o = m.readable.getReader();
-    try {
-        const p = i && j ? new Uint8Array([0x05, 0x02, 0x00, 0x02]) : new Uint8Array([0x05, 0x01, 0x00]);
-        await n.write(p);
-        let q = await o.read();
-        if (q.done || q.value.length < 2) throw new Error('Invalid SOCKS5 response');
-        const r = new Uint8Array(q.value.buffer)[1];
-        if (r === 0x02) {
-            if (!i || !j) throw new Error('SOCKS5 username/password required');
-            const u = new TextEncoder().encode(i);
-            const v = new TextEncoder().encode(j);
-            const w = new Uint8Array([0x01, u.length, ...u, v.length, ...v]);
-            await n.write(w);
-            q = await o.read();
-            if (q.done || new Uint8Array(q.value.buffer)[1] !== 0x00) throw new Error('SOCKS5 authentication failed');
-        } else if (r !== 0x00) {
-            throw new Error('SOCKS5 method not supported: ' + r);
-        }
-        const s = new TextEncoder().encode(c);
-        const t = new Uint8Array([0x05, 0x01, 0x00, 0x03, s.length, ...s, f >> 8, f & 0xff]);
-        await n.write(t);
-        q = await o.read();
-        if (q.done || new Uint8Array(q.value.buffer)[1] !== 0x00) throw new Error('SOCKS5 connect failed');
-        if (validDataLength(g) > 0) await n.write(g);
-        n.releaseLock();
-        o.releaseLock();
-        return m;
-    } catch (x) {
-        try { n.releaseLock(); } catch (y) {}
-        try { o.releaseLock(); } catch (z) {}
-        try { m.close(); } catch (A) {}
-        throw x;
+function isValidWsEarlyData(c, f) {
+    if (!c?.['length']) return false;
+    if (c['length'] >= 0x12 && UUIDbyteMatch(c, 1, f)) return true;
+    if (c['length'] < 0x3a || c[0x38] !== 13 || c[0x39] !== 10) return false;
+    const g = sha224(f);
+    for (let h = 0; h < 0x38; h++) {
+        if (c[h] !== g['charCodeAt'](h)) return false;
     }
+    return true;
 }
 
-// ============================================================
-// HTTP CONNECT Proxy
-// ============================================================
-
-async function httpConnect(c, f, g, h = false, i) {
-    const { username: j, password: k, hostname: l, port: m } = parsedSocks5Address;
-    const n = h ? i({ hostname: l, port: m }, { secureTransport: 'on', allowHalfOpen: false }) : i({ hostname: l, port: m });
-    const o = n.writable.getWriter();
-    const p = n.readable.getReader();
-    const q = new TextEncoder();
-    const r = new TextDecoder();
-    try {
-        if (h) await n.connected;
-        const s = j && k ? 'Proxy-Authorization: Basic ' + btoa(j + ':' + k) + '\r\n' : '';
-        const t = 'CONNECT ' + c + ':' + f + ' HTTP/1.1\r\nHost: ' + c + ':' + f + '\r\n' + s + '\r\n';
-        await o.write(q.encode(t));
-        o.releaseLock();
-        let u = new Uint8Array(0);
-        let v = -1;
-        let w = 0;
-        while (v === -1 && w < 8192) {
-            const { done: z, value: A } = await p.read();
-            if (z || !A) throw new Error((h ? 'HTTPS' : 'HTTP') + ' CONNECT no response');
-            u = new Uint8Array([...u, ...A]);
-            w = u.length;
-            const B = u.findIndex((C, D) => D < u.length - 3 && u[D] === 13 && u[D + 1] === 10 && u[D + 2] === 13 && u[D + 3] === 10);
-            if (B !== -1) v = B + 4;
-        }
-        if (v === -1) throw new Error('HTTP CONNECT no end of headers');
-        const x = r.decode(u.slice(0, v)).split('\r\n')[0].match(/HTTP\/\d\.\d\s+(\d+)/);
-        const y = x ? parseInt(x[1], 10) : NaN;
-        if (!Number.isInteger(y) || y < 200 || y >= 300) throw new Error('HTTP CONNECT failed: ' + y);
-        p.releaseLock();
-        if (validDataLength(g) > 0) {
-            const C = n.writable.getWriter();
-            await C.write(g);
-            C.releaseLock();
-        }
-        if (w > v) {
-            const { readable: D, writable: E } = new TransformStream();
-            const F = E.getWriter();
-            await F.write(u.slice(v, w));
-            F.releaseLock();
-            n.readable.pipeTo(E).catch(() => {});
-            return { readable: D, writable: n.writable, closed: n.closed, close: () => n.close() };
-        }
-        return n;
-    } catch (G) {
-        try { o.releaseLock(); } catch (H) {}
-        try { p.releaseLock(); } catch (I) {}
-        try { n.close(); } catch (J) {}
-        throw G;
+function decodeWsEarlyData(c, f) {
+    if (!c) return null;
+    if (c['length'] > WSearlyDataMaxHeaderLength) throw new Error('Early data too large');
+    let g;
+    const h = Uint8Array;
+    if (typeof h['from'] === 'function') {
+        try { g = h['from'](c, { 'alphabet': 'base64url' }); } catch (j) {}
     }
+    if (!g) {
+        let k = c['replace'](/-/g, '+')['replace'](/_/g, '/');
+        const l = k['length'] % 4;
+        if (l) k += '='['repeat'](4 - l);
+        let m;
+        try { m = atob(k); } catch (n) { return null; }
+        g = new Uint8Array(m['length']);
+        for (let o = 0; o < m['length']; o++) g[o] = m['charCodeAt'](o);
+    }
+    if (g['length'] > WSearlyDataMaxBytes) throw new Error('Decoded early data too large');
+    return isValidWsEarlyData(g, f) ? g : null;
 }
 
-// ============================================================
-// HTTPS CONNECT Proxy
-// ============================================================
-
-async function httpsConnect(c, f, g, h) {
-    const { username: i, password: j, hostname: k, port: l } = parsedSocks5Address;
-    const m = new TextEncoder();
-    const n = new TextDecoder();
-    let o = null;
-    const p = isIPHostname(k) ? '' : stripIPv6Brackets(k);
-    const q = async (r = false) => {
-        const s = h({ hostname: k, port: l });
-        try {
-            await s.connected;
-            const t = new TlsClient(s, { serverName: p, insecure: true, allowChacha: r });
-            await t.connect();
-            log('TLS: ' + (t.tls13 ? 'TLS 1.3' : 'TLS 1.2') + ' ' + (t.chacha ? 'ChaCha20' : 'AES-GCM') + ' | ' + t.cipherSuite.toString(16) + (t.serverName ? ' SNI: ' + t.serverName : ''));
-            return t;
-        } catch (u) {
-            try { s.close(); } catch (v) {}
-            throw u;
-        }
-    };
+async function backendDiagnostic(c, f) {
+    const g = { 'ok': false, 'steps': [] };
+    const i = backendModeConfig(c);
+    g['ok'] = i['on'];
+    g['url'] = i['url'] || 'not-configured';
+    if (!i['on']) {
+        g['steps']['push']('Backend disabled');
+        return new Response(JSON['stringify'](g, null, 2), {
+            'status': 0xc8,
+            'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+        });
+    }
+    let j = '';
     try {
-        try {
-            o = await q(false);
-        } catch (H) {
-            if (!/cipher|handshake|TLS Alert|ServerHello|Finished|Unsupported|Missing TLS/i.test(H && H.message || '' + (H || ''))) throw H;
-            log('TLS fallback: ' + (H && H.message || H));
-            o = await q(true);
-        }
-        const r = i && j ? 'Proxy-Authorization: Basic ' + btoa(i + ':' + j) + '\r\n' : '';
-        const s = 'CONNECT ' + c + ':' + f + ' HTTP/1.1\r\nHost: ' + c + ':' + f + '\r\n' + r + '\r\n';
-        await o.write(m.encode(s));
-        let t = new Uint8Array(0);
-        let u = -1;
-        let v = 0;
-        while (u === -1 && v < 8192) {
-            const I = await o.read();
-            if (!I) throw new Error('HTTPS CONNECT no response');
-            t = concatByteData(t, I);
-            v = t.length;
-            const J = t.findIndex((K, L) => L < t.length - 3 && t[L] === 13 && t[L + 1] === 10 && t[L + 2] === 13 && t[L + 3] === 10);
-            if (J !== -1) u = J + 4;
-        }
-        if (u === -1) throw new Error('HTTPS CONNECT no end of headers');
-        const w = n.decode(t.slice(0, u)).split('\r\n')[0].match(/HTTP\/\d\.\d\s+(\d+)/);
-        const x = w ? parseInt(w[1], 10) : NaN;
-        if (!Number.isInteger(x) || x < 200 || x >= 300) throw new Error('HTTPS CONNECT failed: ' + x);
-        if (validDataLength(g) > 0) await o.write(dataToUint8Array(g));
-        const y = v > u ? t.slice(u, v) : null;
-        let z = false, A, B;
-        const C = (K, L) => { if (!z) { z = true; K(L); } };
-        const D = new Promise((K, L) => { A = K; B = L; });
-        const E = () => {
-            try { o.close(); } catch (K) {}
-            C(A);
-        };
-        const F = new ReadableStream({
-            async start(K) {
+        const l = new URL(i['url']);
+        if (l['pathname'] === '/' || !l['hostname']) l['pathname'] = '/health';
+        j = l['toString']();
+    } catch (m) {
+        g['steps']['push']('Invalid URL: ' + (m && m['message']));
+        return new Response(JSON['stringify'](g, null, 2), {
+            'status': 0xc8,
+            'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+        });
+    }
+    g['target'] = j;
+    const k = Date['now']();
+    try {
+        const n = new Headers();
+        n['set']('User-Agent', 'Taakaa-Xi-Diagnostic');
+        n['set']('Accept', 'application/json');
+        n['set']('Connection', 'close');
+        n['set']('Cache-Control', 'no-cache');
+        const o = await fetch(j, {
+            'method': 'GET',
+            'headers': n,
+            'redirect': 'follow'
+        });
+        g['responseTime'] = Date['now']() - k;
+        g['status'] = o['status'];
+        g['ok'] = !!o['ok'];
+        if (o['status'] === 0x65 && o['webSocket']) {
+            g['ok'] = true;
+            g['steps']['push']('WebSocket upgrade available');
+            try {
+                o['webSocket']['accept']();
+                o['webSocket']['close'](0x3e8, 'OK');
+            } catch (p) {}
+        } else if (o['status'] === 0x65 && !o['webSocket']) {
+            g['steps']['push']('WebSocket upgrade missing');
+        } else {
+            let q = '';
+            try { q = (await o['text']())['slice'](0, 0x12c); } catch (s) {}
+            g['body'] = q || 'Empty response';
+            g['error'] = o['headers']['get']('X-Error') || '';
+            if (o['status'] === 0x193) {
+                let t = false;
                 try {
-                    if (validDataLength(y) > 0) K.enqueue(y);
-                    while (true) {
-                        const L = await o.read();
-                        if (!L) break;
-                        if (L.length > 0) K.enqueue(L);
-                    }
-                    try { K.close(); } catch (M) {}
-                    C(A);
-                } catch (N) {
-                    try { K.error(N); } catch (O) {}
-                    C(B, N);
+                    const u = new URL(j)['hostname'];
+                    t = /^\d{1,3}(\.\d{1,3}){3}$/['test'](u) || u['includes'](':');
+                } catch (v) {}
+                if (t && g['responseTime'] != null && g['responseTime'] < 0x32) {
+                    g['steps']['push']('Host is IP with fast response (' + g['responseTime'] + 'ms)');
+                    g['error'] = 'Check target service health';
+                } else {
+                    g['steps']['push']('Connection refused or timeout');
                 }
-            },
-            cancel() { E(); }
+            } else {
+                g['steps']['push']('Status: ' + o['status'] + ' - ' + (o['statusText'] || 'Unknown'));
+            }
+        }
+    } catch (w) {
+        g['responseTime'] = Date['now']() - k;
+        g['error'] = w && w['message'] ? w['message'] : String(w);
+        g['steps']['push']('Fetch error: ' + (w && w['message'] || w));
+        g['ok'] = false;
+    }
+    return new Response(JSON['stringify'](g, null, 2), {
+        'status': 0xc8,
+        'headers': { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+    });
+}
+
+function backendModeConfig(c) {
+    const f = networkSettings || {};
+    const g = f['backendMode'] && String(f['backendUrl'])['trim']() || c && c['backendUrl'] && String(c['backendUrl'])['trim']() || '';
+    const h = (f['enableBackend'] === true || c && (c['enableBackend'] === 'true' || c['backendEnabled'] === true)) && /^https?:\/\//i['test'](g);
+    return { 'on': h, 'url': g };
+}
+
+function isBackendExcludedPath(c, f) {
+    const g = (c || '')['toLowerCase']();
+    const h = (f || '')['toLowerCase']();
+    if (g === 'taakaa' || g === 'login' || h === '/taakaa' || h === '/login') return true;
+    if (g === 'admin' || g === 'config' || g === 'settings' || g === 'users' || g === 'stats' || g === 'logs' || g === 'install') return true;
+    if (g === 'sub' || g['includes']('sub') || g === 'doh' || g['includes']('dns') || g === 'warp' || g['includes']('warp')) return true;
+    if (g === 'myip' || g['includes']('ip') || g === 'status' || g['includes']('status') || g === 'version-check' || g['includes']('version')) return true;
+    return false;
+}
+
+function backendTargetUrl(c, f) {
+    let g;
+    try { g = new URL(c); } catch (i) { return null; }
+    const h = f && f['pathPrefix'] ? f['pathPrefix'] : '';
+    if (h && h !== '/') g['pathname'] = h;
+    g['search'] = f && f['queryString'] || '';
+    return g['toString']();
+}
+
+async function forwardWsToBackend(c, f, g, h, i, j) {
+    const k = backendTargetUrl(i, f);
+    if (!k) return new Response('Invalid backend URL', { 'status': 0x1f4 });
+    const l = new WebSocketPair();
+    const m = l[0];
+    const n = l[1];
+    try { n['accept'](); } catch (w) {}
+    const o = new Headers(c['headers']);
+    o['set']('Host', 'taakaa.xyz');
+    o['set']('X-Forwarded-Host', 'taakaa.xyz');
+    o['set']('X-Forwarded-Proto', 'https');
+    o['set']('Connection', 'Upgrade');
+    let p;
+    try {
+        p = await fetch(k, {
+            'method': 'GET',
+            'headers': o,
+            'redirect': 'follow'
         });
-        const G = new WritableStream({
-            async write(K) { await o.write(dataToUint8Array(K)); },
-            close() { E(); },
-            abort(K) { E(); if (K) C(B, K); }
-        });
-        return { readable: F, writable: G, closed: D, close: E };
-    } catch (K) {
-        try { o && o.close(); } catch (L) {}
-        throw K;
+    } catch (x) {
+        try { n['close'](0x3f3, 'Backend unreachable'); } catch (y) {}
+        try { m['close'](0x3f3, 'Backend unreachable'); } catch (z) {}
+        return new Response('Backend connection failed: ' + (x && x['message'] || x), { 'status': 0x1f6 });
     }
-}
-
-// ============================================================
-// TURN Protocol
-// ============================================================
-
-const TURN_STUN_MAGIC_COOKIE = new Uint8Array([0x21, 0x12, 0xa4, 0x42]);
-const TURN_STUN_TYPE = {
-    'ALLOCATE_REQUEST': 0x03, 'ALLOCATE_SUCCESS': 0x0103, 'ALLOCATE_ERROR': 0x0113,
-    'CREATE_PERMISSION_REQUEST': 0x08, 'CREATE_PERMISSION_SUCCESS': 0x0108,
-    'CONNECT_REQUEST': 0x0a, 'CONNECT_SUCCESS': 0x010a,
-    'CONNECTION_BIND_REQUEST': 0x0b, 'CONNECTION_BIND_SUCCESS': 0x010b
-};
-const TURN_STUN_ATTR = {
-    'USERNAME': 0x06, 'MESSAGE_INTEGRITY': 0x08, 'ERROR_CODE': 0x09,
-    'XOR_PEER_ADDRESS': 0x12, 'REALM': 0x14, 'NONCE': 0x15,
-    'REQUESTED_TRANSPORT': 0x19, 'CONNECTION_ID': 0x2a
-};
-
-function turnStunPadding(c) { return -c & 3; }
-
-function createTurnStunAttribute(c, f) {
-    const g = dataToUint8Array(f);
-    const h = new Uint8Array(4 + g.length + turnStunPadding(g.length));
-    const i = new DataView(h.buffer);
-    i.setUint16(0, c);
-    i.setUint16(2, g.length);
-    h.set(g, 4);
-    return h;
-}
-
-function createTurnStunMessage(c, f, g) {
-    const h = concatByteData(...g);
-    const i = new Uint8Array(0x14);
-    const j = new DataView(i.buffer);
-    j.setUint16(0, c);
-    j.setUint16(2, h.length);
-    i.set(TURN_STUN_MAGIC_COOKIE, 4);
-    i.set(f, 8);
-    return concatByteData(i, h);
-}
-
-function parseTurnErrorCode(c) {
-    return c && c.length >= 4 ? (c[2] & 0x07) * 100 + c[3] : 0;
-}
-
-function randomTurnTransactionId() { return crypto.getRandomValues(new Uint8Array(12)); }
-
-async function addTurnMessageIntegrity(c, f) {
-    const g = new Uint8Array(c);
-    const h = new DataView(g.buffer);
-    h.setUint16(2, h.getUint16(2) + 24);
-    const i = await crypto.subtle.importKey('raw', f, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-    const j = new Uint8Array(await crypto.subtle.sign('HMAC', i, g));
-    return concatByteData(g, createTurnStunAttribute(TURN_STUN_ATTR['MESSAGE_INTEGRITY'], j));
-}
-
-async function readTurnStunMessage(c, f = null, g = 'STUN read timeout') {
-    let h = validDataLength(f) ? dataToUint8Array(f) : new Uint8Array(0);
-    const i = async () => {
-        const { done: n, value: o } = await withTimeout(c.read(), CONNECT_TIMEOUT_MS, g);
-        if (n) throw new Error('STUN read EOF');
-        if (o && o.length) h = concatByteData(h, o);
-    };
-    while (h.length < 0x14) await i();
-    const j = 0x14 + (h[2] << 8 | h[3]);
-    if (j > 0x10013) throw new Error('STUN message too large');
-    while (h.length < j) await i();
-    const k = h.slice(0, j);
-    if (TURN_STUN_MAGIC_COOKIE.some((n, o) => k[4 + o] !== n)) throw new Error('Invalid STUN magic cookie');
-    const l = new DataView(k.buffer, k.byteOffset, k.byteLength);
-    const m = {};
-    for (let n = 0x14; n + 4 <= j; ) {
-        const o = l.getUint16(n);
-        const p = l.getUint16(n + 2);
-        if (n + 4 + p > k.length) break;
-        m[o] = k.slice(n + 4, n + 4 + p);
-        n += 4 + p + turnStunPadding(p);
+    if (p['status'] !== 0x65 || !p['webSocket']) {
+        try { await p['body']?.['cancel'](); } catch (A) {}
+        try { n['close'](0x3f3, 'Not WebSocket'); } catch (B) {}
+        try { m['close'](0x3f3, 'Not WebSocket'); } catch (C) {}
+        return new Response('Backend not WebSocket: ' + p['status'] + ')', { 'status': 0x1f6 });
     }
-    return {
-        message: { type: l.getUint16(0), attributes: m },
-        extraData: h.length > j ? h.slice(j) : null
+    const q = p['webSocket'];
+    try { q['accept'](); } catch (D) {}
+    let r = false;
+    const s = { 'up': 0, 'down': 0 };
+    const t = E => {
+        try {
+            return E && E['length'] != null ? E['length'] : E && E['byteLength'] != null ? E['byteLength'] : E && E['size'] || 0;
+        } catch (F) { return 0; }
     };
-}
-
-async function writeTurnBytes(c, f, g) {
-    await withTimeout(c.write(f), CONNECT_TIMEOUT_MS, g);
-}
-
-async function turnConnect(c, f, g, h) {
-    c = { ...c, username: c.username ?? null, password: c.password ?? null };
-    const i = stripIPv6Brackets(f);
-    let j = isIPv4(i) ? i : null;
-    if (!j) {
-        const u = await DoHquery(i, 'A');
-        const v = u.find(w => w.type === 1 && isIPv4(w.data))?.data;
-        j = typeof v === 'string' ? v : null;
-    }
-    if (!j) throw new Error('TURN: cannot resolve ' + f + ' to IPv4');
-    const k = stripIPv6Brackets(c.hostname);
-    let l = null, m = null, n = null, o = null, p = null, q = null, r = false;
-    const s = () => {
-        try { l && l.close && l.close(); } catch (w) {}
-        try { m && m.close && m.close(); } catch (x) {}
-    };
-    const t = () => {
+    const u = (E, F) => {
         if (r) return;
         r = true;
-        try { q && q.close && q.close(); } catch (w) {}
-        s();
+        try { n['close'](E || 0x3e8, F || 'Connection closed'); } catch (G) {}
+        try { q['close'](E || 0x3e8, F || 'Connection closed'); } catch (H) {}
+        try { recordUsage(g, s['up'], s['down'], h); } catch (I) {}
+        if (j) {
+            try { recordUserUsage(g, j, s['up'], s['down'], h); } catch (J) {}
+        }
     };
+    const v = (E, F, G) => {
+        if (r) return;
+        if (F instanceof Blob) {
+            F['arrayBuffer']()['then'](H => {
+                if (r) return;
+                try { E['send'](H); if (G) s['up'] += t(H); else s['down'] += t(H); } catch (I) { u(0x3f3, 'Send error'); }
+            })['catch'](() => u(0x3f3, 'Blob error'));
+            return;
+        }
+        if (E['readyState'] !== 1) return;
+        try { E['send'](F); if (G) s['up'] += t(F); else s['down'] += t(F); } catch (H) { u(0x3f3, 'Send error'); }
+    };
+    n['addEventListener']('message', E => v(q, E['data'], true));
+    q['addEventListener']('message', E => v(n, E['data'], false));
+    n['addEventListener']('close', E => u(E['code'], E['reason'] || 'Client closed'));
+    q['addEventListener']('close', E => u(E['code'], E['reason'] || 'Backend closed'));
+    n['addEventListener']('error', () => u(0x3f3, 'Client error'));
+    q['addEventListener']('error', () => u(0x3f3, 'Backend error'));
+    return new Response(null, { 'status': 0x65, 'webSocket': m });
+}
+
+async function forwardHttpToBackend(c, f, g, h) {
+    const i = backendTargetUrl(h, f);
+    if (!i) return new Response('Invalid backend URL', { 'status': 0x1f4 });
+    const j = new Headers();
+    for (const [l, m] of c['headers']) {
+        const n = l['toLowerCase']();
+        if (n === 'host' || n['includes']('connection') || n === 'content-length') continue;
+        j['set'](l, m);
+    }
     try {
-        l = h({ hostname: k, port: c.port });
-        await withTimeout(l.connected, CONNECT_TIMEOUT_MS, 'TURN connect timeout');
-        n = l.writable.getWriter();
-        o = l.readable.getReader();
-        const w = new Uint8Array(8);
-        w[1] = 0x01;
-        new DataView(w.buffer).setUint16(2, g ^ 0x2112);
-        j.split('.').forEach((H, I) => { w[4 + I] = Number(H) ^ TURN_STUN_MAGIC_COOKIE[I]; });
-        const x = createTurnStunAttribute(TURN_STUN_ATTR['XOR_PEER_ADDRESS'], w);
-        const y = new Uint8Array([0x06, 0x00, 0x00, 0x00]);
-        await writeTurnBytes(n, createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [createTurnStunAttribute(TURN_STUN_ATTR['REQUESTED_TRANSPORT'], y)]), 'TURN allocate write');
-        let z = await readTurnStunMessage(o, null, 'TURN allocate read');
-        let A = z.message, B = z.extraData;
-        let C = null, D = [];
-        const E = H => C ? addTurnMessageIntegrity(H, C) : Promise.resolve(H);
-        if (A.type === TURN_STUN_TYPE['ALLOCATE_ERROR'] && c.username !== null && c.password !== null && parseTurnErrorCode(A.attributes[TURN_STUN_ATTR['ERROR_CODE']]) === 401) {
-            const H = A.attributes[TURN_STUN_ATTR['REALM']];
-            const I = A.attributes[TURN_STUN_ATTR['NONCE']];
-            if (!H || !I || !I.length) throw new Error('TURN: missing realm or nonce');
-            const J = new TextDecoder().decode(H);
-            C = new Uint8Array(await crypto.subtle.digest('MD5', new TextEncoder().encode(c.username + ':' + J + ':' + c.password)));
-            D = [
-                createTurnStunAttribute(TURN_STUN_ATTR['USERNAME'], new TextEncoder().encode(c.username)),
-                createTurnStunAttribute(TURN_STUN_ATTR['REALM'], new TextEncoder().encode(J)),
-                createTurnStunAttribute(TURN_STUN_ATTR['NONCE'], I)
-            ];
-            const K = await addTurnMessageIntegrity(createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [createTurnStunAttribute(TURN_STUN_ATTR['REQUESTED_TRANSPORT'], y), ...D]), C);
-            const L = await Promise.all([
-                E(createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [x, ...D])),
-                E(createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [x, ...D]))
-            ]);
-            await writeTurnBytes(n, concatByteData(K, ...L), 'TURN re-allocate write');
-            z = await readTurnStunMessage(o, B, 'TURN re-allocate read');
-            A = z.message;
-            B = z.extraData;
-        } else if (A.type === TURN_STUN_TYPE['ALLOCATE_SUCCESS']) {
-            const M = await Promise.all([
-                E(createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [x, ...D])),
-                E(createTurnStunMessage(TURN_STUN_TYPE['ALLOCATE_REQUEST'], randomTurnTransactionId(), [x, ...D]))
-            ]);
-            if (M.length) await writeTurnBytes(n, concatByteData(...M), 'TURN allocate write');
-        }
-        if (A.type !== TURN_STUN_TYPE['ALLOCATE_SUCCESS']) {
-            const N = parseTurnErrorCode(A.attributes[TURN_STUN_ATTR['ERROR_CODE']]);
-            throw new Error(N ? 'TURN allocate error: ' + N : 'TURN allocate failed');
-        }
-        m = h({ hostname: k, port: c.port });
-        z = await readTurnStunMessage(o, B, 'TURN create permission read');
-        A = z.message;
-        B = z.extraData;
-        if (A.type !== TURN_STUN_TYPE['CREATE_PERMISSION_SUCCESS']) throw new Error('TURN create permission failed');
-        z = await readTurnStunMessage(o, B, 'TURN connect read');
-        A = z.message;
-        B = z.extraData;
-        if (A.type !== TURN_STUN_TYPE['CONNECT_SUCCESS'] || !A.attributes[TURN_STUN_ATTR['CONNECTION_ID']]) throw new Error('TURN connect failed');
-        await withTimeout(m.connected, CONNECT_TIMEOUT_MS, 'TURN second connect timeout');
-        p = m.writable.getWriter();
-        q = m.readable.getReader();
-        await writeTurnBytes(p, await E(createTurnStunMessage(TURN_STUN_TYPE['CONNECTION_BIND_REQUEST'], randomTurnTransactionId(), [
-            createTurnStunAttribute(TURN_STUN_ATTR['CONNECTION_ID'], A.attributes[TURN_STUN_ATTR['CONNECTION_ID']]),
-            ...D
-        ])), 'TURN connection bind write');
-        z = await readTurnStunMessage(q, null, 'TURN connection bind read');
-        A = z.message;
-        const F = z.extraData;
-        if (A.type !== TURN_STUN_TYPE['CONNECTION_BIND_SUCCESS']) throw new Error('TURN connection bind failed');
-        n.releaseLock(); n = null;
-        o.releaseLock(); o = null;
-        p.releaseLock(); p = null;
-        const G = new ReadableStream({
-            start(O) { if (F && F.length) O.enqueue(F); },
-            pull(O) {
-                return q.read().then(({ done: P, value: Q }) => {
-                    if (P) { t(); O.close(); } else {
-                        if (Q && Q.length) O.enqueue(new Uint8Array(Q));
-                    }
-                });
-            },
-            cancel() {
-                try { q && q.close && q.close(); } catch (O) {}
-                t();
-                s();
-            }
+        return await fetch(i, {
+            'method': c['method'],
+            'headers': j,
+            'body': c['body'],
+            'redirect': 'follow'
         });
-        return { readable: G, writable: m.writable, closed: m.closed, close: s };
-    } catch (O) {
-        try { n && n.releaseLock && n.releaseLock(); } catch (P) {}
-        try { o && o.releaseLock && o.releaseLock(); } catch (Q) {}
-        try { p && p.releaseLock && p.releaseLock(); } catch (R) {}
-        t();
-        s();
-        throw O;
+    } catch (o) {
+        return new Response('Backend request failed: ' + (o && o['message'] || o), { 'status': 0x1f6 });
+    }
+                       }
+// ============================================================
+// TAAKAA-XI WEBSOCKET HANDLER (MAIN)
+// ============================================================
+
+async function handleWsRequest(c, f, g, h, i) {
+    if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { 'status': 0x193 });
+    const j = connUserId;
+    const k = new WebSocketPair();
+    const [l, m] = Object['values'](k);
+    try { m['accept']({ 'allowHalfOpen': true }); } catch (R) { m['close'](); }
+    m['binaryType'] = 'arraybuffer';
+    let n = { 'socket': null, 'connectingPromise': null, 'retryConnect': null };
+    const o = { 'up': 0, 'down': 0 };
+    let p = false, q = null;
+    const r = { 'cache': new Uint8Array(0) };
+    const s = c['search']['get']('early') || '';
+    const t = !!g['search']['has']('no-early');
+    let u = null;
+    let v = Promise['resolve']();
+    let w = false, x = false, y = false;
+    let z = 0, A = 0;
+    let B = null, C = null, D = null, E = null, F = null;
+
+    const G = () => {
+        if (D) { try { D['close'](); } catch (S) {} D = null; }
+        C = null;
+    };
+
+    const H = u = createUpstreamWriteQueue({
+        'getWriter': () => {
+            const S = n['socket'];
+            if (!S) return null;
+            if (S !== C) { G(); C = S; D = S['writable']['getWriter'](); }
+            return D;
+        },
+        'releaseWriter': G,
+        'retryConnection': async () => {
+            if (typeof n['retryConnect'] !== 'function') throw new Error('No retry connection function');
+            await n['retryConnect']();
+        },
+        'closeConnection': () => {
+            try { n['socket'] && n['socket']['close'](); } catch (S) {}
+            closeSocketQuietly(m);
+        },
+        'name': 'ws-writer'
+    });
+
+    const I = async (S, T = true) => { return H['write'](S, T); };
+    const J = async () => {
+        if (E) return E;
+        if (!F) {
+            F = (async () => {
+                const S = (g['search']['get']('ss') || '').toLowerCase();
+                const T = SSsupportEncryptionConfig[S] || SSsupportEncryptionConfig['aes-256-gcm'];
+                const U = [T, ...Object['values'](SSsupportEncryptionConfig).filter(a => a['method'] !== T['method'])];
+                const V = new Map();
+                const W = (a) => {
+                    if (!V['has'](a['method'])) V['set'](a['method'], SSderiveMasterKey(f, a['saltLen']));
+                    return V['get'](a['method']);
+                };
+                const X = {
+                    'buffer': new Uint8Array(0),
+                    'hasSalt': false,
+                    'waitPayloadLength': null,
+                    'decryptKey': null,
+                    'nonceCounter': new Uint8Array(SSNoncelength),
+                    'encryptionConfig': null
+                };
+                const Y = async () => {
+                    const a6 = 2 + SSAEADtagLength;
+                    const a7 = Math['max'](...U['map'](ab => ab['aesLength']));
+                    const a8 = 16;
+                    const a9 = Math['max'](a8, Math['min'](0, X['buffer']['length'] - (a6 + Math['max'](...U['map'](ab => ab['keyLen'])))));
+                    for (let ab = 0; ab <= a9; ab++) {
+                        for (const ac of U) {
+                            const ad = ab + ac['keyLen'] + a6;
+                            if (X['buffer']['length'] < ad) continue;
+                            const ae = X['buffer']['slice'](ab, ab + ac['keyLen']);
+                            const af = X['buffer']['slice'](ab + ac['keyLen'], ad);
+                            const ag = await W(ac);
+                            const ah = await SSderiveSessionKey(ac, ag, ae, ['key']);
+                            const ai = new Uint8Array(SSNoncelength);
+                            try {
+                                const aj = await SSAEADdecrypt(ah, ai, af);
+                                if (aj['length'] !== 2) continue;
+                                const ak = aj[0] << 8 | aj[1];
+                                if (ak < 0 || ak > ac['maxChunk']) continue;
+                                if (ab > 0) log('SS: salt offset ' + ab + ' bytes');
+                                if (ac['method'] !== T['method']) log('SS: using fallback cipher ' + (S || T['method']) + ' → ' + ac['method']);
+                                X['buffer'] = X['buffer']['slice'](ad);
+                                X['decryptKey'] = ah;
+                                X['nonceCounter'] = ai;
+                                X['waitPayloadLength'] = ak;
+                                X['encryptionConfig'] = ac;
+                                X['hasSalt'] = true;
+                                return true;
+                            } catch (al) {}
+                        }
+                    }
+                    const aa = a7 + a6 + a8;
+                    if (X['buffer']['length'] >= aa) {
+                        throw new Error('SS: cannot find salt for ' + (S || T['method']) + ' (tried ' + U['map'](a => a['method'])['join']('/') + ')');
+                    }
+                    return false;
+                };
+                const Z = {
+                    async 'input'(a6) {
+                        const a7 = dataToUint8Array(a6);
+                        if (a7['length'] > 0) X['buffer'] = concatByteData(X['buffer'], a7);
+                        if (!X['hasSalt']) {
+                            const a9 = await Y();
+                            if (!a9) return [];
+                        }
+                        const a8 = [];
+                        while (true) {
+                            if (X['waitPayloadLength'] === null) {
+                                const ad = 2 + SSAEADtagLength;
+                                if (X['buffer']['length'] < ad) break;
+                                const ae = X['buffer']['slice'](0, ad);
+                                X['buffer'] = X['buffer']['slice'](ad);
+                                const af = await SSAEADdecrypt(X['decryptKey'], X['nonceCounter'], ae);
+                                if (af['length'] !== 2) throw new Error('SS: invalid length header');
+                                const ag = af[0] << 8 | af[1];
+                                if (ag < 0 || ag > X['encryptionConfig']['maxChunk']) throw new Error('SS: invalid chunk length ' + ag);
+                                X['waitPayloadLength'] = ag;
+                            }
+                            const aa = X['waitPayloadLength'] + SSAEADtagLength;
+                            if (X['buffer']['length'] < aa) break;
+                            const ab = X['buffer']['slice'](0, aa);
+                            X['buffer'] = X['buffer']['slice'](aa);
+                            const ac = await SSAEADdecrypt(X['decryptKey'], X['nonceCounter'], ab);
+                            a8['push'](ac);
+                            X['waitPayloadLength'] = null;
+                        }
+                        return a8;
+                    }
+                };
+                let a0 = null;
+                const a1 = 32 * 1024;
+                const a2 = async () => {
+                    if (a0) return a0;
+                    if (!X['hasSalt']) throw new Error('SS: no salt available');
+                    const a6 = X['encryptionConfig'];
+                    const a7 = await SSderiveMasterKey(f, a6['saltLen']);
+                    const a8 = crypto['getRandomValues'](new Uint8Array(a6['saltLen']));
+                    const a9 = await SSderiveSessionKey(a6, a7, a8, ['key']);
+                    const aa = new Uint8Array(SSNoncelength);
+                    let ab = false;
+                    return a0 = {
+                        async 'encryptAndSend'(ac, ad) {
+                            const ae = dataToUint8Array(ac);
+                            if (!ab) { await ad(a8); ab = true; }
+                            if (ae['length'] === 0) return;
+                            let af = 0;
+                            while (af < ae['length']) {
+                                const ag = Math['min'](af + a6['maxChunk'], ae['length']);
+                                const ah = ae['slice'](af, ag);
+                                const ai = new Uint8Array(2);
+                                ai[0] = ah['length'] >>> 8 & 0xff;
+                                ai[1] = ah['length'] & 0xff;
+                                const aj = await SSAEADencryption(a9, aa, ai);
+                                const ak = await SSAEADencryption(a9, aa, ah);
+                                const al = new Uint8Array(aj['length'] + ak['length']);
+                                al['set'](aj, 0);
+                                al['set'](ak, aj['length']);
+                                await ad(al);
+                                af = ag;
+                            }
+                        }
+                    };
+                };
+                let a3 = Promise['resolve']();
+                const a4 = (a6) => {
+                    a3 = a3['then'](async () => {
+                        if (m['readyState'] !== WebSocket['OPEN']) return;
+                        const a7 = await a2();
+                        await a7['encryptAndSend'](a6, async (a8) => {
+                            if (a8['length'] > 0 && m['readyState'] === WebSocket['OPEN']) {
+                                await WebSocketsendAndWait(m, a8['buffer']);
+                            }
+                        });
+                    })['catch'](a7 => {
+                        log('SS send error: ' + (a7 && a7['message'] || a7));
+                        closeSocketQuietly(m);
+                    });
+                    return a3;
+                };
+                const a5 = {
+                    get 'readyState'() { return m['readyState']; },
+                    'send'(a6) {
+                        const a7 = dataToUint8Array(a6);
+                        o['up'] += a7['length'];
+                        if (a7['length'] <= a1) return a4(a7);
+                        for (let a8 = 0; a8 < a7['length']; a8 += a1) {
+                            a4(a7['slice'](a8, Math['min'](a8 + a1, a7['length'])));
+                        }
+                        return a3;
+                    },
+                    'close'() { closeSocketQuietly(m); }
+                };
+                return {
+                    'inboundDecryptor': Z,
+                    'replyChunkSocket': a5,
+                    'firstPacketEstablished': false,
+                    'targetHost': '',
+                    'targetPort': 0
+                };
+            })();
+            F['catch'](() => { F = null; });
+        }
+        return F;
+    };
+        const K = async S => {
+        const T = await J();
+        let U = null;
+        try {
+            U = await T['inboundDecryptor']['input'](S);
+        } catch (V) {
+            const W = V && V['message'] || '' + V;
+            if (W['includes']('buffer') || W['includes']('decrypt') || W['includes']('salt')) {
+                log('SS decrypt error: ' + W);
+                closeSocketQuietly(m);
+                return;
+            }
+            throw V;
+        }
+        for (const X of U) {
+            let Y = false;
+            try { Y = await I(X, false); } catch (a5) {
+                if (a5 && a5['message']) throw a5;
+                Y = false;
+            }
+            if (Y) continue;
+            if (T['firstPacketEstablished'] && T['targetHost'] && T['targetPort'] > 0) {
+                o['up'] += validDataLength(X);
+                await forwardataTCP(T['targetHost'], T['targetPort'], X, T['replyChunkSocket'], null, n, f, c, o);
+                continue;
+            }
+            const Z = dataToUint8Array(X);
+            if (Z['length'] < 3) throw new Error('Too short');
+            const a0 = Z[0];
+            let a1 = 1, a2 = '';
+            if (a0 === 1) {
+                if (Z['length'] < a1 + 4 + 2) throw new Error('Incomplete IPv4');
+                a2 = Z[a1] + '.' + Z[a1 + 1] + '.' + Z[a1 + 2] + '.' + Z[a1 + 3];
+                a1 += 4;
+            } else if (a0 === 3) {
+                if (Z['length'] < a1 + 1) throw new Error('Incomplete domain length');
+                const a6 = Z[a1]; a1 += 1;
+                if (Z['length'] < a1 + a6 + 2) throw new Error('Incomplete domain');
+                a2 = SStextDecode['decode'](Z['slice'](a1, a1 + a6));
+                a1 += a6;
+            } else if (a0 === 4) {
+                if (Z['length'] < a1 + 16 + 2) throw new Error('Incomplete IPv6');
+                const a7 = [];
+                const a8 = new DataView(Z['buffer'], Z['byteOffset'] + a1, 16);
+                for (let a9 = 0; a9 < 8; a9++) {
+                    a7['push'](a8['getUint16'](a9 * 2)['toString'](16));
+                }
+                a2 = a7['join'](':');
+                a1 += 16;
+            } else {
+                throw new Error('Invalid address type: ' + a0);
+            }
+            if (!a2) throw new Error('Empty address, type: ' + a0);
+            const a3 = Z[a1] << 8 | Z[a1 + 1];
+            a1 += 2;
+            const a4 = Z['slice'](a1);
+            if (isBlockedSite(a2)) throw new Error('Blocked site: ' + a2);
+            T['firstPacketEstablished'] = true;
+            T['targetHost'] = a2;
+            T['targetPort'] = a3;
+            o['up'] += validDataLength(a4);
+            await forwardataTCP(a2, a3, a4, T['replyChunkSocket'], null, n, f, c, o);
+        }
+    };
+
+    const L = async S => {
+        let T = null;
+        if (p) {
+            if (q) return await forwardTrojanUdpData(S, m, r, c);
+            return await forwardataudp(S, m, null, c);
+        }
+        if (B === 'ss') { await K(S); return; }
+        if (await I(S)) { o['up'] += validDataLength(S); return; }
+        if (B === null) {
+            if (g['search']['has']('ss')) B = 'ss';
+            else {
+                T = T || dataToUint8Array(S);
+                const U = T;
+                B = isTrojanFirstPacket(U, f) ? 'trojan' : 'vless';
+            }
+            q = B === 'trojan';
+            log('Protocol: ' + B + ' | Host: ' + g['host'] + ' | Path: ' + (c['pathname'] || '/'));
+        }
+        if (B === 'ss') { await K(S); return; }
+        if (await I(S)) { o['up'] += validDataLength(S); return; }
+        if (B === 'trojan') {
+            const V = parseTrojanRequest(S, f);
+            if (V && V['hasError']) throw new Error(V['message'] || 'Trojan parse error');
+            const { port: W, hostname: X, rawClientData: Y, isUDP: Z } = V;
+            if (isBlockedSite(X)) throw new Error('Blocked site: ' + X);
+            if (Z) {
+                p = true;
+                if (validDataLength(Y) > 0) {
+                    o['up'] += validDataLength(Y);
+                    return forwardTrojanUdpData(Y, m, r, c);
+                }
+                return;
+            }
+            o['up'] += validDataLength(Y);
+            await forwardataTCP(X, W, Y, m, null, n, f, c, o);
+        } else {
+            q = false;
+            T = T || dataToUint8Array(S);
+            const a0 = T;
+            const a1 = parseVlessRequest(a0, f);
+            if (a1 && a1['hasError']) throw new Error(a1['message'] || 'VLESS parse error');
+            const { port: a2, hostname: a3, version: a4, isUDP: a5, rawClientData: a6 } = a1;
+            if (isBlockedSite(a3)) throw new Error('Blocked site: ' + a3);
+            if (a5) {
+                if (a2 === 53) p = true;
+                else throw new Error('UDP only supported on port 53');
+            }
+            const a7 = new Uint8Array([a4, 0]);
+            const a8 = a6;
+            if (p) {
+                if (q) {
+                    o['up'] += validDataLength(a8);
+                    return forwardTrojanUdpData(a8, m, r, c);
+                }
+                o['up'] += validDataLength(a8);
+                return forwardataudp(a8, m, a7, c);
+            }
+            o['up'] += validDataLength(a8);
+            await forwardataTCP(a3, a2, a8, m, a7, n, f, c, o);
+        }
+    };
+
+    const M = S => {
+        if (x) return;
+        x = true;
+        w = true;
+        z = 0; A = 0;
+        const T = S && S['message'] || '' + S;
+        if (T['includes']('close') || T['includes']('CLOSE')) log('WebSocket closed: ' + T);
+        else log('WebSocket error: ' + T);
+        H['clear']();
+        G();
+        closeSocketQuietly(m);
+    };
+
+    const N = S => {
+        v = v['then'](() => S)['catch'](M);
+        return v;
+    };
+
+    const O = S => {
+        if (w || x) return;
+        const T = Math['min'](0, validDataLength(S));
+        const U = z + T;
+        const V = A + 1;
+        if (U > upstreamQueueMaxBytes || V > upstreamQueueMaxItems) {
+            M(new Error('Queue overflow: ' + U + 'B/' + V));
+            return;
+        }
+        z = U; A = V;
+        N(async () => {
+            z = Math['max'](0, z - T);
+            A = Math['max'](0, A - 1);
+            if (x) return;
+            await L(S);
+        });
+    };
+
+    const P = () => {
+        if (y) return;
+        y = true;
+        w = true;
+        N(async () => {
+            if (x) return;
+            await H['waitEmpty']();
+            G();
+        });
+    };
+
+    m['addEventListener']('message', S => { O(S['data']); });
+    const Q = () => {
+        recordUsage(h, o['up'], o['down'], i);
+        if (j) recordUserUsage(h, j, o['up'], o['down'], i);
+    };
+    m['addEventListener']('close', () => { closeSocketQuietly(m); P(); Q(); });
+    m['addEventListener']('error', S => { M(S); Q(); });
+
+    if (!t && s) {
+        try {
+            const S = decodeWsEarlyData(s, f);
+            if (S && S['length']) O(S);
+        } catch (T) { M(T); }
+    }
+
+    return new Response(null, { 'status': 101, 'webSocket': l, 'headers': { 'Sec-WebSocket-Extensions': '' } });
+        }
+// ============================================================
+// TAAKAA-XI TROJAN, VLESS, SS FUNCTIONS
+// ============================================================
+
+function isTrojanFirstPacket(c, f) {
+    if (!c || c['length'] < 0x3a || c[0x38] !== 13 || c[0x39] !== 10) return false;
+    const g = sha224(f);
+    for (let h = 0; h < 0x38; h++) {
+        if (c[h] !== g['charCodeAt'](h)) return false;
+    }
+    return true;
+}
+
+const trojanTextDecoder = new TextDecoder();
+
+function parseTrojanRequest(c, f) {
+    const g = dataToUint8Array(c);
+    const h = sha224(f);
+    if (g['length'] < 0x3a) return { 'hasError': true, 'message': 'Too short' };
+    let j = 0x38;
+    if (g[j] !== 13 || g[j + 1] !== 10) return { 'hasError': true, 'message': 'Invalid CRLF' };
+    for (let t = 0; t < j; t++) {
+        if (g[t] !== h['charCodeAt'](t)) return { 'hasError': true, 'message': 'SHA224 mismatch' };
+    }
+    const k = j + 2;
+    if (g['length'] < k + 6) return { 'hasError': true, 'message': 'Incomplete header' };
+    const l = g[k];
+    if (l !== 1 && l !== 3) return { 'hasError': true, 'message': 'Invalid address type' };
+    const m = l === 3;
+    const n = g[k + 1];
+    let o = 0, p = k + 2, q = '';
+    switch (n) {
+        case 1:
+            o = 4;
+            if (g['length'] < p + o + 4) return { 'hasError': true, 'message': 'Incomplete IPv4' };
+            q = g[p] + '.' + g[p + 1] + '.' + g[p + 2] + '.' + g[p + 3];
+            break;
+        case 3:
+            if (g['length'] < p + 1) return { 'hasError': true, 'message': 'Incomplete domain length' };
+            o = g[p]; p += 1;
+            if (g['length'] < p + o + 4) return { 'hasError': true, 'message': 'Incomplete domain' };
+            q = trojanTextDecoder['decode'](g['slice'](p, p + o));
+            break;
+        case 4:
+            o = 16;
+            if (g['length'] < p + o + 4) return { 'hasError': true, 'message': 'Incomplete IPv6' };
+            const u = [];
+            for (let v = 0; v < 8; v++) {
+                const w = p + v * 2;
+                u['push']((g[w] << 8 | g[w + 1])['toString'](16));
+            }
+            q = u['join'](':');
+            break;
+        default:
+            return { 'hasError': true, 'message': 'Invalid address type: ' + n };
+    }
+    if (!q) return { 'hasError': true, 'message': 'Empty address, type: ' + n };
+    const r = p + o;
+    if (g['length'] < r + 4) return { 'hasError': true, 'message': 'Incomplete port' };
+    const s = g[r] << 8 | g[r + 1];
+    return { 'hasError': false, 'addressType': n, 'port': s, 'hostname': q, 'isUDP': m, 'rawClientData': g['slice'](r + 4) };
+}
+
+const UUIDbytesCache = new Map();
+const VLESStextDecode = new TextDecoder();
+
+function readHexNibble(c) {
+    if (c >= 0x30 && c <= 0x39) return c - 0x30;
+    c |= 0x20;
+    if (c >= 0x61 && c <= 0x66) return c - 0x57;
+    return -1;
+}
+
+function getUuidBytes(c) {
+    const f = String(c || '');
+    let g = UUIDbytesCache['get'](f);
+    if (g) return g;
+    const h = f['replace'](/-/g, '');
+    if (h['length'] !== 0x20) return null;
+    const j = new Uint8Array(0x10);
+    for (let k = 0; k < 0x10; k++) {
+        const l = readHexNibble(h['charCodeAt'](k * 2));
+        const m = readHexNibble(h['charCodeAt'](k * 2 + 1));
+        if (l < 0 || m < 0) return null;
+        j[k] = l << 4 | m;
+    }
+    if (UUIDbytesCache['size'] >= 0x20) UUIDbytesCache['clear']();
+    UUIDbytesCache['set'](f, j);
+    return j;
+}
+
+function UUIDbyteMatch(c, f, g) {
+    const h = getUuidBytes(g);
+    if (!h || c['length'] < f + 0x10) return false;
+    for (let j = 0; j < 0x10; j++) {
+        if (c[f + j] !== h[j]) return false;
+    }
+    return true;
+}
+
+function parseVlessRequest(c, f) {
+    const g = dataToUint8Array(c);
+    const h = g['length'];
+    if (h < 0x18) return { 'hasError': true, 'message': 'Too short' };
+    const j = g[0];
+    if (!UUIDbyteMatch(g, 1, f)) return { 'hasError': true, 'message': 'UUID mismatch' };
+    const k = g[0x11];
+    const l = 0x12 + k;
+    if (h < l + 4) return { 'hasError': true, 'message': 'Incomplete header' };
+    const m = g[l];
+    let n = false;
+    if (m === 1) { } else if (m === 2) { n = true; } else {
+        return { 'hasError': true, 'message': 'Invalid protocol: ' + m };
+    }
+    const o = l + 1;
+    const p = g[o] << 8 | g[o + 1];
+    let q = o + 3;
+    let r = 0;
+    let s = '';
+    const t = g[o + 2];
+    switch (t) {
+        case 1:
+            r = 4;
+            if (h < q + r) return { 'hasError': true, 'message': 'Incomplete IPv4' };
+            s = g[q] + '.' + g[q + 1] + '.' + g[q + 2] + '.' + g[q + 3];
+            break;
+        case 2:
+            if (h < q + 1) return { 'hasError': true, 'message': 'Incomplete domain length' };
+            r = g[q]; q += 1;
+            if (h < q + r) return { 'hasError': true, 'message': 'Incomplete domain' };
+            s = VLESStextDecode['decode'](g['slice'](q, q + r));
+            break;
+        case 3:
+            r = 16;
+            if (h < q + r) return { 'hasError': true, 'message': 'Incomplete IPv6' };
+            const v = [];
+            for (let w = 0; w < 8; w++) {
+                const x = q + w * 2;
+                v['push']((g[x] << 8 | g[x + 1])['toString'](16));
+            }
+            s = v['join'](':');
+            break;
+        default:
+            return { 'hasError': true, 'message': 'Invalid address type: ' + t };
+    }
+    if (!s) return { 'hasError': true, 'message': 'Empty address, type: ' + t };
+    const u = q + r;
+    return { 'hasError': false, 'addressType': t, 'port': p, 'hostname': s, 'isUDP': n, 'rawClientData': g['slice'](u), 'version': j };
+}
+
+const SSsupportEncryptionConfig = {
+    'aes-128-gcm': { 'method': 'AES-GCM', 'keyLen': 0x10, 'saltLen': 0x10, 'maxChunk': 0x3fff, 'aesLength': 0x80 },
+    'aes-256-gcm': { 'method': 'AES-GCM', 'keyLen': 0x20, 'saltLen': 0x20, 'maxChunk': 0x3fff, 'aesLength': 0x100 }
+};
+const SSAEADtagLength = 0x10;
+const SSNoncelength = 0xc;
+const SSsubkeyInfo = new TextEncoder()['encode']('ss-subkey');
+const SStextEncoder = new TextEncoder();
+const SStextDecode = new TextDecoder();
+const SSmasterKeyCache = new Map();
+
+function dataToUint8Array(c) {
+    if (c instanceof Uint8Array) return c;
+    if (c instanceof ArrayBuffer) return new Uint8Array(c);
+    if (ArrayBuffer['isView'](c)) return new Uint8Array(c['buffer'], c['byteOffset'], c['byteLength']);
+    return new Uint8Array(c || 0);
+}
+
+function concatByteData(...f) {
+    if (!f || f['length'] === 0) return new Uint8Array(0);
+    const g = f['filter'](dataToUint8Array);
+    const h = g['reduce']((k, l) => k + l['length'], 0);
+    const i = new Uint8Array(h);
+    let j = 0;
+    for (const k of g) {
+        i['set'](k, j);
+        j += k['length'];
+    }
+    return i;
+        }
+function SSincrementNonceCounter(c) {
+    for (let f = 0; f < c['length']; f++) {
+        c[f] = c[f] + 1 & 0xff;
+        if (c[f] !== 0) return;
     }
 }
 
-// ============================================================
-// SSTP Protocol
-// ============================================================
-
-const SSTP_TCP_MSS = 0x578;
-const SSTP_EMPTY_BYTES = new Uint8Array(0);
-
-function readSstpUint16(c, f = 0) { return c[f] << 8 | c[f + 1]; }
-function readSstpUint32(c, f = 0) { return (c[f] << 24 | c[f + 1] << 16 | c[f + 2] << 8 | c[f + 3]) >>> 0; }
-function randomSstpUint16() { return readSstpUint16(crypto.getRandomValues(new Uint8Array(2))); }
-
-function internetChecksum(c, f, g) {
-    let h = 0;
-    for (let i = f; i < f + g - 1; i += 2) h += readSstpUint16(c, i);
-    if (g & 1) h += c[f + g - 1] << 8;
-    while (h >> 16) h = (h & 0xffff) + (h >> 16);
-    return ~h & 0xffff;
+async function SSderiveMasterKey(c, f) {
+    const g = f + ':' + c;
+    if (SSmasterKeyCache['has'](g)) return SSmasterKeyCache['get'](g);
+    const h = ((async () => {
+        const i = SStextEncoder['encode'](c || '');
+        let j = new Uint8Array(0);
+        let k = new Uint8Array(0);
+        while (k['length'] < f) {
+            const l = new Uint8Array(j['length'] + i['length']);
+            l['set'](j, 0);
+            l['set'](i, j['length']);
+            j = new Uint8Array(await crypto['subtle']['digest']('SHA-256', l));
+            k = concatByteData(k, j);
+        }
+        return k['slice'](0, f);
+    })());
+    SSmasterKeyCache['set'](g, h);
+    try { return await h; } catch (i) { SSmasterKeyCache['delete'](g); throw i; }
 }
 
-async function sstpConnect(c, f, g, h) {
-    c = { ...c, username: c.username ?? null, password: c.password ?? null };
-    let i = SSTP_EMPTY_BYTES, j = 1, k = null, l = null, m = null, n = false, o, p;
-    const q = new Promise((B, C) => { o = B; p = C; });
-    const r = (B, C) => { if (n) return; n = true; B(C); };
-    const s = () => {
-        try { l && l.close && l.close(); } catch (B) {}
-        try { m && m.close && m.close(); } catch (C) {}
-        try { k && k.close && k.close(); } catch (D) {}
-        r(o);
-    };
-    const t = async () => {
-        const { value: B, done: C } = await l.read();
-        if (C || !B) throw new Error('SSTP: unexpected EOF');
-        return dataToUint8Array(B);
-    };
-    const u = async B => {
-        while (i.length < B) { const D = await t(); i = i.length ? concatByteData(i, D) : D; }
-        const C = i.slice(0, B);
-        i = i.slice(B);
-        return C;
-    };
-    const v = async () => {
-        for (;;) {
-            const B = i.findIndex(x => x === 0x0a);
-            if (B >= 0) {
-                const D = new TextDecoder().decode(i.slice(0, B));
-                i = i.slice(B + 1);
-                return D.replace(/\r$/, '');
-            }
-            const C = await t();
-            i = i.length ? concatByteData(i, C) : C;
-        }
-    };
-    const w = async (B = CONNECT_TIMEOUT_MS) => {
-        const C = await withTimeout(u(4), B, 'SSTP header timeout');
-        const D = readSstpUint16(C, 2) & 0xfff;
-        if (D < 4) throw new Error('SSTP: invalid length');
-        return {
-            isControl: (C[1] & 1) !== 0,
-            body: D > 4 ? await withTimeout(u(D - 4), B, 'SSTP body timeout') : SSTP_EMPTY_BYTES
-        };
-    };
-    const x = B => {
-        const C = 6 + B.length;
-        const D = new Uint8Array(C);
-        D.set([0x10, 0x00, C >> 8 & 0x0f | 0x80, C & 0xff, 0xff, 0x03]);
-        D.set(B, 6);
-        return D;
-    };
-    const y = (B, C, D, E = []) => {
-        const F = E.reduce((I, J) => I + 2 + J.data.length, 0);
-        const G = new Uint8Array(6 + F);
-        const H = new DataView(G.buffer);
-        H.setUint16(0, B);
-        G[2] = C;
-        G[3] = D;
-        H.setUint32(4, 4 + F);
-        E.reduce((I, J) => {
-            G[I] = J.type;
-            G[I + 1] = 2 + J.data.length;
-            G.set(J.data, I + 2);
-            return I + 2 + J.data.length;
-        }, 6);
-        return G;
-    };
-    const z = B => {
-        const C = B.length >= 2 && B[0] === 0xff && B[1] === 0x03 ? 2 : 0;
-        if (B.length - C < 4) return null;
-        const D = readSstpUint16(B, C);
-        if (D === 0x21) return { protocol: D, ipPacket: B.slice(C + 2) };
-        if (B.length - C < 6) return null;
-        return { protocol: D, code: B[C + 2], id: B[C + 3], payload: B.slice(C + 6), rawPacket: B.slice(C) };
-    };
-    const A = B => {
-        const C = [];
-        for (let D = 0; D + 2 <= B.length; ) {
-            const E = B[D];
-            const F = B[D + 1];
-            if (F < 2 || D + F > B.length) break;
-            C.push({ type: E, data: B.slice(D + 2, D + F) });
-            D += F;
-        }
-        return C;
-    };
+async function SSderiveSessionKey(c, f, g, h) {
+    const i = { 'name': 'HKDF', 'hash': 'SHA-256' };
+    const j = await crypto['subtle']['deriveKey'](i, g, { 'name': 'HMAC', 'hash': 'SHA-256' }, false, ['sign']);
+    const k = new Uint8Array(await crypto['subtle']['sign']('HMAC', j, f));
+    const l = await crypto['subtle']['deriveKey']({ 'name': 'HKDF', 'hash': 'SHA-256' }, k, i, false, ['deriveBits']);
+    const m = new Uint8Array(c['saltLen']);
+    let n = new Uint8Array(0);
+    let o = 0;
+    let p = 1;
+    while (o < c['saltLen']) {
+        const q = concatByteData(n, SSsubkeyInfo, new Uint8Array([p]));
+        n = new Uint8Array(await crypto['subtle']['deriveBits']({ 'name': 'HKDF', 'hash': 'SHA-256' }, l, (q['length'] + 0x1f) * 8));
+        const r = Math['min'](n['length'], c['saltLen'] - o);
+        m['set'](n['slice'](0, r), o);
+        o += r;
+        p += 1;
+    }
+    return crypto['subtle']['importKey']('raw', m, { 'name': 'AES-GCM', 'length': c['keyLen'] * 8 }, false, h);
+}
+
+async function SSAEADencryption(c, f, g) {
+    const h = f['slice']();
+    const i = await crypto['subtle']['encrypt']({ 'name': 'AES-GCM', 'iv': h, 'tagLength': 128 }, c, g);
+    SSincrementNonceCounter(f);
+    return new Uint8Array(i);
+}
+
+async function SSAEADdecrypt(c, f, g) {
+    const h = f['slice']();
+    const i = await crypto['subtle']['decrypt']({ 'name': 'AES-GCM', 'iv': h, 'tagLength': 128 }, c, g);
+    SSincrementNonceCounter(f);
+    return new Uint8Array(i);
+}
+
+function isIPv4Addr(c) {
+    return /^(\d{1,3}\.){3}\d{1,3}$/['test'](c);
+}
+
+async function resolveAviaDoH(c) {
     try {
-        const B = stripIPv6Brackets(c.hostname);
-        const C = c.port;
-        k = h({ hostname: B, port: C }, { secureTransport: 'on', allowHalfOpen: false });
-        await withTimeout(k.connected, CONNECT_TIMEOUT_MS, 'SSTP connect timeout');
-        l = k.writable.getWriter();
-        m = k.readable.getReader();
-        const D = B.includes(':') ? '[' + B + ']' : B;
-        const E = new TextEncoder().encode('CONNECT ' + (Number(C) === 0x1bb ? D : D + ':' + C) + ' HTTP/1.1\r\n' + 'Host: ' + D + '\r\n' + 'Proxy-Connection: Keep-Alive\r\n\r\n');
-        const F = new Uint8Array(2);
-        new DataView(F.buffer).setUint16(0, 1);
-        const G = new Uint8Array(2);
-        new DataView(G.buffer).setUint16(0, 0x5dc);
-        const H = new Uint8Array(12 + F.length);
-        const I = new DataView(H.buffer);
-        H[0] = 0x10;
-        H[1] = 0x01;
-        I.setUint16(2, H.length | 0x8000);
-        I.setUint16(4, 1);
-        I.setUint16(6, 1);
-        H[9] = 0x01;
-        I.setUint32(10, 4 + F.length);
-        H.set(F, 12);
-        await withTimeout(m.write(concatByteData(E, H, x(y(0xc021, 1, j++, [{ type: 1, data: G }])))), CONNECT_TIMEOUT_MS, 'SSTP handshake write');
-        const J = await withTimeout(v(), CONNECT_TIMEOUT_MS, 'SSTP response read');
-        for (;;) { const a9 = await withTimeout(v(), CONNECT_TIMEOUT_MS, 'SSTP extra read'); if (a9 === '') break; }
-        if (!/HTTP\/\d(?:\.\d)?\s+2\d\d/i.test(J)) throw new Error('SSTP: bad response: ' + (J || 'empty'));
-        let K = false, L = false, M = false, N = false, O = false, P = false, Q = false, R = null;
-        const S = async () => {
-            if (!K || !L || !M || N) return;
-            if (c.username === null || c.password === null) throw new Error('SSTP: missing credentials');
-            const aa = new TextEncoder().encode(c.username);
-            const ab = new TextEncoder().encode(c.password);
-            if (aa.length > 255 || ab.length > 255) throw new Error('SSTP: credentials too long');
-            const ac = 6 + aa.length + ab.length;
-            const ad = new Uint8Array(2 + ac);
-            const ae = new DataView(ad.buffer);
-            ae.setUint16(0, 0xc023);
-            ad[2] = 1;
-            ad[3] = j++;
-            ae.setUint32(4, ac);
-            ad[6] = aa.length;
-            ad.set(aa, 7);
-            ad[7 + aa.length] = ab.length;
-            ad.set(ab, 8 + aa.length);
-            await withTimeout(m.write(x(ad)), CONNECT_TIMEOUT_MS, 'SSTP auth write');
-            N = true;
-        };
-        const T = async () => {
-            if (!K || !L || P || M && !O) return;
-            await withTimeout(m.write(x(y(0x8021, 1, j++, [{ type: 3, data: new Uint8Array(4) }]))), CONNECT_TIMEOUT_MS, 'SSTP CCP write');
-            P = true;
-        };
-        for (let aa = 0; aa < 50 && !Q; aa++) {
-            const ab = await w(CONNECT_TIMEOUT_MS);
-            if (ab.isControl) continue;
-            const ac = z(ab.body);
-            if (!ac) continue;
-            if (ac.protocol === 0xc021) {
-                if (ac.code === 1) {
-                    const ad = A(ac.payload).find(ae => ae.type === 3);
-                    if (ad && ad.data && ad.data.length >= 2) {
-                        const af = readSstpUint16(ad.data);
-                        if (af !== 0xc023) throw new Error('SSTP: bad LCP option: ' + af.toString(16));
-                        M = true;
-                    }
-                    const ae = new Uint8Array(ac.rawPacket);
-                    ae[2] = 2;
-                    await withTimeout(m.write(x(ae)), CONNECT_TIMEOUT_MS, 'SSTP LCP ack write');
-                    L = true;
-                    await S(); await T();
-                } else if (ac.code === 2) {
-                    K = true;
-                    await S(); await T();
-                }
-                continue;
-            }
-            if (ac.protocol === 0xc023) {
-                if (ac.code === 2) { O = true; await T(); }
-                else if (ac.code === 3) throw new Error('SSTP: authentication failed');
-                continue;
-            }
-            if (ac.protocol === 0x8021) {
-                if (ac.code === 1) {
-                    const ag = new Uint8Array(ac.rawPacket);
-                    ag[2] = 2;
-                    await withTimeout(m.write(x(ag)), CONNECT_TIMEOUT_MS, 'SSTP CCP ack write');
-                    await T();
-                } else if (ac.code === 3) {
-                    const ah = A(ac.payload).find(ai => ai.type === 3);
-                    if (ah && ah.data && ah.data.length === 4) {
-                        R = [...ah.data].map(String).join('.');
-                        await withTimeout(m.write(x(y(0x8021, 1, j++, [{ type: 3, data: ah.data }]))), CONNECT_TIMEOUT_MS, 'SSTP IPCP ack write');
-                        P = true;
-                    }
-                } else if (ac.code === 2) {
-                    const ai = A(ac.payload).find(aj => aj.type === 3);
-                    if (ai && ai.data && ai.data.length === 4) R = [...ai.data].map(String).join('.');
-                    Q = true;
-                }
-                continue;
-            }
+        const f = await fetch('https://dns.taakaa.xyz/dns-query?name=' + encodeURIComponent(c) + '&type=A', { 'headers': { 'accept': 'application/dns-json' } });
+        const g = await f['json']();
+        const h = (g['Answer'] || [])['filter'](i => i['type'] === 1)['map'](i => i['data']);
+        return h['length'] ? h[Math['floor'](Math['random']() * h['length'])] : null;
+    } catch (i) { return null; }
+}
+
+function makeNat64Address(c, f) {
+    const g = String(c)['toLowerCase']()['replace'](/[\[\]]/g, '')['replace'](/:+$/, '');
+    const h = f['split']('.')['map'](j => parseInt(j, 10));
+    if (h['length'] !== 4 || h['some'](j => isNaN(j) || j < 0 || j > 255)) return null;
+    const i = ((h[0] << 8 | h[1]) >>> 0)['toString'](16)['padStart'](4, '0') + ':' + ((h[2] << 8 | h[3]) >>> 0)['toString'](16)['padStart'](4, '0');
+    return '[' + g + '::' + i + ']';
+}
+
+async function getNat64Prefixes() {
+    const c = (nat64Config || '')['trim']();
+    if (!c) return [];
+    if (/^https?:\/\//i['test'](c)) {
+        if (cachedNat64Prefixes && cachedNat64Src === c && Date['now']() - cachedNat64At < 0x36ee80) return cachedNat64Prefixes;
+        try {
+            const f = await fetch(c, { 'headers': { 'User-Agent': 'Taakaa-Xi-Nat64' } });
+            const g = await f['text']();
+            let h = (g['match'](/\[([0-9a-fA-F:]+::)\]/g) || [])['map'](i => i['replace'](/[\[\]]/g, ''));
+            if (!h['length']) h = g['split'](/[\n,]+/)['map'](i => i['replace'](/[\[\]]/g, '')['trim']())['filter'](i => i['includes']('::'));
+            cachedNat64Prefixes = [...new Set(h)];
+            cachedNat64At = Date['now']();
+            cachedNat64Src = c;
+            return cachedNat64Prefixes;
+        } catch (i) { return cachedNat64Prefixes || []; }
+    }
+    return [...new Set(c['split'](/[\n,]+/)['map'](j => j['replace'](/[\[\]]/g, '')['trim']())['filter'](Boolean))];
+}
+
+async function forwardTrojanUdpData(c, f, g, h) {
+    const i = dataToUint8Array(c);
+    const j = g?.['cache'] instanceof Uint8Array ? g['cache'] : new Uint8Array(0);
+    const k = j['length'] ? concatByteData(j, i) : i;
+    let l = 0;
+    while (l < k['length']) {
+        const m = l;
+        const n = k[l];
+        let o = l + 1, p = 0;
+        if (n === 1) p = 4;
+        else if (n === 4) p = 16;
+        else if (n === 3) {
+            if (k['length'] < o + 1) break;
+            p = 1 + k[o];
+        } else throw new Error('Invalid address type: ' + n);
+        const q = o + p;
+        if (k['length'] < q + 6) break;
+        const r = k[q] << 8 | k[q + 1];
+        const s = k[q + 2] << 8 | k[q + 3];
+        if (k[q + 4] !== 13 || k[q + 5] !== 10) throw new Error('Invalid CRLF');
+        const t = q + 6;
+        const u = t + s;
+        if (k['length'] < u) break;
+        const v = k['slice'](m, q + 2);
+        const w = k['slice'](t, u);
+        l = u;
+        if (r !== 0x35) throw new Error('UDP only port 53');
+        if (!w['length']) continue;
+        let x = w;
+        if (w['length'] < 2 || (w[0] << 8 | w[1]) !== w['length'] - 2) {
+            x = new Uint8Array(w['length'] + 2);
+            x[0] = w['length'] >>> 8 & 0xff;
+            x[1] = w['length'] & 0xff;
+            x['set'](w, 2);
         }
-        if (!R) throw new Error('SSTP: no IP assigned');
-        const U = stripIPv6Brackets(f);
-        let V = isIPv4(U) ? U : null;
-        if (!V) {
-            const aj = await DoHquery(U, 'A');
-            const ak = aj.find(al => al.type === 1 && isIPv4(al.data))?.data;
-            V = typeof ak === 'string' ? ak : null;
+        const y = { 'cache': new Uint8Array(0) };
+        await forwardataudp(x, f, null, h, z => {
+            const A = dataToUint8Array(z);
+            const B = y['cache']['length'] ? concatByteData(y['cache'], A) : A;
+            const C = [];
+            let D = 0;
+            while (D + 2 <= B['length']) {
+                const E = B[D] << 8 | B[D + 1];
+                const F = D + 2;
+                const G = F + E;
+                if (G > B['length']) break;
+                const H = B['slice'](F, G);
+                const I = new Uint8Array(v['length'] + 4 + H['length']);
+                I['set'](v, 0);
+                I[v['length']] = H['length'] >>> 8 & 0xff;
+                I[v['length'] + 1] = H['length'] & 0xff;
+                I[v['length'] + 2] = 13;
+                I[v['length'] + 3] = 10;
+                I['set'](H, v['length'] + 4);
+                C['push'](I);
+                D = G;
+            }
+            y['cache'] = B['slice'](D);
+            return C['length'] ? C : new Uint8Array(0);
+        });
+    }
+    if (g) g['cache'] = k['slice'](l);
         }
-        if (!V) throw new Error('SSTP: cannot resolve ' + f + ' to IPv4');
-        const W = 10000 + randomSstpUint16() % 50000;
-        const X = new Uint8Array(String(R || '').split('.').map(Number));
-        const Y = new Uint8Array(String(V || '').split('.').map(Number));
-        let Z = readSstpUint32(crypto.getRandomValues(new Uint8Array(4)));
-        let a0 = 0;
-        const a1 = new Uint8Array(0x14);
-        a1.set([0x45, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x40, 0x06]);
-        a1.set(X, 0x0c);
-        a1.set(Y, 0x10);
-        const a2 = new Uint8Array(0x598);
-        a2.set(X);
-        a2.set(Y, 4);
-        a2[9] = 6;
-        const a3 = (al, am = SSTP_EMPTY_BYTES) => {
-            const an = dataToUint8Array(am);
-            const ao = an.length;
-            const ap = 0x14 + ao;
-            const aq = 0x14 + ap;
-            const ar = 0x08 + aq;
-            const as = new Uint8Array(ar);
-            const at = new DataView(as.buffer);
-            as.set([0x10, 0x00, ar >> 8 & 0x0f | 0x80, ar & 0xff, 0xff, 0x03, 0x00, 0x21]);
-            as.set(a1, 8);
-            at.setUint16(10, aq);
-            at.setUint16(12, randomSstpUint16());
-            at.setUint16(18, internetChecksum(as, 8, 0x14));
-            at.setUint16(28, W);
-            at.setUint16(30, g);
-            at.setUint32(32, Z);
-            at.setUint32(36, a0);
-            as[40] = 0x50;
-            as[41] = al;
-            at.setUint16(42, 0xffff);
-            if (ao) as.set(an, 48);
-            a2[10] = ap >> 8;
-            a2[11] = ap & 0xff;
-            a2.set(as.slice(28, 28 + ap), 12);
-            at.setUint16(44, internetChecksum(a2, 0, 12 + ap));
-            return as;
-        };
-        const a4 = al => {
-            if (al.length < 40 || al[9] !== 6) return null;
-            const am = (al[0] & 0x0f) * 4;
-            if (al.length < am + 20) return null;
-            if (readSstpUint16(al, am) !== g) return null;
-            if (readSstpUint16(al, am + 2) !== W) return null;
-            return { flags: al[am + 13], sequence: readSstpUint32(al, am + 4), payloadOffset: am + ((al[am + 12] >> 4) & 0x0f) * 4 };
-        };
-        await withTimeout(m.write(a3(0x02)), CONNECT_TIMEOUT_MS, 'SSTP SYN write');
-        Z = Z + 1 >>> 0;
-        let a5 = false;
-        for (let al = 0; al < 30; al++) {
-            const am = await w(CONNECT_TIMEOUT_MS);
-            if (am.isControl) continue;
-            const an = z(am.body);
-            if (!an || an.protocol !== 0x21) continue;
-            const ao = a4(an.rawPacket);
-            if (!ao || (ao.flags & 0x12) !== 0x12) continue;
-            a0 = ao.sequence + 1 >>> 0;
-            await withTimeout(m.write(a3(0x10)), CONNECT_TIMEOUT_MS, 'SSTP ACK write');
-            a5 = true;
-            break;
-        }
-        if (!a5) throw new Error('SSTP: no SYN-ACK received');
-        let a6 = null;
-        const a7 = new ReadableStream({ start(ap) { a6 = ap; }, cancel() { s(); } });
-        (async () => {
+async function forwardataTCP(c, f, g, h, i, j, k, l = null, m = null) {
+    log('TCP: ' + c + ':' + f + ' | Proxy: ' + proxyIP + ' | Fallback: ' + (enableProxyFallback ? 'yes' : 'no') + ' | SOCKS5: ' + (enableSocks5Proxy || 'none') + ' | Global: ' + (enableSocks5GlobalProxy ? 'yes' : 'no'));
+    const n = 0x1388;
+    let o = false;
+    const p = createRequestTcpConnector(l);
+    async function q(x, y = n) {
+        await Promise['all']([x['connected'], new Promise((z, A) => setTimeout(() => A(new Error('Connection timeout')), y))]);
+    }
+    async function r(x, y) {
+        const z = p({ 'hostname': x, 'port': y });
+        try { await q(z); return z; } catch (A) { try { z?.['close']?.(); } catch (B) {} throw A; }
+    }
+    async function s(x, y) {
+        if (validDataLength(y) <= 0) return;
+        const z = x['writable']['getWriter']();
+        try { await z['write'](dataToUint8Array(y)); } finally { try { z['releaseLock'](); } catch (A) {} }
+    }
+    async function t(x) {
+        const y = await getNat64Prefixes();
+        if (!y['length']) return null;
+        const z = isIPv4Addr(c) ? c : await resolveAviaDoH(c);
+        if (!z) return null;
+        for (const A of y['slice'](0, 4)) {
+            const B = makeNat64Address(A, z);
+            if (!B) continue;
             try {
-                let ap = [], aq = 0;
-                const ar = () => {
-                    if (!aq) return;
-                    if (!a6) throw new Error('SSTP: stream closed');
-                    a6.enqueue(ap.length === 1 ? ap[0] : concatByteData(...ap));
-                    ap = [];
-                    aq = 0;
-                    m.write(a3(0x10)).catch(() => {});
-                };
-                for (;;) {
-                    const as = await w(60000);
-                    if (as.isControl) continue;
-                    const at = z(as.body);
-                    if (!at || at.protocol !== 0x21) continue;
-                    const au = a4(at.rawPacket);
-                    if (!au) continue;
-                    if (au.flags < at.rawPacket.length) {
-                        const av = at.rawPacket.slice(au.payloadOffset);
-                        if (av.length) {
-                            a0 = au.sequence + av.length >>> 0;
-                            ap.push(new Uint8Array(av));
-                            aq += av.length;
-                        }
-                    }
-                    if (au.flags & 1) {
-                        ar();
-                        a0 = a0 + 1 >>> 0;
-                        m.write(a3(0x11)).catch(() => {});
-                        if (a6) try { a6.close(); } catch (av) {}
-                        s();
-                        return;
-                    }
-                    if (i.length < 4 || aq >= 32768) ar();
-                }
-            } catch (aw) {
-                if (a6) try { a6.error(aw); } catch (ax) {}
-                r(p, aw);
-                try { k && k.close && k.close(); } catch (ay) {}
+                const C = await r(B, f);
+                await s(C, x);
+                log('NAT64: ' + B + ':' + f);
+                return C;
+            } catch (D) { log('NAT64 fail: ' + B + ': ' + (D['message'] || D)); }
+        }
+        return null;
+    }
+    async function u(x) {
+        if (x['length'] === 1) {
+            const A = x[0];
+            return { 'socket': await r(A['hostname'], A['port']), 'candidate': A };
+        }
+        const y = x['map'](B => r(B['hostname'], B['port'])['then'](C => ({ 'socket': C, 'candidate': B })));
+        let z = null;
+        try { z = await Promise['all'](y); } finally {
+            if (z) for (const B of y) {
+                B['then'](({ socket: C }) => {
+                    if (C !== z['socket']) try { C?.['close']?.(); } catch (D) {}
+                })['catch'](() => {});
             }
-        })();
-        const a8 = new WritableStream({
-            async write(ap) {
-                const aq = dataToUint8Array(ap);
-                if (!aq.length) return;
-                if (aq.length <= SSTP_TCP_MSS) {
-                    await m.write(a3(0x18, aq));
-                    Z = Z + aq.length >>> 0;
+        }
+        return z;
+    }
+    async function v(x, y, z = null, A = null, B = true) {
+        if (A && A['length'] > 0) {
+            for (let C = 0; C < A['length']; C += TCPconcurrentDialCount) {
+                const D = [];
+                for (let G = 0; G < TCPconcurrentDialCount && C + G < A['length']; G++) {
+                    const H = (cachedProxyArrayIndex + C + G) % A['length'];
+                    const [I, J] = A[H];
+                    D['push']({ 'hostname': I, 'port': J, 'index': H });
+                }
+                let E = null, F = null;
+                try {
+                    log('Dial batch: ' + D['length'] + ' hosts: ' + D['map'](L => L['hostname'] + ':' + L['port'])['join'](', '));
+                    const K = await u(D);
+                    E = K['socket'];
+                    F = K['candidate'];
+                    await s(E, z);
+                    log('Connected via: ' + F['hostname'] + ':' + F['port'] + ' (attempt ' + F['index'] + ')');
+                    cachedProxyArrayIndex = F['index'];
+                    return E;
+                } catch (L) {
+                    try { E?.['close']?.(); } catch (M) {}
+                    log('Dial failed: ' + (L['message'] || L));
+                }
+            }
+        }
+        if (B) {
+            const N = Array['from']({ 'length': TCPconcurrentDialCount }, (P, Q) => ({ 'hostname': x, 'port': y, 'attempt': Q }));
+            log('Direct dial: ' + N['length'] + ' attempts to ' + x + ':' + y);
+            let O = null;
+            try {
+                const P = await u(N);
+                O = P['socket'];
+                await s(O, z);
+                return O;
+            } catch (Q) { try { O?.['close']?.(); } catch (R) {} throw Q; }
+        } else {
+            closeSocketQuietly(h);
+            throw new Error('All connection attempts failed');
+        }
+    }
+    async function w(x = true) {
+        if (j['connectingPromise']) { await j['connectingPromise']; return; }
+        const y = x && !o && validDataLength(g) > 0;
+        const z = y ? g : null;
+        const A = ((async () => {
+            let B;
+            if (enableSocks5Proxy === 'socks5') {
+                log('SOCKS5: ' + c + ':' + f);
+                B = await socks5Connect(c, f, z, p);
+            } else if (enableSocks5Proxy === 'http') {
+                log('HTTP CONNECT: ' + c + ':' + f);
+                B = await httpConnect(c, f, z, false, p);
+            } else if (enableSocks5Proxy === 'https') {
+                log('HTTPS CONNECT: ' + c + ':' + f);
+                B = isIPHostname(parsedSocks5Address['hostname']) ? await httpsConnect(c, f, z, p) : await httpConnect(c, f, z, true, p);
+            } else if (enableSocks5Proxy === 'turn') {
+                log('TURN: ' + c + ':' + f);
+                B = await turnConnect(parsedSocks5Address, c, f, p);
+                if (validDataLength(z) > 0) {
+                    const C = B['writable']['getWriter']();
+                    try { await C['write'](dataToUint8Array(z)); } finally { try { C['releaseLock'](); } catch (D) {} }
+                }
+            } else if (enableSocks5Proxy === 'sstp') {
+                log('SSTP: ' + c + ':' + f);
+                B = await sstpConnect(parsedSocks5Address, c, f, p);
+                if (validDataLength(z) > 0) {
+                    const E = B['writable']['getWriter']();
+                    try { await E['write'](dataToUint8Array(z)); } finally { try { E['releaseLock'](); } catch (F) {} }
+                }
+            } else {
+                log('Direct: ' + c + ':' + f);
+                const G = await parseAddressPort(proxyIP, c, k);
+                try { B = await v(atob('taakaa.xyz'), 1, z, G, enableProxyFallback); } catch (H) {
+                    const I = nat64Config ? await t(z) : null;
+                    if (!I) throw H;
+                    B = I;
+                }
+            }
+            if (y) o = true;
+            j['socket'] = B;
+            B['closed']['then'](() => {})['catch'](() => closeSocketQuietly(h));
+            connectStreams(B, h, i, null, m);
+        })());
+        j['connectingPromise'] = A;
+        try { await A; } finally { if (j['connectingPromise'] === A) j['connectingPromise'] = null; }
+    }
+    j['retryConnect'] = async () => w(!o);
+    if (enableSocks5Proxy && (enableSocks5GlobalProxy || hostMatchesProxyList(c))) {
+        log('Using SOCKS5 proxy for ' + c);
+        try { await w(); } catch (x) { log('SOCKS5 failed: ' + x['message']); throw x; }
+    } else {
+        try {
+            log('Direct connect: ' + c + ':' + f);
+            const y = await v(c, f, g);
+            j['socket'] = y;
+            connectStreams(y, h, i, async () => {
+                if (j['socket'] !== y) return;
+                await w();
+            }, m);
+        } catch (z) {
+            log('Direct failed: ' + c + ':' + f + ' - ' + z['message']);
+            await w();
+        }
+    }
+}
+
+async function forwardataudp(c, f, g, h, i = null) {
+    const j = dataToUint8Array(c);
+    const k = j['length'];
+    log('UDP: ' + k + ' bytes');
+    try {
+        const l = createRequestTcpConnector(h);
+        const m = l({ 'hostname': 'taakaa.xyz', 'port': 0x35 });
+        let n = g;
+        const o = m['writable']['getWriter']();
+        await o['write'](j);
+        log('UDP sent: ' + k + 'B');
+        o['releaseLock']();
+        await m['readable']['pipeTo'](new WritableStream({
+            async 'write'(p) {
+                const q = dataToUint8Array(p);
+                log('UDP response: ' + q['length'] + 'B');
+                const r = i ? await i(q) : q;
+                const s = Array['isArray'](r) ? r : [r];
+                if (!s['length']) return;
+                if (f['readyState'] !== WebSocket['OPEN']) return;
+                for (const t of s) {
+                    const u = dataToUint8Array(t);
+                    if (!u['length']) continue;
+                    if (n) {
+                        const v = new Uint8Array(n['length'] + u['length']);
+                        v['set'](n, 0);
+                        v['set'](u, n['length']);
+                        await WebSocketsendAndWait(f, v['buffer']);
+                        n = null;
+                    } else {
+                        await WebSocketsendAndWait(f, u);
+                    }
+                }
+            }
+        }));
+    } catch (p) {
+        log('UDP error: ' + (p?.['message'] || p));
+    }
+}
+
+function closeSocketQuietly(c) {
+    try {
+        if ((c['readyState'] === WebSocket['CLOSING'] || c['readyState'] === WebSocket['CLOSED']) && c['close']) {
+            c['close']();
+        }
+    } catch (f) {}
+}
+
+function formatIdentifier(c, f = 0) {
+    const g = [...c['slice'](f, f + 16)]['map'](h => h['toString'](16)['padStart'](2, '0'))['join']('');
+    return g['slice'](0, 8) + '-' + g['slice'](8, 12) + '-' + g['slice'](12, 16) + '-' + g['slice'](16, 20) + '-' + g['slice'](20);
+}
+
+async function WebSocketsendAndWait(c, f) {
+    const g = c['send'](f);
+    if (g && typeof g['then'] === 'function') await g;
+        }
+function createUpstreamWriteQueue({ getWriter: c, releaseWriter: f, retryConnection: g, closeConnection: h, name: name = 'queue' }) {
+    let i = [], j = 0, k = 0, l = false, m = false, n = null, o = [], p = null;
+    const q = (z, A = null) => {
+        if (!z) return;
+        for (const B of z) {
+            if (A) B['reject'](A);
+            else B['resolve']();
+        }
+    };
+    const r = z => {
+        for (let A = j; A < i['length']; A++) {
+            const B = i[A];
+            if (B && B['completions']) q(B['completions'], z);
+        }
+    };
+    const s = () => {
+        if (j > 32 && j * 2 >= i['length']) {
+            i = i['slice'](j);
+            j = 0;
+        }
+    };
+    const t = () => {
+        if (k || l || !o['length']) return;
+        const z = o;
+        o = [];
+        for (const A of z) A();
+    };
+    const u = (z = null) => {
+        const A = z || (m ? new Error(name + ' queue closed') : null);
+        if (A) { r(A); if (p) { q(p, A); p = null; } }
+        i = [];
+        j = 0;
+        k = 0;
+        t();
+    };
+    const v = () => {
+        if (j >= i['length']) return null;
+        const z = i[j];
+        i[j++] = undefined;
+        k -= z['chunk']['length'];
+        s();
+        return z;
+    };
+    const w = () => {
+        const z = v();
+        if (!z) return null;
+        if (j >= i['length'] || z['chunk']['length'] >= upstreamBatchTargetBytes) return z;
+        let A = z['chunk']['length'], B = j, C = z['allowRetry'], D = z['completions'] || null;
+        while (B < i['length']) {
+            const G = i[B];
+            const H = A + G['chunk']['length'];
+            if (H > upstreamBatchTargetBytes) break;
+            A = H;
+            C = C && G['allowRetry'];
+            if (G['completions']) D = D ? D['then'](G['completions']) : G['completions'];
+            B++;
+        }
+        if (B === j) return z;
+        const E = n || (n = new Uint8Array(upstreamBatchTargetBytes));
+        E['set'](z['chunk']);
+        let F = z['chunk']['length'];
+        while (j < B) {
+            const I = i[j];
+            i[j++] = undefined;
+            k -= I['chunk']['length'];
+            E['set'](I['chunk'], F);
+            F += I['chunk']['length'];
+        }
+        s();
+        return { 'chunk': E['slice'](0, A), 'allowRetry': C, 'completions': D };
+    };
+    const x = async () => {
+        if (l || m) return;
+        l = true;
+        try {
+            for (;;) {
+                if (m) break;
+                const z = w();
+                if (!z) break;
+                let A = c();
+                if (!A) throw new Error(name + ' writer is null');
+                const B = z['completions'] || null;
+                p = B;
+                try {
+                    try {
+                        await A['write'](z['chunk']);
+                    } catch (C) {
+                        f && f();
+                        if (!z['allowRetry'] || typeof g !== 'function') throw C;
+                        await g();
+                        A = c();
+                        if (!A) throw C;
+                        await A['write'](z['chunk']);
+                    }
+                    q(B);
+                } catch (C) {
+                    q(B, C);
+                    throw C;
+                } finally {
+                    if (p === B) p = null;
+                }
+            }
+        } catch (E) {
+            m = true;
+            u(E);
+            log('[' + name + '] write error: ' + (E && E['message'] || E));
+            try { h && h(E); } catch (F) {}
+        } finally {
+            l = false;
+            if (!m && j < i['length']) queueMicrotask(x);
+            else t();
+        }
+    };
+    const y = (z, A = true, B = false) => {
+        if (m) return false;
+        if (!c()) return false;
+        const C = dataToUint8Array(z);
+        if (!C['length']) return true;
+        const D = k + C['length'];
+        const E = i['length'] - j + 1;
+        if (D > upstreamQueueMaxBytes || E > upstreamQueueMaxItems) {
+            m = true;
+            const H = Object['assign'](new Error(name + ' queue overflow: ' + D + 'B/' + E + ')'), { 'isQueueOverflow': true });
+            u(H);
+            log('[' + name + '] queue overflow');
+            try { h && h(H); } catch (I) {}
+            throw H;
+        }
+        let F = null, G = null;
+        if (B) {
+            G = [];
+            F = new Promise((J, K) => G['push']({ 'resolve': J, 'reject': K }));
+        }
+        i['push']({ 'chunk': C, 'allowRetry': A, 'completions': G });
+        k = D;
+        if (!l) queueMicrotask(x);
+        return B ? F['then'](() => true) : true;
+    };
+    return {
+        'write'(z, A = true) { return y(z, A, false); },
+        'writeAndWait'(z, A = true) { return y(z, A, true); },
+        async 'waitEmpty'() {
+            if (!k && !l) return;
+            await new Promise(z => o['push'](z));
+        },
+        'clear'() { m = true; u(); }
+    };
+}
+
+function createDownstreamGrainSender(c, f = null) {
+    const g = downstreamGrainChunkBytes;
+    const h = downstreamGrainTailThreshold;
+    const i = Math['min'](0x1000, h << 3);
+    let j = f;
+    let k = new Uint8Array(g);
+    let l = 0;
+    let m = null;
+    let n = false;
+    let o = 0;
+    let p = 0;
+    let q = 0;
+    let r = null;
+    const s = async w => {
+        if (c['readyState'] !== WebSocket['OPEN']) throw new Error('WebSocket not open');
+        await WebSocketsendAndWait(c, w);
+    };
+    const t = w => {
+        if (!j) return w;
+        const x = new Uint8Array(j['length'] + w['length']);
+        x['set'](j, 0);
+        x['set'](w, j['length']);
+        j = null;
+        return x;
+    };
+    const u = async () => {
+        while (r) await r;
+        if (m) clearTimeout(m);
+        m = null;
+        n = false;
+        if (!l) return;
+        const w = k['slice'](0, l);
+        k = new Uint8Array(g);
+        l = 0;
+        q = 0;
+        r = s(w);
+        r['then'](() => { r = null; });
+        return r;
+    };
+    const v = () => {
+        if (m || n) return;
+        n = true;
+        p = o;
+        queueMicrotask(() => {
+            n = false;
+            if (!l || m) return;
+            if (g - l < h) {
+                u()['then'](() => closeSocketQuietly(c));
+                return;
+            }
+            m = setTimeout(() => {
+                m = null;
+                if (!l) return;
+                if (g - l < h) {
+                    u()['then'](() => closeSocketQuietly(c));
                     return;
                 }
-                const ar = [];
-                for (let as = 0; as < aq.length; as += SSTP_TCP_MSS) {
-                    const at = aq.slice(as, Math.min(as + SSTP_TCP_MSS, aq.length));
-                    ar.push(a3(0x18, at));
-                    Z = Z + at.length >>> 0;
+                if (q < 2 && (o !== p || l < i)) {
+                    q++;
+                    p = o;
+                    v();
+                    return;
                 }
-                await m.write(concatByteData(...ar));
-            },
-            close() { return m.write(a3(0x11)).catch(() => {}); },
-            abort(ap) { s(); if (ap) r(p, ap); }
+                u()['then'](() => closeSocketQuietly(c));
+            }, Math['max'](downstreamGrainSilentMs, 1));
         });
-        return { readable: a7, writable: a8, closed: q, close: s };
-    } catch (ap) { s(); throw ap; }
-}
-
-// ============================================================
-// Warp (Cloudflare)
-// ============================================================
-
-const WARP_API = 'https://api.cloudflareclient.com/v0a';
-const WARP_REG_HEADERS = {
-    'Content-Type': 'application/json',
-    'User-Agent': 'cf-client',
-    'CF-Client-Version': 'a-6.33-2143'
-};
-
-const warpKeyPool = [
-    { pk: 'M5Ii...', ipv6: 'dbGg...', reserved: '' }
-];
-const warpPublicKey = 'Taakaa-Xi-Warp-Public-Key';
-const warpCidrs = ['0.0.0.0/0', '::/0', '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10', '127.0.0.0/8'];
-const warpPorts = [854, 859, 864, 878, 880, 890, 891, 894, 903, 908, 928, 934, 939, 942, 943, 945, 946, 955, 968, 987, 988, 1002, 1010, 1014, 1018, 1070, 1074, 1180, 1387, 1843, 2371, 2506, 3154, 3428, 3565, 3886, 4177, 4198, 4233, 5279, 5956, 7103, 7152, 7156, 7281, 7551, 8319, 8742, 8886, 8934, 2408, 500, 4500, 1701];
-
-function warpRandomIPv4InCidr(c) {
-    const [f, g] = c.split('/');
-    const h = parseInt(g, 10);
-    const i = f.split('.').reduce((l, m) => (l << 8) + parseInt(m, 10), 0) >>> 0;
-    const j = Math.floor(Math.random() * Math.pow(2, 32 - h));
-    const k = i + j >>> 0;
-    return [k >>> 24 & 0xff, k >>> 16 & 0xff, k >>> 8 & 0xff, k & 0xff].join('.');
-}
-
-function warpRandomEndpoints(c) {
-    const f = new Set();
-    let g = 0;
-    while (f.size < c && g++ < c * 6) {
-        const h = warpCidrs[Math.floor(Math.random() * warpCidrs.length)];
-        const i = warpPorts[Math.floor(Math.random() * warpPorts.length)];
-        f.add(warpRandomIPv4InCidr(h) + ':' + i);
-    }
-    return [...f];
-}
-
-async function warpGenKeys() {
-    const c = await crypto.subtle.generateKey({ name: 'X25519' }, true, ['deriveKey', 'deriveBits']);
-    const f = await crypto.subtle.exportKey('raw', c.privateKey);
-    const g = new Uint8Array(await crypto.subtle.exportKey('raw', c.publicKey));
-    const h = j => btoa(String.fromCharCode.apply(null, j));
-    const i = j => { j = j.replace(/-/g, '+').replace(/_/g, '/'); while (j.length % 4) j += '='; return j; };
-    return { privateKey: i(f), publicKey: h(g) };
-}
-
-function warpDecodeReserved(c) {
-    try { const f = atob(c); return [f.charCodeAt(0), f.charCodeAt(1), f.charCodeAt(2)]; } catch (g) { return []; }
-}
-
-async function warpRegisterAccount() {
-    const c = await warpGenKeys();
-    const f = JSON.stringify({
-        key: c.publicKey,
-        install_id: '',
-        fcm_token: '',
-        tos: new Date().toISOString(),
-        model: 'PC',
-        type: 'Android',
-        locale: 'en_US'
-    });
-    let g, h = 0;
-    for (let n = 0; n < 4; n++) {
-        if (n) await new Promise(o => setTimeout(o, 500 * n * n));
-        g = await fetch(WARP_API + '/reg', { method: 'POST', headers: WARP_REG_HEADERS, body: f });
-        if (g.ok) break;
-        h = g.status;
-        if (g.status !== 429 && g.status < 500) break;
-    }
-    if (!g.ok) { if (h === 429) throw new Error('WARP: rate limited'); throw new Error('WARP: registration failed (' + h + ')'); }
-    const i = await g.json();
-    const k = i.config && i.config.interface && i.config.interface.addresses && i.config.interface.addresses[0] || {};
-    const l = k.v4 && (k.v4.address || k.v4['v4']) || '0.0.0.0';
-    const m = i.account && i.account.license && i.account.license.activated_at && i.account.license.activated_at[0] || {};
+    };
     return {
-        privateKey: c.privateKey,
-        publicKey: c.publicKey,
-        id: i.id,
-        token: i.token,
-        peerPublicKey: i.config && i.config.interface && i.config.interface.peer_public_key || '',
-        endpoint: l,
-        addressV4: m.v4 || '0.0.0.0',
-        addressV6: m.v6 || '',
-        clientId: i.account && i.account.license && i.account.license.activated_at && i.account.license.activated_at[0] || '',
-        reserved: warpDecodeReserved(i.account && i.account.license && i.account.license.activated_at && i.account.license.activated_at[0] || ''),
-        warpPlus: !!(i.account && i.account.license && i.account.license.activated_at && i.account.license.activated_at[0]),
-        license: i.account && i.account.license && i.account.license.activated_at && i.account.license.activated_at[0] || null
-    };
-}
-
-async function warpApplyLicense(c, f) {
-    const h = await fetch(WARP_API + '/reg/' + c.id + '/license', {
-        method: 'PUT',
-        headers: { ...WARP_REG_HEADERS, 'Authorization': 'Bearer ' + c.token },
-        body: JSON.stringify({ license: f })
-    });
-    const i = await h.json();
-    let k = {};
-    try { k = JSON.parse(i); } catch (m) {}
-    if (!h.ok) throw new Error('WARP: license apply failed (' + h.status + ')' + (k && k.error ? ': ' + JSON.stringify(k.error) : '') + ')');
-    let l = !!(k && (k.success || k.account && k.account.license && k.account.license.activated_at && k.account.license.activated_at[0]));
-    if (!l) try {
-        const n = await fetch(WARP_API + '/reg/' + c.id + '/account', {
-            headers: { ...WARP_REG_HEADERS, 'Authorization': 'Bearer ' + c.token }
-        });
-        const o = await n.json().catch(() => ({}));
-        l = !!(o && (o.success || o.account && o.account.license && o.account.license.activated_at && o.account.license.activated_at[0]));
-    } catch (p) {}
-    if (!l) throw new Error('WARP: license verification failed');
-    c.warpPlus = true;
-    c.license = f;
-    return c;
-}
-
-function warpValidEndpoint(c) {
-    return typeof c === 'string' && /^[A-Za-z0-9.\-\[\]:]+:\d{1,5}$/.test(c.trim());
-}
-
-const WARP_SUGGESTED_ENDPOINTS = [
-    '162.159.193.10:2408', '162.159.193.11:2408', '162.159.193.12:2408',
-    '162.159.193.13:2408', '162.159.193.14:2408', '162.159.193.15:2408',
-    '162.159.193.16:2408', '162.159.193.17:2408', '162.159.193.18:2408',
-    '162.159.193.19:2408', '162.159.193.20:2408', '162.159.193.21:2408'
-];
-
-function warpPublicView(c, f) {
-    if (!c || !c.registered) return { registered: false };
-    const g = {
-        registered: true,
-        endpoint: c.endpoint,
-        warpPlus: !!c.warpPlus,
-        wow: c.wow ? { registered: true } : undefined,
-        suggestedEndpoints: WARP_SUGGESTED_ENDPOINTS
-    };
-    if (c.privateKey && c.publicKey) {
-        const h = String(f && warpValidEndpoint(f) ? f.trim() : c.endpoint || '0.0.0.0:2408');
-        const i = h.includes(':') ? h : h + ':2408';
-        g.wireguard = 'wg://' + encodeURIComponent(c.publicKey) + '@' + i + '/?public_key=' + encodeURIComponent(warpPublicKey) +
-            '&address=' + encodeURIComponent('172.16.0.2/32,' + c.addressV6) +
-            '&mtu=' + encodeURIComponent('1280') +
-            '&reserved=' + encodeURIComponent((c.reserved && c.reserved.length ? c.reserved.map(String).join(',') : ''));
-        g.nekoray = 'nekoray://' + btoa(JSON.stringify({
-            _v: 0, addr: c.endpoint, cmd: [''], core: 'wireguard',
-            cs: { type: 'wireguard', tag: 'warp', server: i.split(':')[0], server_port: parseInt(i.split(':')[1]),
-            system_interface: false, interface_name: 'warp', local_address: ['172.16.0.2/32', c.addressV6],
-            private_key: c.privateKey, peer_public_key: warpPublicKey, pre_shared_key: '',
-            reserved: c.reserved && c.reserved.length ? c.reserved.map(Number) : [], mtu: 1280 },
-            mapping_port: 0, name: 'warp-' + c.endpoint, port: 1080, socks_port: 0
-        }));
-    }
-    return g;
-}
-
-async function handleWarpRequest(c) {
-    const f = new URL(c.url);
-    const g = (f.searchParams.get('format') || 'wireguard').toLowerCase();
-    const h = Math.max(Math.min(parseInt(f.searchParams.get('count') || '50', 10) || 50, 1), 500);
-    const i = Math.max(Math.min(parseInt(f.searchParams.get('mtu') || '1280', 10) || 1280, 576), 1500);
-    const j = warpRandomEndpoints(h);
-    const k = ['wireguard', 'nekoray', 'json'][['wireguard', 'nekoray', 'json'].indexOf(g)];
-    const l = j.map(n => {
-        const o = warpKeyPool[Math.floor(Math.random() * warpKeyPool.length)];
-        return k ? buildWarpNekoRayLink(n, o, i) : buildWarpWireGuardLink(n, o, i);
-    });
-    const m = btoa(l.join('\n'));
-    return new Response(m, { status: 200, headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' } });
-}
-
-function buildWarpWireGuardLink(c, f, g) {
-    const h = encodeURIComponent(f.publicKey);
-    const i = encodeURIComponent(warpPublicKey);
-    const j = encodeURIComponent('172.16.0.2/32,' + f.ipv6);
-    const k = encodeURIComponent('warp+' + c);
-    const l = f.reserved && f.reserved.length ? '&reserved=' + encodeURIComponent(f.reserved.map(String).join(',')) : '';
-    return 'wg://' + h + '@' + c + '/?public_key=' + i + '&address=' + j + '&mtu=' + g + l + '#' + k;
-}
-
-function buildWarpNekoRayLink(c, f, g) {
-    const h = c.indexOf(':');
-    const i = c.slice(0, h);
-    const j = c.slice(h + 1);
-    const k = JSON.stringify({
-        type: 'wireguard', tag: 'warp', server: i, server_port: Number(j),
-        system_interface: false, interface_name: 'warp',
-        local_address: ['172.16.0.2/32', f.ipv6],
-        private_key: f.privateKey, peer_public_key: warpPublicKey,
-        pre_shared_key: '',
-        reserved: f.reserved && f.reserved.length ? f.reserved.map(Number) : [],
-        mtu: Number(g)
-    });
-    const l = { _v: 0, addr: c, cmd: [''], core: 'wireguard', cs: JSON.parse(k), mapping_port: 0, name: 'warp-' + c, port: 1080, socks_port: 0 };
-    return 'nekoray://' + btoa(JSON.stringify(l));
-}
-
-// ============================================================
-// DoH (DNS over HTTPS)
-// ============================================================
-
-async function DoHquery(c, f, g = 'https://cloudflare-dns.com/dns-query') {
-    const h = performance.now();
-    log('DoH: ' + c + ' ' + f + ' via ' + g);
-    try {
-        const k = { 'A': 1, 'NS': 2, 'CNAME': 5, 'MX': 15, 'TXT': 16, 'AAAA': 28, 'SRV': 33, 'HTTPS': 65 };
-        const l = k[f.toLowerCase()] || 1;
-        const m = z => {
-            const A = z.includes('.') ? z.slice(0, -1).split('.') : z.split('.');
-            const B = [];
-            for (const F of A) {
-                const G = new TextEncoder().encode(F);
-                B.push(new Uint8Array([G.length]), G);
-            }
-            B.push(new Uint8Array([0]));
-            const C = B.reduce((H, I) => H + I.length, 0);
-            const D = new Uint8Array(C);
-            let E = 0;
-            for (const H of B) { D.set(H, E); E += H.length; }
-            return D;
-        };
-        const n = m(c);
-        const o = new Uint8Array(12 + n.length + 4);
-        const p = new DataView(o.buffer);
-        p.setUint16(0, crypto.getRandomValues(new Uint16Array(1))[0]);
-        p.setUint16(2, 0x0100);
-        p.setUint16(4, 1);
-        o.set(n, 12);
-        p.setUint16(12 + n.length, l);
-        p.setUint16(12 + n.length + 2, 1);
-        log('DoH: query ' + c + ' ' + f + ' via ' + g + ' type=' + l + ', len=' + o.length + 'B');
-        const q = await fetch(g, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/dns-message', 'Accept': 'application/dns-message' },
-            body: o
-        });
-        if (!q.ok) {
-            console.log('DoH: ' + c + ' ' + f + ' via ' + g + ' failed: ' + q.status);
-            return [];
-        }
-        const r = new Uint8Array(await q.arrayBuffer());
-        const s = new DataView(r.buffer);
-        const t = s.getUint16(4);
-        const u = s.getUint16(6);
-        log('DoH: ' + c + ' ' + f + ' via ' + g + ' (' + r.length + 'B, id=' + t + ', qc=' + u + ')');
-        const v = z => {
-            const A = [];
-            let B = z, C = false, D = -1, E = 128;
-            while (B < r.length && E-- > 0) {
-                const F = r[B];
-                if (F === 0) { if (!C) D = B + 1; break; }
-                if ((F & 0xc0) === 0xc0) {
-                    if (!C) D = B + 2;
-                    B = ((F & 0x3f) << 8) | r[B + 1];
-                    C = true;
+        async 'directSend'(w) {
+            let x = dataToUint8Array(w);
+            if (!x['length']) return;
+            x = t(x);
+            await s(x);
+        },
+        async 'send'(w) {
+            let x = dataToUint8Array(w);
+            if (!x['length']) return;
+            x = t(x);
+            let y = 0;
+            const z = x['length'];
+            while (y < z) {
+                if (!l && z - y >= g) {
+                    const B = Math['min'](g, z - y);
+                    const C = y || B !== z ? x['slice'](y, y + B) : x;
+                    await s(C);
+                    y += B;
                     continue;
                 }
-                A.push(new TextDecoder().decode(r.slice(B + 1, B + 1 + F)));
-                B += F + 1;
+                const A = Math['min'](g - l, z - y);
+                k['set'](x['slice'](y, y + A), l);
+                l += A;
+                y += A;
+                o++;
+                if (l === g || g - l < h) await u();
+                else v();
             }
-            if (D === -1) D = B + 1;
-            return [A.join('.'), D];
-        };
-        let w = 12;
-        for (let z = 0; z < t; z++) { const [, A] = v(w); w = A + 4; }
-        const x = [];
-        for (let B = 0; B < u && w < r.length; B++) {
-            const [C, D] = v(w);
-            w = D;
-            const E = s.getUint16(w); w += 2;
-            const F = s.getUint16(w); w += 2;
-            const G = s.getUint32(w); w += 4;
-            const H = s.getUint16(w); w += 2;
-            const I = r.slice(w, w + H);
-            w += H;
-            let J;
-            if (E === 1 && H === 4) {
-                J = I[0] + '.' + I[1] + '.' + I[2] + '.' + I[3];
-            } else if (E === 28 && H === 16) {
-                const K = [];
-                for (let L = 0; L < 16; L += 2) K.push((I[L] << 8 | I[L + 1]).toString(16));
-                J = K.join(':');
-            } else if (E === 16) {
-                let L = 0;
-                const M = [];
-                while (L < H) {
-                    const N = I[L++];
-                    M.push(new TextDecoder().decode(I.slice(L, L + N)));
-                    L += N;
-                }
-                J = M.join('');
-            } else if (E === 5) {
-                const [O] = v(w - H);
-                J = O;
-            } else {
-                J = Array.from(I).map(P => P.toString(16).padStart(2, '0')).join('');
-            }
-            x.push({ name: C, type: E, TTL: G, data: J, rdata: I });
-        }
-        const y = ((performance.now() - h) / 1000).toFixed(2);
-        log('DoH: ' + c + ' ' + f + ' via ' + g + ' ' + y + 's, ' + x.length + ' records' +
-            (x.length > 0 ? '\n' + x.map((P, Q) => '  ' + (Q + 1) + '. ' + P.name + ' ' + P.type + ' ' + P.TTL + ' ' + P.data).join('\n') : ''));
-        return x;
-    } catch (P) {
-        const Q = ((performance.now() - h) / 1000).toFixed(2);
-        console.log('DoH: ' + c + ' ' + f + ' via ' + g + ' ' + Q + 's error', P);
-        return [];
-    }
-}
-
-// ============================================================
-// Fragment
-// ============================================================
-
-async function handleXhttpRequest(c, f, g, h) {
-    if (connRejectReason) return new Response('Connection rejected: ' + connRejectReason + ')', { status: 403 });
-    if (!c.body) return new Response('No body', { status: 400 });
-    const i = c.body.getReader();
-    const j = await readXhttpFirstPacket(i, f);
-    if (!j) { try { i.cancel(); } catch (s) {} return new Response('Invalid packet', { status: 400 }); }
-    if (isBlockedSite(j.hostname)) {
-        try { i.cancel(); } catch (t) {}
-        return networkSettings && networkSettings.enablePornBlock && isAdultDomain(j.hostname) ?
-            novaBlockPage(c) :
-            new Response('Blocked', { status: 403 });
-    }
-    if (j.isUDP && j.protocol !== 'tcp' && j.port !== 53) {
-        try { i.cancel(); } catch (u) {}
-        return new Response('UDP only port 53', { status: 400 });
-    }
-    const k = { socket: null, connectingPromise: null, retryConnect: null };
-    let l = null, m = null;
-    const n = { up: 0, down: 0 };
-    const o = new Headers({ 'Content-Type': 'application/octet-stream', 'X-Accel-Buffering': 'no', 'Cache-Control': 'no-cache' });
-    const p = () => {
-        if (m) { try { m.close(); } catch (v) {} m = null; }
-        l = null;
+        },
+        'flush': u
     };
-    const q = () => {
-        const v = k.socket;
-        if (!v) return null;
-        if (v !== l) { p(); l = v; m = v.writable.getWriter(); }
-        return m;
-    };
-    let r = null;
-    return new Response(new ReadableStream({
-        async start(v) {
-            let w = false, x = j.rawData;
-            const y = { cache: new Uint8Array(0) };
-            const z = {
-                readyState: WebSocket.CONNECTING,
-                send(C) {
-                    if (w) return;
-                    try {
-                        const D = C instanceof Uint8Array ? C :
-                            C instanceof ArrayBuffer ? new Uint8Array(C) :
-                            ArrayBuffer.isView(C) ? new Uint8Array(C.buffer, C.byteOffset, C.byteLength) :
-                            new Uint8Array(C);
-                        v.enqueue(D);
-                        n.up += D.length;
-                    } catch (E) { w = true; this.readyState = WebSocket.CLOSED; }
-                },
-                close() {
-                    if (w) return;
-                    w = true;
-                    this.readyState = WebSocket.CLOSED;
-                    try { v.close(); } catch (C) {}
-                }
-            };
-            const A = r = createUpstreamWriteQueue({
-                getWriter: q,
-                releaseWriter: p,
-                retryConnection: async () => {
-                    if (typeof k.retryConnect !== 'function') throw new Error('No retry connection function');
-                    await k.retryConnect();
-                },
-                closeConnection: () => {
-                    try { k.socket && k.socket.close(); } catch (C) {}
-                    closeSocketQuietly(z);
-                },
-                name: 'fragment-writer'
-            });
-            const B = async (C, D = true) => { return A.write(C, D); };
-            try {
-                if (j.isUDP) {
-                    if (j.protocol === 'trojan') await forwardTrojanUdpData(j.rawData, z, y, c);
-                    else await forwardataudp(j.rawData, z, x, c);
-                    x = null;
-                } else {
-                    n.up += validDataLength(j.rawData);
-                    await forwardataTCP(j.hostname, j.port, j.rawData, z, null, k, f, c, n);
-                }
-                while (true) {
-                    const { done: C, value: D } = await i.read();
-                    if (C) break;
-                    if (!D || D.length === 0) continue;
-                    if (D.length) n.up += D.length;
-                    if (j.isUDP) {
-                        if (j.protocol === 'trojan') await forwardTrojanUdpData(D, z, y, c);
-                        else await forwardataudp(D, z, x, c);
-                        x = null;
-                    } else {
-                        if (!await B(D)) throw new Error('Write failed');
-                    }
-                }
-                if (!j.isUDP) {
-                    await A.waitEmpty();
-                    const E = q();
-                    if (E) try { await E.close(); } catch (F) {}
-                }
-            } catch (G) {
-                log('Fragment error: ' + (G && G.message || G));
-                closeSocketQuietly(z);
-            } finally {
-                A.clear();
-                p();
-                try { i.cancel(); } catch (H) {}
-                recordUsage(g, n.up, n.down, h);
-            }
-        }
-    }), { status: 200, headers: o });
 }
 
-async function readXhttpFirstPacket(c, f) {
-    const g = VLESStextDecode;
-    const h = o => {
-        const p = o.length;
-        if (p < 18) return { status: 'Too short' };
-        if (!UUIDbyteMatch(o, 1, f)) return { status: 'UUID mismatch' };
-        const q = o[17];
-        const r = 18 + q;
-        if (p < r + 1) return { status: 'Incomplete header' };
-        const s = o[r];
-        if (s !== 1 && s !== 2) return { status: 'Invalid protocol' };
-        const t = r + 1;
-        if (p < t + 3) return { status: 'Incomplete address' };
-        const u = o[t] << 8 | o[t + 1];
-        const v = o[t + 2];
-        const w = t + 3;
-        let x = -1, y = '';
-        if (v === 1) {
-            if (p < w + 4) return { status: 'Incomplete IPv4' };
-            y = o[w] + '.' + o[w + 1] + '.' + o[w + 2] + '.' + o[w + 3];
-            x = w + 4;
-        } else if (v === 2) {
-            if (p < w + 1) return { status: 'Incomplete domain length' };
-            const z = o[w];
-            if (p < w + 1 + z) return { status: 'Incomplete domain' };
-            y = g.decode(o.slice(w + 1, w + 1 + z));
-            x = w + 1 + z;
-        } else if (v === 3) {
-            if (p < w + 16) return { status: 'Incomplete IPv6' };
-            const A = [];
-            for (let B = 0; B < 8; B++) {
-                const C = w + B * 2;
-                A.push((o[C] << 8 | o[C + 1]).toString(16));
-            }
-            y = A.join(':');
-            x = w + 16;
-        } else {
-            return { status: 'Invalid address type' };
-        }
-        if (!y) return { status: 'Empty address' };
-        return { status: 'ok', result: { protocol: 'vless', hostname: y, port: u, isUDP: s === 2, rawData: o.slice(x), respHeader: new Uint8Array([o[0], 0]) } };
-    };
-    const i = o => {
-        const p = sha224(f);
-        const q = new TextEncoder().encode(p);
-        const r = o.length;
-        if (r < 58) return { status: 'Too short' };
-        if (o[56] !== 13 || o[57] !== 10) return { status: 'Invalid CRLF' };
-        for (let A = 0; A < 56; A++) { if (o[A] !== q[A]) return { status: 'SHA224 mismatch' }; }
-        const s = 58;
-        if (r < s + 2) return { status: 'Incomplete header' };
-        const t = o[s];
-        if (t !== 1 && t !== 3) return { status: 'Invalid protocol' };
-        const u = t === 3;
-        const v = o[s + 1];
-        let w = s + 2, x = '';
-        if (v === 1) {
-            if (r < w + 4) return { status: 'Incomplete IPv4' };
-            x = o[w] + '.' + o[w + 1] + '.' + o[w + 2] + '.' + o[w + 3];
-            w += 4;
-        } else if (v === 3) {
-            if (r < w + 1) return { status: 'Incomplete domain length' };
-            const B = o[w];
-            if (r < w + 1 + B) return { status: 'Incomplete domain' };
-            x = g.decode(o.slice(w + 1, w + 1 + B));
-            w += 1 + B;
-        } else if (v === 4) {
-            if (r < w + 16) return { status: 'Incomplete IPv6' };
-            const C = [];
-            for (let D = 0; D < 8; D++) {
-                const E = w + D * 2;
-                C.push((o[E] << 8 | o[E + 1]).toString(16));
-            }
-            x = C.join(':');
-            w += 16;
-        } else {
-            return { status: 'Invalid address type' };
-        }
-        if (!x) return { status: 'Empty address' };
-        if (r < w + 4) return { status: 'Incomplete port' };
-        const y = o[w] << 8 | o[w + 1];
-        if (o[w + 2] !== 13 || o[w + 3] !== 10) return { status: 'Invalid CRLF' };
-        const z = w + 4;
-        return { status: 'ok', result: { protocol: 'trojan', hostname: x, port: y, isUDP: u, rawData: o.slice(z), respHeader: null } };
-    };
-    let j = new Uint8Array(0x400), k = 0;
-    while (true) {
-        const { value: o, done: p } = await c.read();
-        if (p) { if (k === 0) return null; break; }
-        const q = o instanceof Uint8Array ? o : new Uint8Array(o);
-        if (k + q.length > j.length) {
-            const u = new Uint8Array(Math.max(j.length * 2, k + q.length));
-            u.set(j.slice(0, k));
-            j = u;
-        }
-        j.set(q, k);
-        k += q.length;
-        const r = j.slice(0, k);
-        const s = i(r);
-        if (s.status === 'ok') return { ...s.result, reader: c };
-        const t = h(r);
-        if (t.status === 'ok') return { ...t.result, reader: c };
-        if (s.status === 'Too short' && t.status === 'Too short') return null;
-    }
-    const l = j.slice(0, k);
-    const m = i(l);
-    if (m.status === 'ok') return { ...m.result, reader: c };
-    const n = h(l);
-    if (n.status === 'ok') return { ...n.result, reader: c };
-    return null;
-}
-
-function novaBlockPage(c) {
-    const f = new URL(c.url);
-    const g = f.hostname;
-    const h = '<!DOCTYPE html><html><head><title>Blocked</title><style>body{background:#1a1a1a;color:#ff6b00;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;flex-direction:column}.box{background:#0d0d0d;padding:40px;border-radius:16px;border:2px solid #ff6b00;text-align:center;max-width:500px}h1{color:#ff6b00}p{color:#aaa;margin:15px 0}a{color:#ff6b00;text-decoration:none}a:hover{color:#ff8c00}</style></head><body><div class="box"><h1>🚫 Taakaa-Xi</h1><p>This site has been blocked</p><p>' + g + '</p><a href="/">🔙 Back</a></div></body></html>';
-    return new Response(h, { status: 403, headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache' } });
-    }
-// ============================================================
-// TAAKAA-XI PROXY WORKER - PART 5: WORKER EXPORT
-// ============================================================
-// این بخش: Worker اصلی، روت‌ها، APIها، Export نهایی
-// ============================================================
-
-// ============================================================
-// TAAKAA-XI PANEL HTML
-// ============================================================
-
-function panelHtml() {
-    const c = TAAKAA_CONFIG;
-    return `<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taakaa-Xi Panel</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:${c.colors.dark};color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
-        .container{background:${c.colors.primary};border-radius:16px;padding:40px;max-width:600px;width:100%;border:2px solid ${c.colors.secondary};box-shadow:0 0 40px rgba(255,107,0,0.15)}
-        .brand{text-align:center;margin-bottom:30px}
-        .brand h1{font-size:32px;color:${c.colors.secondary};letter-spacing:2px;text-shadow:0 0 20px rgba(255,107,0,0.3)}
-        .brand .sub{color:${c.colors.light};font-size:14px;opacity:0.7;margin-top:5px}
-        .service-msg{text-align:center;color:${c.colors.secondary};font-size:13px;padding:10px;background:${c.colors.dark};border-radius:8px;margin-bottom:25px;border:1px solid ${c.colors.secondary}33}
-        .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:25px}
-        .menu-btn{padding:16px 12px;background:${c.colors.dark};border:2px solid #333;border-radius:10px;color:#fff;text-decoration:none;text-align:center;transition:all 0.3s;font-weight:500;font-size:14px}
-        .menu-btn:hover{border-color:${c.colors.secondary};transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,107,0,0.2)}
-        .menu-btn .icon{font-size:24px;display:block;margin-bottom:6px}
-        .menu-btn .label{font-size:13px}
-        .menu-btn .desc{font-size:11px;color:#888;margin-top:4px}
-        .footer{text-align:center;padding-top:20px;border-top:1px solid ${c.colors.secondary}33;font-size:12px;color:#666}
-        .footer a{color:${c.colors.secondary};text-decoration:none}
-        .footer a:hover{color:${c.colors.accent}}
-        @media(max-width:480px){.menu-grid{grid-template-columns:1fr}.container{padding:20px}}
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="brand"><h1>⚡ Taakaa-Xi</h1><div class="sub">Premium Proxy Service</div></div>
-        <div class="service-msg">${c.serviceMessage}</div>
-        <div class="menu-grid">
-            <a href="/owners" class="menu-btn"><span class="icon">👑</span><span class="label">Owners</span><span class="desc">پشتیبانی و کانال</span></a>
-            <a href="/fragment-info" class="menu-btn"><span class="icon">🧩</span><span class="label">Fragment</span><span class="desc">تکه‌تکه‌سازی</span></a>
-            <a href="/offline-support" class="menu-btn"><span class="icon">📱</span><span class="label">پشتیبانی آفلاین</span><span class="desc">انتخاب اپراتور</span></a>
-            <a href="/select-location" class="menu-btn"><span class="icon">🌍</span><span class="label">انتخاب لوکیشن</span><span class="desc">سرور با پرچم</span></a>
-            <a href="/api/users" class="menu-btn"><span class="icon">👥</span><span class="label">مدیریت کاربران</span><span class="desc">مشاهده و مدیریت</span></a>
-            <a href="/config" class="menu-btn"><span class="icon">⚙️</span><span class="label">کانفیگ</span><span class="desc">مشاهده تنظیمات</span></a>
-        </div>
-        <div class="footer">
-            <a href="${c.telegram.channel}" target="_blank">@TaakaaOrg</a> |
-            <a href="${c.telegram.support}" target="_blank">@TaaKaaOrg</a>
-        </div>
-    </div>
-</body>
-</html>`;
-}
-
-// ============================================================
-// MAIN WORKER
-// ============================================================
-
-const taakaaXiWorker = {
-    async fetch(request, env, ctx) {
-        const url = new URL(request.url);
-        const path = url.pathname;
-
-        // ============================================================
-        // TAAKAA-XI SPECIAL PAGES
-        // ============================================================
-
-        if (path === '/owners' || path === '/about') {
-            return new Response(taakaaOwnersPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }
-            });
-        }
-
-        if (path === '/offline-support' || path === '/operator') {
-            return new Response(taakaaOfflineSupportPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }
-            });
-        }
-
-        if (path === '/fragment-info' || path === '/fragment') {
-            return new Response(taakaaFragmentInfoPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }
-            });
-        }
-
-        if (path === '/select-location') {
-            return new Response(taakaaLocationSelectionPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }
-            });
-        }
-
-        // ============================================================
-        // USER MANAGEMENT API
-        // ============================================================
-
-        if (path === '/api/users' && request.method === 'GET') {
-            const users = await getUsers(env);
-            return new Response(JSON.stringify(users, null, 2), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        if (path === '/api/users' && request.method === 'POST') {
-            try {
-                const body = await request.json();
-                const user = await createUser(env, body.username, body.limit || 10, body.expiryDays || 30);
-                return new Response(JSON.stringify(user, null, 2), {
-                    status: 201,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (e) {
-                return new Response(JSON.stringify({ error: e.message }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-        }
-
-        if (path === '/api/users/:uuid' && request.method === 'DELETE') {
-            try {
-                const uuid = path.split('/')[3];
-                let users = await getUsers(env);
-                users = users.filter(u => u.uuid !== uuid);
-                await saveUsers(env, users);
-                return new Response(JSON.stringify({ success: true }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            } catch (e) {
-                return new Response(JSON.stringify({ error: e.message }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-        }
-
-        // ============================================================
-        // CONFIG ENDPOINT
-        // ============================================================
-
-        if (path === '/config') {
-            const config = await getConfigRaw(env);
-            return new Response(config || '{}', {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // ============================================================
-        // HEALTH CHECK
-        // ============================================================
-
-        if (path === '/health') {
-            return new Response(JSON.stringify({ status: 'ok', version: 'Taakaa-Xi' }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // ============================================================
-        // PROXY LOGIC (NOVA CORE)
-        // ============================================================
-
-        try {
-            // Check for WebSocket upgrade (VLESS/Trojan over WS)
-            const upgrade = request.headers.get('Upgrade');
-            if (upgrade && upgrade.toLowerCase() === 'websocket') {
-                // Parse URL for UUID and config
-                const urlObj = new URL(request.url);
-                const pathname = urlObj.pathname;
-
-                // Get UUID from path or search params
-                let uuid = urlObj.searchParams.get('uuid') || '';
-                if (!uuid && pathname.length > 1) {
-                    const parts = pathname.split('/');
-                    for (const part of parts) {
-                        if (uuidRegex.test(part)) {
-                            uuid = part;
-                            break;
-                        }
-                    }
-                }
-
-                // Default UUID if not found
-                if (!uuid) {
-                    uuid = 'taakaa-xi-default-uuid';
-                }
-
-                // Get host and path
-                const host = request.headers.get('Host') || 'taakaa.xyz';
-                const path = urlObj.pathname || '/';
-
-                // Create mock config for proxy
-                const mockConfig = {
-                    url: request.url,
-                    headers: request.headers,
-                    cf: request.cf || {}
-                };
-
-                // Get config from KV or use default
-                const configRaw = await getConfigRaw(env);
-                let config = {};
-                if (configRaw) {
-                    try { config = JSON.parse(configRaw); } catch (e) {}
-                }
-
-                // Call WebSocket handler
-                return await handleWsRequest(
-                    mockConfig,
-                    uuid,
-                    { url: new URL('https://' + host + path) },
-                    env,
-                    ctx
-                );
-            }
-
-            // Handle HTTP CONNECT (HTTPS proxy)
-            if (request.method === 'CONNECT') {
-                const host = url.hostname;
-                const port = parseInt(url.port) || 443;
-
-                // Create mock config
-                const mockConfig = {
-                    url: request.url,
-                    headers: request.headers,
-                    cf: request.cf || {}
-                };
-
-                // Get UUID from headers or use default
-                let uuid = request.headers.get('X-UUID') || '';
-                if (!uuid) {
-                    const auth = request.headers.get('Authorization');
-                    if (auth && auth.startsWith('Bearer ')) {
-                        uuid = auth.substring(7);
-                    }
-                }
-                if (!uuid) uuid = 'taakaa-xi-default-uuid';
-
-                // Check user limit
-                const userCheck = await checkUserLimit(env, uuid);
-                if (!userCheck.allowed) {
-                    return new Response(userCheck.reason, { status: 403 });
-                }
-
-                // Handle HTTP CONNECT
-                const connector = createRequestTcpConnector(null);
-                let socket;
-                try {
-                    socket = connector({ hostname: host, port: port });
-                    await socket.connected;
-                } catch (e) {
-                    return new Response('Connection failed: ' + e.message, { status: 502 });
-                }
-
-                // Create response stream
-                const { readable, writable } = new TransformStream();
-                const writer = writable.getWriter();
-
-                // Pipe socket to response
-                const reader = socket.readable.getReader();
-                const pipe = async () => {
-                    try {
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-                            await writer.write(value);
-                            await recordUserUsage(env, uuid, value.length);
-                        }
-                    } catch (e) {}
-                    finally {
-                        try { writer.close(); } catch (e) {}
-                        try { socket.close(); } catch (e) {}
-                    }
-                };
-                ctx.waitUntil(pipe());
-
-                // Write client request to socket
-                const socketWriter = socket.writable.getWriter();
-                const clientReader = request.body ? request.body.getReader() : null;
-
-                if (clientReader) {
-                    ctx.waitUntil((async () => {
-                        try {
-                            while (true) {
-                                const { done, value } = await clientReader.read();
-                                if (done) break;
-                                await socketWriter.write(value);
-                            }
-                        } catch (e) {}
-                        finally {
-                            try { socketWriter.close(); } catch (e) {}
-                        }
-                    })());
-                }
-
-                return new Response(readable, {
-                    status: 200,
-                    headers: { 'Connection': 'close' }
-                });
-            }
-
-            // ============================================================
-            // PANEL
-            // ============================================================
-
-            if (path === '/' || path === '/panel') {
-                return new Response(panelHtml(), {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }
-                });
-            }
-
-            // ============================================================
-            // STATIC ASSETS (if panel has them)
-            // ============================================================
-
-            if (panelHasAssets(env)) {
-                const asset = await panelFetch(env, path);
-                if (asset && asset.ok) return asset;
-            }
-
-            // ============================================================
-            // DEFAULT RESPONSE
-            // ============================================================
-
-            return new Response('Taakaa-Xi Proxy Worker', {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain' }
-            });
-
-        } catch (error) {
-            console.error('Proxy error:', error && error.message || error);
-
-            return new Response(TAAKAA_CONFIG.serviceMessage + '\nError: ' + (error && error.message || 'Unknown error'), {
-                status: 500,
-                headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache' }
-            });
-        }
-    },
-
-    // ============================================================
-    // SCHEDULED TASKS
-    // ============================================================
-
-    async scheduled(event, env, ctx) {
-        try {
-            // Clean up expired users
-            const users = await getUsers(env);
-            const now = new Date();
-            let expired = 0;
-
-            for (const user of users) {
-                if (new Date(user.expiry) < now && user.enabled) {
-                    user.enabled = false;
-                    expired++;
-                }
-            }
-
-            if (expired > 0) {
-                await saveUsers(env, users);
-                console.log('🗑️ ' + expired + ' expired users disabled');
-            }
-
-            // Run maintenance tasks
-            await runScheduledMaintenance(env);
-
-        } catch (error) {
-            console.error('Scheduled task error:', error && error.message || error);
-        }
-    }
-};
-
-// ============================================================
-// PANEL ASSETS
-// ============================================================
-
-function panelHasAssets(env) {
-    return !!(env && env.ASSETS && typeof env.ASSETS.fetch === 'function');
-}
-
-async function panelFetch(env, path) {
-    if (!panelHasAssets(env)) return null;
+async function connectStreams(c, f, g, h, i = null) {
+    let j = g;
+    let k = false;
+    let l, m = false;
+    const n = 0x40 * 0x400;
+    const o = createDownstreamGrainSender(f, j);
+    j = null;
     try {
-        return await env.ASSETS.fetch(new Request('https://taakaa-panel' + path));
-    } catch { return null; }
-}
-
-// ============================================================
-// SCHEDULED MAINTENANCE
-// ============================================================
-
-async function runScheduledMaintenance(env) {
-    // Clean up expired users
-    const users = await getUsers(env);
-    const now = new Date();
-    let expired = 0;
-    for (const user of users) {
-        if (new Date(user.expiry) < now && user.enabled) {
-            user.enabled = false;
-            expired++;
+        l = c['readable']['getReader']({ 'mode': 'byob' });
+        m = true;
+    } catch (p) {
+        l = c['readable']['getReader']();
+    }
+    try {
+        if (!m) {
+            while (true) {
+                const { done: q, value: r } = await l['read']();
+                if (q) break;
+                if (!r || r['length'] === 0) continue;
+                k = true;
+                if (i) i['up'] += r['length'];
+                await o['send'](r);
+            }
+        } else {
+            let s = new ArrayBuffer(n);
+            while (true) {
+                const { done: t, value: u } = await l['read'](new Uint8Array(s, 0, n));
+                if (t) break;
+                if (!u || u['length'] === 0) continue;
+                k = true;
+                if (i) i['up'] += u['length'];
+                if (u['length'] >= downstreamGrainChunkBytes) {
+                    await o['flush']();
+                    await o['send'](u);
+                    s = new ArrayBuffer(n);
+                } else {
+                    await o['send'](u);
+                    s = u['buffer']['byteLength'] >= n ? u['buffer'] : new ArrayBuffer(n);
+                }
+            }
         }
+        await o['flush']();
+    } catch (v) {
+        closeSocketQuietly(f);
+    } finally {
+        try { l['releaseLock'](); } catch (w) {}
+        try { l['cancel'](); } catch (x) {}
     }
-    if (expired > 0) {
-        await saveUsers(env, users);
-    }
-    return { expired };
+    if (!k && h) await h();
 }
 
 // ============================================================
-// CREATE REQUEST TCP CONNECTOR
-// ============================================================
-
-function createRequestTcpConnector(c) {
-    const f = c;
-    const g = f && f.tcpConnect;
-    if (g && typeof g.connect === 'function') {
-        return (h, i) => i === undefined ? g.connect(h) : g.connect(h, i);
-    }
-    if (typeof cfSocketConnect === 'function') {
-        return (h, i) => i === undefined ? cfSocketConnect(h) : cfSocketConnect(h, i);
-    }
-    throw new Error('No TCP connector available');
-}
-
-// ============================================================
-// EXPORT
+// TAAKAA-XI EXPORT
 // ============================================================
 
 export default taakaaXiWorker;
-
