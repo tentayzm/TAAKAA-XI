@@ -10531,4 +10531,876 @@ async function runScheduledMaintenance(c) {
     try { await refreshAnnouncements(c); } catch (l) {}
     return { 'health': h, 'mirror': i };
     }
+                // ============================================================
+// ۱. تابع panelHtml - صفحه اصلی پنل با تم نارنجی و مشکی
+// ============================================================
+async function panelHtml(c, f, g = {}) {
+    const tw = { c: 0x963, f: 'yxI7', g: 0xdbb, h: 0x961, i: 0x11f7, j: 0x1c5a, k: 'PYt$', l: 0xe53, m: 0x1a72, n: 0x576, o: 'rsIZ', p: 0x939, q: 'CeJW', r: '[p9(', s: 0x1c0b, t: 0x1b07, u: 'V#kN', v: 0x1094, w: 'yxI7', x: 0x1125, y: 0xb02 },
+        m3 = fX,
+        i = panelHasAssets(c);
+    let j = null;
+    try { j = await panelFetch(c, f); } catch (m) { j = null; }
+    if (!j || !j['ok']) return new Response(panelUnavailableHtml(), { 'status': 0xc8, 'headers': { 'Content-Type': m3(0x112b, 'dn8p'), 'Cache-Control': m3(tw.c, tw.f) } });
+    let k = await j[m3(tw.g, 'CeJW')]();
+    
+    // ============================================================
+    // تغییر رنگ‌های پنل به تم مشکی و نارنجی (Taakaa-Xi Theme)
+    // ============================================================
+    k = k.replace(/<style>([\s\S]*?)<\/style>/gi, (match, css) => {
+        // جایگزینی رنگ‌های اصلی با رنگ‌های جدید
+        const colorMap = {
+            '#ffffff': '#1a1a1a', '#fff': '#1a1a1a',
+            '#f8f9fa': '#0d0d0d', '#e9ecef': '#1a1a1a',
+            '#dee2e6': '#2a2a2a', '#ced4da': '#3a3a3a',
+            '#adb5bd': '#ffa64d', '#6c757d': '#ff8c00',
+            '#495057': '#ff6b00', '#343a40': '#0d0d0d',
+            '#212529': '#1a1a1a',
+            '#007bff': '#ff6b00', '#0069d9': '#ff6b00',
+            '#005cbf': '#ff6b00', '#0d6efd': '#ff6b00',
+            '#0a58ca': '#ff6b00', '#084298': '#ff6b00',
+            '#28a745': '#ff8c00', '#dc3545': '#ff6b00',
+            '#ffc107': '#ffa64d', '#17a2b8': '#ff6b00'
+        };
+        let newCss = css;
+        for (const [oldColor, newColor] of Object.entries(colorMap)) {
+            newCss = newCss.replace(new RegExp(oldColor.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), newColor);
+        }
+        return '<style>' + newCss + '</style>';
+    });
+    
+    // ============================================================
+    // اضافه کردن استایل‌های اختصاصی تم مشکی و نارنجی
+    // ============================================================
+    k = k.replace(/<\/head>/i, `<style>
+        /* ============================================================
+           Taakaa-Xi Custom Theme - Black & Orange
+           ============================================================ */
+        
+        * { box-sizing: border-box; }
+        body, html {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container, .main-content, .page-wrapper {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+        }
+        
+        .navbar, .header, .top-bar, nav, .nav-bar {
+            background-color: #0d0d0d !important;
+            border-bottom: 2px solid #ff6b00 !important;
+            color: #ffa64d !important;
+        }
+        .navbar-brand, .nav-link, .header-title {
+            color: #ffa64d !important;
+        }
+        .navbar-brand:hover, .nav-link:hover {
+            color: #ff8c00 !important;
+        }
+        
+        .btn, .button, button, .submit-btn, .action-btn {
+            background-color: #ff6b00 !important;
+            border: 1px solid #ff6b00 !important;
+            color: #1a1a1a !important;
+            border-radius: 4px !important;
+            padding: 8px 16px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+        }
+        .btn:hover, .button:hover, button:hover {
+            background-color: #ff8c00 !important;
+            border-color: #ff8c00 !important;
+            color: #0d0d0d !important;
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.3) !important;
+        }
+        .btn-secondary, .button-secondary {
+            background-color: #0d0d0d !important;
+            border: 1px solid #ff6b00 !important;
+            color: #ffa64d !important;
+        }
+        .btn-secondary:hover {
+            background-color: #1a1a1a !important;
+            border-color: #ff8c00 !important;
+            color: #ffa64d !important;
+        }
+        .btn-success { background-color: #ff8c00 !important; border-color: #ff8c00 !important; }
+        .btn-danger { background-color: #ff6b00 !important; border-color: #ff6b00 !important; }
+        
+        a, .link {
+            color: #ff8c00 !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease !important;
+        }
+        a:hover, .link:hover {
+            color: #ffa64d !important;
+            text-decoration: underline !important;
+        }
+        
+        .card, .panel, .box, .widget {
+            background-color: #1a1a1a !important;
+            border: 1px solid #ff6b00 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 15px rgba(255, 107, 0, 0.1) !important;
+            padding: 16px !important;
+            margin-bottom: 16px !important;
+        }
+        .card-header, .panel-header, .widget-header {
+            background-color: #0d0d0d !important;
+            border-bottom: 1px solid #ff6b00 !important;
+            color: #ffa64d !important;
+            padding: 12px 16px !important;
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: 700 !important;
+        }
+        .card-body, .panel-body, .widget-body {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+            padding: 16px !important;
+        }
+        .card-footer, .panel-footer {
+            background-color: #0d0d0d !important;
+            border-top: 1px solid #ff6b00 !important;
+            color: #ffa64d !important;
+            padding: 12px 16px !important;
+        }
+        
+        .table {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+            border-collapse: collapse !important;
+            width: 100% !important;
+        }
+        .table th {
+            background-color: #0d0d0d !important;
+            color: #ffa64d !important;
+            border-bottom: 2px solid #ff6b00 !important;
+            padding: 10px 12px !important;
+            text-align: left !important;
+            font-weight: 700 !important;
+        }
+        .table td {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+            border-bottom: 1px solid #ff6b00 !important;
+            padding: 10px 12px !important;
+        }
+        .table tr:hover td {
+            background-color: #0d0d0d !important;
+        }
+        .table-striped tbody tr:nth-of-type(odd) td {
+            background-color: #0d0d0d !important;
+        }
+        
+        input, select, textarea, .form-control {
+            background-color: #0d0d0d !important;
+            color: #ffa64d !important;
+            border: 1px solid #ff6b00 !important;
+            border-radius: 4px !important;
+            padding: 8px 12px !important;
+            transition: border-color 0.3s ease !important;
+            width: 100% !important;
+        }
+        input:focus, select:focus, textarea:focus, .form-control:focus {
+            border-color: #ff8c00 !important;
+            outline: 2px solid rgba(255, 107, 0, 0.3) !important;
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.2) !important;
+        }
+        label, .form-label {
+            color: #ffa64d !important;
+            font-weight: 600 !important;
+        }
+        
+        .badge, .tag, .label {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+            padding: 4px 10px !important;
+            border-radius: 12px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+        }
+        .badge-success, .tag-success {
+            background-color: #ff8c00 !important;
+            color: #0d0d0d !important;
+        }
+        .badge-danger, .tag-danger {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+        }
+        .badge-warning, .tag-warning {
+            background-color: #ffa64d !important;
+            color: #0d0d0d !important;
+        }
+        
+        .alert, .notification, .message {
+            background-color: #0d0d0d !important;
+            border-left: 4px solid #ff6b00 !important;
+            color: #ffa64d !important;
+            padding: 12px 16px !important;
+            border-radius: 4px !important;
+            margin-bottom: 12px !important;
+        }
+        .alert-success {
+            border-left-color: #ff8c00 !important;
+        }
+        .alert-danger {
+            border-left-color: #ff6b00 !important;
+        }
+        .alert-info {
+            border-left-color: #ffa64d !important;
+        }
+        
+        .footer, .foot {
+            background-color: #0d0d0d !important;
+            border-top: 2px solid #ff6b00 !important;
+            color: #ffa64d !important;
+            padding: 16px !important;
+            text-align: center !important;
+        }
+        .footer a, .foot a {
+            color: #ff8c00 !important;
+        }
+        .footer a:hover, .foot a:hover {
+            color: #ffa64d !important;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 10px !important;
+            height: 10px !important;
+            background-color: #0d0d0d !important;
+        }
+        ::-webkit-scrollbar-track {
+            background-color: #0d0d0d !important;
+            border-radius: 4px !important;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #ff6b00 !important;
+            border-radius: 4px !important;
+            border: 1px solid #ff8c00 !important;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #ff8c00 !important;
+        }
+        
+        .dropdown-menu, .dropdown-content {
+            background-color: #0d0d0d !important;
+            border: 1px solid #ff6b00 !important;
+        }
+        .dropdown-item {
+            color: #ffa64d !important;
+        }
+        .dropdown-item:hover {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+        }
+        
+        .modal-content {
+            background-color: #1a1a1a !important;
+            border: 1px solid #ff6b00 !important;
+            color: #ffa64d !important;
+        }
+        .modal-header {
+            border-bottom: 1px solid #ff6b00 !important;
+            background-color: #0d0d0d !important;
+        }
+        .modal-footer {
+            border-top: 1px solid #ff6b00 !important;
+            background-color: #0d0d0d !important;
+        }
+        
+        .progress {
+            background-color: #0d0d0d !important;
+        }
+        .progress-bar {
+            background-color: #ff6b00 !important;
+        }
+        
+        .nav-tabs .nav-link {
+            color: #ffa64d !important;
+            background-color: #0d0d0d !important;
+            border: 1px solid #ff6b00 !important;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+            border-color: #ff6b00 !important;
+        }
+        .tab-content {
+            background-color: #1a1a1a !important;
+            color: #ffa64d !important;
+            border: 1px solid #ff6b00 !important;
+            border-top: none !important;
+            padding: 16px !important;
+        }
+        
+        ::selection {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+        }
+        ::-moz-selection {
+            background-color: #ff6b00 !important;
+            color: #1a1a1a !important;
+        }
+    </style></head>`);
+    
+    if (g[m3(tw.l, 'w(Wr')]) k = k[m3(tw.m, 'rsIZ')](m3(0xea, '[]Y1'), m3(0x8ea, 'NMJQ') + g[m3(0xebc, tw.o)] + m3(tw.p, tw.q));
+    const l = new Headers();
+    return l[m3(0x1449, tw.r)](m3(tw.s, 'ZgMu'), m3(tw.t, tw.u)), l[m3(0x125d, '9rQu')](m3(tw.v, tw.w), m3(tw.x, '$p[^')), new Response(k, { 'status': g[m3(0x14f9, 'M5Ii')] || j[m3(tw.y, 'ZgMu')], 'headers': l });
+}
+
+// ============================================================
+// ۲. تابع panelUnavailableHtml - صفحه خطا با تم نارنجی و مشکی
+// ============================================================
+function panelUnavailableHtml() {
+    const tx = { c: 0xe2f, f: 0x158a, g: 'egod', h: 0x11c8, i: 0x7d7, j: 'Pt3!' },
+        m4 = fX;
+    return `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taakaa-Xi - پنل در دسترس نیست</title>
+    <style>
+        /* ============================================================
+           Taakaa-Xi Error Page - Black & Orange Theme
+           ============================================================ */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: #1a1a1a;
+            color: #ffa64d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .error-container {
+            max-width: 600px;
+            width: 100%;
+            background-color: #0d0d0d;
+            border: 2px solid #ff6b00;
+            border-radius: 12px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 107, 0, 0.15);
+        }
+        
+        .error-icon {
+            font-size: 72px;
+            margin-bottom: 16px;
+            color: #ff6b00;
+        }
+        
+        .error-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffa64d;
+            margin-bottom: 12px;
+        }
+        
+        .error-subtitle {
+            font-size: 16px;
+            color: #ffa64d;
+            opacity: 0.8;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+        
+        .error-details {
+            background-color: #1a1a1a;
+            border: 1px solid #ff6b00;
+            border-radius: 8px;
+            padding: 16px;
+            font-size: 14px;
+            color: #ffa64d;
+            margin-bottom: 24px;
+            word-break: break-word;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #ff6b00;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #ff8c00;
+            color: #0d0d0d;
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.3);
+        }
+        
+        .footer-text {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #ffa64d;
+            opacity: 0.5;
+        }
+        
+        .footer-text a {
+            color: #ff8c00;
+            text-decoration: none;
+        }
+        
+        .footer-text a:hover {
+            color: #ffa64d;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">🔧</div>
+        <h1 class="error-title">پنل در دسترس نیست</h1>
+        <p class="error-subtitle">متأسفیم، پنل مدیریت Taakaa-Xi در حال حاضر در دسترس نمی‌باشد. لطفاً چند لحظه دیگر تلاش کنید.</p>
+        <div class="error-details">
+            <span>⏳</span> در حال بارگذاری مجدد...
+        </div>
+        <a href="#" onclick="location.reload(); return false;" class="btn">تلاش مجدد</a>
+        <div class="footer-text">
+            Taakaa-Xi &bull; Premium Proxy Service
+        </div>
+    </div>
+    <script>
+        setTimeout(() => location.reload(), 10000);
+    </script>
+</body>
+</html>`;
+}
+async function readConfigJson(c, f, g, h = fX(0x151e, 'C2T0'), i = ![]) {
+    const sx = { c: 0x2ec, f: 'C2T0', g: 'vel(', h: 'V#kN', i: 'T3Fv', j: 0x5d9, k: 'zs!c', l: 0x1ad2, m: 'V#kN', n: 'zs!c', o: 0x19ec, p: 'GzjL', q: 0x17a7, r: 0x816, s: 0xfd7, t: 'jODS', u: 0x1a7a, v: 0xa49, w: 'egod', x: 0xcca, y: 'PYt$', z: 0x7f0, A: 0xdb4, B: '[]Y1', C: 0x15cd, D: 'd%lH', E: 'ZgMu', F: 0xf5d, G: '0Ua@', H: 0x1155, I: 0x1dc8, J: 'XITC', K: '0Ua@', L: 0xa22, M: 0x554, N: 'wCGK', O: 0x1751, P: 0x1ea0, Q: '7NO9', R: 0x1de7, S: 0x1d3, T: 0x7fb, U: 0x1931, V: '2#Qk', W: 0xec6, X: 0x519, Y: 'M5Ii', Z: 'rsIZ', a0: 0x1670, a1: '[p9(', a2: 0x59a, a3: 0x422, a4: 'Mmsl', a5: 'Mmsl', a6: 0x177b, a7: '9rQu', a8: 'w(Wr', a9: 0x7e0, aa: 'NxG1', ab: 0x17d0, ac: '*lLT', ad: 0x156f, ae: 'b)3q', af: 0x137a, ag: 'GzjL', ah: 'mRB^', ai: 0x8cb, aj: 'w3Tt', ak: 0x1272, al: '#sM9', am: 0xcc0, an: 'NMJQ', ao: 0xe37, ap: 0x19bb, aq: 'CeJW', ar: 'yxI7', as: 0x1b03, at: 0x1cbd, au: '0Ua@', av: 0x7f7, aw: 'PSkb', ax: 0x609, ay: 'Gn7Q', az: '9rQu', aA: '$p[^', aB: 0xb22, aC: 0x1dc3, aD: '*lLT', aE: 0xa5f, aF: 0x8e8, aG: 0x1534, aH: 0x1e9f, aI: 0x1622, aJ: '$BSl', aK: 0xe14, aL: 'PYt$', aM: 'IcEg', aN: 0x1995, aO: '%oj0', aP: 0x296, aQ: '%oj0', aR: 0x11f, aS: 0x942, aT: 'V#kN', aU: 0x1e89, aV: 0x597, aW: 0x1685, aX: 'dbGg', aY: 0x377, aZ: 'w(Wr', b0: 0x1460, b1: 'T3Fv', b2: 0x19b8, b3: 'PSkb', b4: 0x210, b5: 'dbGg', b6: '1qbp', b7: 0x8e2, b8: '*lLT', b9: 0x59e, ba: 'M5Ii', bb: 0x1d10, bc: 0x194e, bd: 0x42d, be: 0xf9a, bf: 'NxG1', bg: 0x1971, bh: 0xbcf, bi: 0xdb5, bj: 0xd9e, bk: 'CeJW', bl: 0x1b42, bm: 0x44e, bn: '5M6D', bo: 0x1700, bp: 0x1b3b, bq: 'dZbH', br: '8Ys%', bs: 0xd7f, bt: 0x1911, bu: 0xcc2, bv: '6UCx', bw: 0x1263, bx: '9rQu', by: 'dn8p', bz: 0xf86, bA: 0x1785, bB: 0x1823, bC: 0x162e, bD: 0x1da2, bE: 0x5f1, bF: '60r9', bG: 0x165e, bH: 0xb11, bI: 'mRB^', bJ: 0x1a74, bK: 'n7E3', bL: 0xc71, bM: '#sM9', bN: 'd%lH', bO: 0x1312, bP: 0x15ff, bQ: 'V#kN', bR: '%oj0', bS: 'w(Wr', bT: 0x12f7, bU: 0xe89, bV: 0xc26, bW: 0x154e, bX: 'egod', bY: 0x612, bZ: 0x158, c0: 0x17ca, c1: 0x1bcd, c2: '0Ua@', c3: 0xdb3, c4: 0x1bd5, c5: '89Hn', c6: 'ZgMu', c7: 0x1108, c8: 'oeP*', c9: 0x19d7, ca: 0xd2d, cb: 'egod', cc: 0x130a, cd: 0x139f, ce: 'ZgMu', cf: 'ZgMu', cg: 0xa84, ch: '%oj0', ci: 0x479, ck: 0x16f6, cl: 'Gn7Q', cm: '1qbp', cn: 'dn8p', co: 0x933, cp: 0x18ad, cq: 0xaf7, cr: 0x13b4, cs: 0x1476, ct: 'yxI7', cu: 0x18f4, cv: '60r9', cw: '1qbp', cx: 0x1919, cy: 'oeP*', cz: 0x1225, cA: 'n7E3', cB: 0x1468, cC: '#sM9', cD: 'NMJQ', cE: 0x24a, cF: '1qbp', cG: 0xce9, cH: 0x8c1, cI: '$p[^', cJ: 0x1e02, cK: 'oeP*', cL: 0x6ce, cM: 'egod', cN: 0x3bb, cO: 0x1ec9, cP: 'w3Tt', cQ: 0x129a, cR: 'dZbH', cS: 'Pt3!', cT: 0x565, cU: 0x1de9, cV: 0x1d0c, cW: 0x1131, cX: 'V#kN', cY: 'yxI7', cZ: 0x1198, d0: 'w3Tt', d1: 0x36c, d2: 'vel(', d3: 'PSkb', d4: 0x1289, d5: 0x179b, d6: 'n7E3', d7: 0xfde, d8: 0x87c, d9: 0x13e5, da: 'M5Ii', db: 0x1d14, dc: 'egod', dd: '7NO9', de: 'w3Tt', df: 0x16d0, dg: 'zs!c', dh: 0x7a5, di: 0x4c4, dj: 'T3Fv', dk: 0x1b28, dl: 0x19d3, dm: 'XITC', dn: 0x10cc, dp: 'w(Wr', dq: '1qbp', dr: 0x1418, ds: 'rsIZ', dt: 0x1732, du: 'w(Wr', dv: 0x1537, dw: 0x791, dx: '1qbp', dy: 0x475, dz: 'V#kN', dA: 0x1097, dB: 'dbGg', dC: 0x176d, dD: 0x16e4, dE: 'CeJW', dF: 0x1b00, dG: 0xa8d, dH: '9rQu', dI: 0x357, dJ: 0x8f0, dK: 0x1256, dL: 0x17eb, dM: 'vel(', dN: 'dbGg' },
+        l7 = fX,
+        j = atob(l7(sx.c, sx.f)),
+        k = f,
+        l = l7(0x1dd4, sx.g),
+        m = l7(0x1b53, sx.h),
+        n = l7(0x806, sx.i),
+        o = performance[l7(0xf4d, 'NxG1')](),
+        p = { 'TIME': new Date()[l7(sx.j, sx.k)](), 'HOST': k, 'HOSTS': [f], 'UUID': g, 'PATH': '/', 'protocolType': 'v' + 'le' + 'ss', 'transportProtocol': 'ws', 'gRPCmode': l7(sx.l, sx.m), 'gRPCUserAgent': h, 'skipCertVerify': ![], 'enable0RTT': ![], 'tlsFragment': null, 'randomPath': ![], 'ECH': ![], 'ECHConfig': { 'DNS': l, 'SNI': m }, 'SS': { 'cipherMethod': l7(0x1b3b, 'dZbH'), 'TLS': !![] }, 'Fingerprint': l7(0x127f, 'IcEg'), 'optimizedSubGeneration': { 'local': !![], 'localIPPool': { 'randomIP': !![], 'randomCount': 0x10, 'specifiedPorts': -0x1 }, 'SUB': null, 'SUBNAME': l7(0x14aa, sx.n), 'SUBUpdateTime': 0x3, 'TOKEN': await MD5MD5(f + g) }, 'subConverterConfig': { 'SUBAPI': l7(sx.o, sx.p), 'SUBCONFIG': l7(sx.q, sx.f), 'SUBEMOJI': ![] }, 'proxy': { [j]: l7(sx.r, 'PSkb'), 'SOCKS5': { 'enabled': enableSocks5Proxy, 'globalScope': enableSocks5GlobalProxy, 'accountStr': mySocks5Account, 'whitelist': SOCKS5whitelist }, 'pathTemplate': { [j]: l7(sx.s, '$BSl') + n, 'SOCKS5': { 'globalScope': l7(0x22c, sx.t) + n, 'standardScope': l7(0x259, 'yxI7') + n }, 'HTTP': { 'globalScope': l7(sx.u, 'mRB^') + n, 'standardScope': l7(sx.v, 'b)3q') + n }, 'HTTPS': { 'globalScope': l7(0x3cc, '1qbp') + n, 'standardScope': l7(0x1136, '*lLT') + n }, 'TURN': { 'globalScope': l7(0xabc, sx.w) + n, 'standardScope': l7(sx.x, sx.y) + n }, 'SSTP': { 'globalScope': l7(sx.z, 'dbGg') + n, 'standardScope': l7(sx.A, 'rsIZ') + n } } }, 'TG': { 'enabled': ![], 'BotToken': null, 'ChatID': null }, 'CF': { 'Email': null, 'GlobalAPIKey': null, 'AccountID': null, 'APIToken': null, 'UsageAPI': null, 'Usage': { 'success': ![], 'pages': 0x0, 'workers': 0x0, 'total': 0x0, 'max': 0x186a0 } } };
+    try {
+        let G = await getConfigRaw(c);
+        if (!G || i == !![]) await putConfig(c, JSON[l7(0x14c9, 'jODS')](p, null, 0x2)), config_JSON = p;
+        else {
+            config_JSON = JSON[l7(0x143e, sx.B)](G);
+            if (config_JSON[l7(sx.C, sx.D)] !== undefined && config_JSON[l7(0x5c5, sx.E)] === undefined) config_JSON[l7(sx.F, '0Ua@')] = config_JSON[l7(0x163c, sx.G)];
+            if (config_JSON[l7(sx.H, 'M5Ii')] || config_JSON[l7(sx.I, '[p9(')] === l7(0x1d85, sx.J) || config_JSON[l7(0xf5d, sx.K)] === l7(0xf58, 'NxG1')) {
+                config_JSON[l7(0x12a4, '[]Y1')] = ![];
+                if (config_JSON[l7(0x120d, sx.w)] === l7(0x8f4, 'CeJW') || config_JSON[l7(sx.M, 'Pt3!')] === l7(0xc7a, '5M6D') || !config_JSON[l7(0xbf4, sx.N)]) config_JSON[l7(0x1495, '7NO9')] = l7(sx.O, sx.G);
+            }
+            // ... ادامه در بخش بعدی
+        }
+    } catch (H) { console[l7(0x1480, sx.b3)](l7(sx.b4, sx.b5) + H[l7(0x3c1, sx.b6)]), config_JSON = p; }
+    // ... ادامه در بخش بعدی
+}
+
+function identifyCarrier(c) {
+    const sy = { c: 'C2T0', f: 0x7de, g: 0x1dff, h: 0xda0, i: '2#Qk', j: 'wCGK', k: 'M5Ii', l: 0x1984, m: 'vel(', n: 'yxI7', o: 0x4cf, p: 'NxG1', q: 'oeP*' },
+        l8 = fX,
+        f = c?.['cf'],
+        g = { '4134': 'ct', '4809': 'ct', '4811': 'ct', '4812': 'ct', '4815': 'ct', '4837': 'cu', '4814': 'cu', '9929': 'cu', '17623': 'cu', '17816': 'cu', '9808': l8(0xfe6, sy.c), '24400': l8(sy.f, '89Hn'), '56040': l8(sy.g, 'dbGg'), '56041': l8(sy.h, sy.i), '56044': l8(0x1864, sy.j) },
+        h = [{ 'code': 'ct', 'pattern': /chinanet|chinatelecom|china telecom|cn2|shtel/ }, { 'code': l8(0xea9, sy.k), 'pattern': /cmi|cmnet|chinamobile|china mobile|cmcc|mobile communications/ }, { 'code': 'cu', 'pattern': /china169|china unicom|chinaunicom|cucc|cncgroup|cuii|netcom/ }];
+    if (String(f?.[l8(sy.l, sy.m)] || '')[l8(0xf68, sy.n)]() !== 'cn') return 'cf';
+    const i = String(f?.[l8(sy.o, 'M5Ii')] || '')[l8(0x154, sy.p)](),
+        j = h[l8(0x1813, sy.q)](({ pattern: k }) => k[l8(0x710, 'NMJQ')](i))?.[l8(0x945, '0Ua@')];
+    return j || g[String(f?.[l8(0x182d, 'T3Fv')] || '')] || 'cf';
+}
+
+async function generateRandomIp(c, f = 0x10, g = -0x1) {
+    const sB = { c: 'w3Tt', f: 0x1446, g: 0x67a, h: 0xd90, i: '$BSl', j: '1qbp', k: 0x16b9, l: '%oj0', m: 'IcEg', n: 0xab6, o: 'Pt3!', p: 0x15a2, q: 'yxI7', r: 0x112c, s: 'w(Wr', t: 0xaf3, u: 0x16c8, v: 'CeJW', w: 0x1ada, x: 0x238, y: '[]Y1', z: 'PSkb', A: 0xa7a, B: '[p9(', C: 0x1eef, D: 0xfff, E: 0xfc3, F: 'C2T0', G: 0x1cdf },
+        sA = { c: 0x103a, f: 'PYt$', g: 'PSkb', h: 0x193b, i: 'Gn7Q', j: 0x198, k: 'M5Ii', l: 'dZbH', m: 'vel(' },
+        sz = { c: 'd%lH', f: 0x678, g: 0xada, h: 'b)3q', i: 'zs!c', j: '89Hn', k: 0xd64, l: 'jODS' },
+        l9 = fX,
+        h = new URL(c[l9(0x1635, sB.c)]),
+        i = String(h[l9(sB.f, '1qbp')][l9(sB.g, 'XITC')](l9(sB.h, sB.i)) || '')[l9(0xc88, sB.j)](),
+        j = ['ct', 'cu', l9(0x13fd, '7NO9'), 'cf'][l9(sB.k, sB.l)](i) ? i : identifyCarrier(c),
+        k = { 'cmcc': l9(0x1011, sB.m), 'cu': l9(sB.n, sB.o), 'ct': l9(sB.p, sB.q), 'cf': l9(sB.r, sB.s) },
+        l = j === 'cf' ? l9(sB.t, 'Gn7Q') : l9(sB.u, sB.v) + j + l9(sB.w, 'IcEg'),
+        m = k[j] || l9(sB.x, sB.y),
+        n = [0x1bb, 0x805, 0x823, 0x827, 0x830, 0x20fb];
+    let o = [];
+    {
+        const r = _cidrListCache[l9(0x539, 'jODS')](j);
+        if (r && Date[l9(0xf47, sB.z)]() - r['at'] < 0x36ee80) o = r[l9(0x173e, 'ZgMu')];
+        else {
+            try {
+                const s = await fetch(l);
+                o = s['ok'] ? await sortIntoArray(await s[l9(sB.A, '6UCx')]()) : [l9(0x1e64, sB.B)];
+            } catch { o = [l9(sB.C, 'GzjL')]; }
+            _cidrListCache[l9(sB.D, 'XITC')](j, { 'at': Date[l9(sB.E, 'wCGK')](), 'list': o });
+        }
+    }
+    const p = t => {
+            const la = l9,
+                [u, v] = t[la(0x1202, sz.c)]('/'),
+                w = parseInt(v),
+                x = 0x20 - w,
+                y = u[la(0xaef, 'mRB^')]('.')[la(sz.f, '#sM9')]((C, D, E) => C | parseInt(D) << 0x18 - E * 0x8, 0x0),
+                z = Math[la(sz.g, sz.h)](Math[la(0x1502, sz.i)]() * Math[la(0x285, sz.j)](0x2, x)),
+                A = 0xffffffff << x >>> 0x0,
+                B = ((y & A) >>> 0x0) + z >>> 0x0;
+            return [B >>> 0x18 & 0xff, B >>> 0x10 & 0xff, B >>> 0x8 & 0xff, B & 0xff][la(sz.k, sz.l)]('.');
+        },
+        q = Array[l9(0xc58, sB.F)]({ 'length': f }, (t, u) => {
+            const lb = l9,
+                v = p(o[Math[lb(sA.c, 'V#kN')](Math[lb(0x1d2c, '%oj0')]() * o[lb(0x292, 'IcEg')])]),
+                w = g === -0x1 ? n[Math[lb(0x15f4, sA.f)](Math[lb(0xa63, '5M6D')]() * n[lb(0xb28, sA.g)])] : g,
+                x = lb(sA.h, sA.i) + Array[lb(sA.j, sA.k)](crypto[lb(0x3da, sA.l)](new Uint8Array(0x6)), y => lb(0x1cec, '$BSl')[y % 0x24])[lb(0x18eb, sA.m)]('');
+            return v + ':' + w + '#' + x;
+        });
+    return [q, q[l9(sB.G, '7NO9')]('\x0a')];
+}
+
+async function sortIntoArray(c) {
+    const sC = { c: '$p[^', f: 0xc9b, g: 'C2T0', h: 0x17d6, i: 0x793 },
+        lc = fX;
+    var f = c[lc(0x16f6, 'Gn7Q')](/[	"'\r\n]+/g, ',')[lc(0xb8a, sC.c)](/,+/g, ',');
+    if (f[lc(0x343, '%oj0')](0x0) == ',') f = f[lc(0x1c22, 'M5Ii')](0x1);
+    if (f[lc(sC.f, sC.g)](f[lc(0x181f, 'dn8p')] - 0x1) == ',') f = f[lc(0x115b, '[p9(')](0x0, f[lc(sC.h, '[p9(')] - 0x1);
+    const g = f[lc(sC.i, 'jODS')](',');
+    return g;
+}
+
+async function getBestSubGeneratorData(c) {
+    const sD = { c: '60r9', f: '#sM9', g: 'Pt3!', h: 0x588, i: 'd%lH', j: '%oj0', k: 'NxG1', l: 0x1d57, m: 0xa7c, n: 'Gn7Q', o: '1qbp', p: '2#Qk', q: '0Ua@', r: 0x16b1, s: 0x15bb, t: '8Ys%', u: 0x9d9, v: 'NxG1', w: 0x1f0b, x: 0x11d4, y: 0x1406, z: 'mRB^', A: 0xba8, B: 'Gn7Q', C: 0x1e17, D: 0x1d18, E: 'NMJQ', F: 'M5Ii', G: 0x20c, H: 'mRB^', I: 0x5a7, J: '[p9(', K: 0x120e, L: '#sM9', M: 0x1f0b, N: 'C2T0', O: 0x8ab },
+        ld = fX;
+    let f = [],
+        g = '',
+        h = c[ld(0x79f, '0Ua@')](/^sub:\/\//i, ld(0x5f1, sD.c))[ld(0x1567, sD.f)]('#')[0x0][ld(0xae6, sD.g)]('?')[0x0];
+    if (!/^https?:\/\//i[ld(sD.h, sD.i)](h)) h = ld(0x1e9b, sD.j) + h;
+    try {
+        const j = new URL(h);
+        h = j[ld(0x837, sD.k)];
+    } catch (k) { return f[ld(sD.l, 'dZbH')](ld(sD.m, sD.n) + c + ld(0x132c, sD.o) + k[ld(0x1444, sD.p)]), [f, g]; }
+    const i = h + ld(0x1c49, sD.q);
+    try {
+        const l = await fetch(i, { 'headers': { 'User-Agent': ld(sD.r, 'PYt$') } });
+        if (!l['ok']) return f[ld(sD.s, sD.t)](ld(sD.u, sD.v) + c + ld(sD.w, 'C2T0') + l[ld(sD.x, '5M6D')]), [f, g];
+        const m = atob(await l[ld(sD.y, sD.z)]()),
+            n = m[ld(sD.A, 'dbGg')]('\x0d\x0a') ? m[ld(0xddc, sD.B)]('\x0d\x0a') : m[ld(sD.C, '%oj0')]('\x0a');
+        for (const o of n) {
+            if (!o[ld(sD.D, sD.E)]()) continue;
+            if (o[ld(0x19c5, sD.F)](ld(sD.G, '$p[^')) && o[ld(0xc84, sD.f)](ld(0x1b19, sD.H))) {
+                const p = o[ld(sD.I, sD.J)](/:\/\/[^@]+@([^?]+)/);
+                if (p) {
+                    let q = p[0x1],
+                        r = '';
+                    const s = o[ld(0x19b, 'd%lH')](/#(.+)$/);
+                    if (s) r = '#' + decodeURIComponent(s[0x1]);
+                    f[ld(0x1bd9, 'dbGg')](q + r);
+                }
+            } else g += o + '\x0a';
+        }
+    } catch (t) { f[ld(sD.K, sD.L)](ld(0xfc5, 'w(Wr') + c + ld(sD.M, sD.N) + t[ld(sD.O, 'C2T0')]); }
+    return [f, g];
+}
+
+async function requestBestApi(c, f = fX(0x5e3, 'w(Wr'), g = 0xbb8) {
+    const sK = { c: 0xd77, f: 'dbGg', g: 0x14de, h: '9rQu', i: 0x61f, j: 0x165c, k: '60r9' },
+        sJ = { c: 'IcEg', f: 0x1e49, g: 'rsIZ', h: 0x1e62, i: 'PYt$', j: 0xba8, k: 'dbGg', l: 'Gn7Q', m: 0xd7a, n: '7NO9', o: 0x1e76, p: 'dn8p', q: 0x1896, r: '%oj0', s: 'w(Wr', t: 0x12e6, u: 'GzjL', v: 0x13ab, w: 'jODS', x: '5M6D', y: '$BSl', z: 0x1714, A: '89Hn', B: 0x8ed, C: 0x303, D: '6UCx', E: 0xd06, F: 0x1948, G: 0xd82, H: 0xb7c, I: 0xaf0, J: 0x6c6, K: 'egod', L: '[]Y1', M: 0xab9, N: 'Mmsl', O: 0x1c85, P: '6UCx', Q: 0x96f, R: '[p9(', S: 'Pt3!', T: 0xcb7, U: 0xa33, V: 'C2T0', W: 0x1ca, X: 'T3Fv', Y: 0x1c26, Z: 'ZgMu', a0: 0x1c6d, a1: '$BSl', a2: 0x3f7, a3: 0x14cf, a4: 0x118, a5: 'NxG1', a6: 0x7a4, a7: '%oj0', a8: 0xaef, a9: 'mRB^', aa: 0xbf3, ab: 'CeJW', ac: 'wCGK', ad: 0x805, ae: 0x133c, af: 0x1df, ag: '*lLT', ah: '$p[^', ai: 0x1a7f, aj: 0xb52, ak: '9rQu', al: 0x565, am: 0x16e9, an: 0x134, ao: 0x1b76, ap: 0x3b3, aq: 0x722, ar: 'V#kN', as: 0x973, at: 'dn8p', au: 0x1c9d, av: 0xad1, aw: 'IcEg', ax: 'M5Ii', ay: 0xfd4, az: '#sM9', aA: 0x5e7, aB: 0x25e, aC: 'Pt3!', aD: 0x1934, aE: 'jODS', aF: '[p9(', aG: 'oeP*', aH: 0x342 },
+        sG = { c: 0x2f9, f: 'ZgMu', g: 0x25f, h: '7NO9', i: 0x1db9, j: 'dbGg', k: 0x2ca, l: '1qbp', m: '$p[^', n: 0x18ec, o: 'PSkb', p: '7NO9', q: 'V#kN' },
+        sF = { c: '60r9' },
+        le = fX;
+    if (!c?.[le(sK.c, sK.f)]) return [[], [], [], []];
+    const h = new Set(),
+        i = new Set();
+    let j = '',
+        k = [];
+    await Promise[le(0x147f, '2#Qk')](c[le(sK.g, sK.h)](async m => {
+        const sI = { c: 0x1859, f: 0x14de, g: '9rQu', h: '#sM9', i: '2#Qk', j: '$p[^', k: 'zs!c', l: 0x157e, m: 0xa32, n: 'C2T0' },
+            sH = { c: 0x201, f: 'M5Ii', g: 0x867, h: 'oeP*', i: 0x622, j: 'V#kN', k: 0xfcc, l: '60r9', m: 0xf02 },
+            lf = le,
+            n = m[lf(0xad1, sJ.c)]('#'),
+            o = n > -0x1 ? m[lf(sJ.f, sJ.g)](0x0, n) : m,
+            p = n > -0x1 ? decodeURIComponent(m[lf(sJ.h, 'V#kN')](n + 0x1)) : null,
+            q = m[lf(0x5c6, sJ.i)]()[lf(sJ.j, sJ.k)](lf(0xb71, sJ.l));
+        if (o[lf(sJ.m, sJ.n)]()[lf(0x1cd, 'C2T0')](lf(0x20d, '60r9'))) {
+            try {
+                const [r, s] = await getBestSubGeneratorData(o);
+                if (p)
+                    for (const t of r) {
+                        const u = t[lf(sJ.o, sJ.p)]('#') ? t + '\x20[' + p + ']' : t + '#[' + p + ']';
+                        h[lf(sJ.q, sJ.r)](u);
+                        if (q) i[lf(0xe32, sJ.s)](t[lf(sJ.t, sJ.u)]('#')[0x0]);
+                    }
+                else
+                    for (const v of r) {
+                        h[lf(sJ.v, '5M6D')](v);
+                        if (q) i[lf(0x412, sJ.w)](v[lf(0xbcd, sJ.x)]('#')[0x0]);
+                    }
+                if (s && typeof s === lf(0x1143, sJ.y) && p) {
+                    const w = s[lf(sJ.z, '1qbp')](/([a-z][a-z0-9+\-.]*:\/\/[^\r\n]*?)(\r?\n|$)/gi, (x, y, z) => {
+                        const lg = lf,
+                            A = y[lg(0xf52, 'yxI7')]('#') ? '' + y + encodeURIComponent('\x20[' + p + ']') : '' + y + encodeURIComponent('#[' + p + ']');
+                        return '' + A + z;
+                    });
+                    j += w;
+                } else s && typeof s === lf(0x445, 'w(Wr') && (j += s);
+            } catch (x) {}
+            return;
+        }
+        try {
+            const y = new AbortController(),
+                z = setTimeout(() => y[lf(0xb96, '8Ys%')](), g),
+                A = await fetch(o, { 'signal': y[lf(0x884, sJ.A)] });
+            clearTimeout(z);
+            let B = '';
+            try {
+                const I = await A[lf(0x1950, '[]Y1')](),
+                    J = (A[lf(0x64b, '8Ys%')][lf(sJ.B, '9rQu')](lf(sJ.C, sJ.D)) || '')[lf(0x156d, sJ.A)](),
+                    K = J[lf(0xc09, '5M6D')](/charset=([^\s;]+)/i)?.[0x1]?.[lf(sJ.E, 'n7E3')]() || '';
+                let L = [lf(sJ.F, 'NMJQ'), lf(sJ.G, '$p[^')];
+                (K[lf(0x805, 'jODS')]('gb') || K[lf(sJ.H, sJ.n)](lf(0x3c6, 'zs!c')) || K[lf(0x565, 'Gn7Q')](lf(sJ.I, sJ.A))) && (L = [lf(sJ.J, sJ.K), lf(0x107b, sJ.L)]);
+                let M = ![];
+                for (const N of L) {
+                    try {
+                        const O = new TextDecoder(N)[lf(0x1dd1, 'XITC')](I);
+                        if (O && O[lf(sJ.M, '%oj0')] > 0x0 && !O[lf(0x1cf9, sJ.N)]('�')) { B = O, M = !![]; break; } else { if (O && O[lf(sJ.O, sJ.P)] > 0x0) continue; }
+                    } catch (P) { continue; }
+                }
+                !M && (B = await A[lf(sJ.Q, '7NO9')]());
+                if (!B || B[lf(0x550, sJ.R)]()[lf(0xa1f, sJ.S)] === 0x0) return;
+            } catch (Q) { console[lf(0x1a8e, sJ.x)](lf(sJ.T, 'M5Ii'), Q);
+                return; }
+            let C = B;
+            const D = typeof B === lf(sJ.U, sJ.V) ? B[lf(0x1596, '$BSl')](/\s/g, '') : '';
+            if (D[lf(0x1a31, 'b)3q')] > 0x0 && D[lf(0xaae, '#sM9')] % 0x4 === 0x0 && /^[A-Za-z0-9+/]+={0,2}$/[lf(0xac9, 'Mmsl')](D))
+                try {
+                    const R = new Uint8Array(atob(D)[lf(0x1299, 'zs!c')]('')[lf(sJ.W, sJ.X)](S => S[lf(0x1627, 'XITC')](0x0)));
+                    C = new TextDecoder(lf(sJ.Y, sJ.Z))[lf(sJ.a0, sJ.a1)](R);
+                } catch {}
+            if (C[lf(sJ.a2, 'dn8p')]('#')[0x0][lf(0x16e9, '5M6D')](lf(sJ.a3, 'w3Tt'))) {
+                if (p) {
+                    const S = C[lf(sJ.a4, sJ.a5)](/([a-z][a-z0-9+\-.]*:\/\/[^\r\n]*?)(\r?\n|$)/gi, (T, U, V) => {
+                        const lh = lf,
+                            W = U[lh(0x1daa, sF.c)]('#') ? '' + U + encodeURIComponent('\x20[' + p + ']') : '' + U + encodeURIComponent('#[' + p + ']');
+                        return '' + W + V;
+                    });
+                    j += S + '\x0a';
+                } else j += C + '\x0a';
+                return;
+            }
+            const E = B[lf(sJ.a6, sJ.a7)]()[lf(sJ.a8, sJ.a9)]('\x0a')[lf(sJ.aa, sJ.ab)](T => T[lf(0xb64, '2#Qk')]())[lf(0x1b78, 'n7E3')](T => T),
+                F = E[lf(sJ.ac, 'wCGK')] > 0x1 && E[0x0][lf(sJ.ad, 'jODS')](','),
+                G = /^[^\[\]]*:[^\[\]]*:[^\[\]]/,
+                H = new URL(o);
+            if (!F) E[lf(sJ.ae, 'n7E3')](T => {
+                const li = lf,
+                    U = T[li(sG.c, sG.f)]('#'),
+                    [V, W] = U > -0x1 ? [T[li(sG.g, sG.h)](0x0, U), T[li(sG.i, sG.j)](U)] : [T, ''];
+                let X = ![];
+                if (V[li(0x1cd, 'C2T0')]('[')) X = /\]:(\d+)$/[li(0x1456, 'vel(')](V);
+                else {
+                    const a0 = V[li(sG.k, sG.l)](':');
+                    X = a0 > -0x1 && /^\d+$/[li(0x35a, 'rsIZ')](V[li(0x49f, sG.m)](a0 + 0x1));
+                }
+                const Y = H[li(0x833, 'PYt$')][li(0x1d7, '%oj0')](li(0x244, 'V#kN')) || f,
+                    Z = X ? T : V + ':' + Y + W;
+                if (p) {
+                    const a1 = Z[li(sG.n, sG.o)]('#') ? Z + '\x20[' + p + ']' : Z + '#[' + p + ']';
+                    h[li(0xd6f, sG.p)](a1);
+                } else h[li(0x898, sG.q)](Z);
+                if (q) i[li(0xf02, '$p[^')](Z[li(0x102a, '89Hn')]('#')[0x0]);
+            });
+            else {
+                const T = E[0x0][lf(sJ.af, sJ.ag)](',')[lf(0x15e1, 'egod')](V => V[lf(0x109a, '1qbp')]()),
+                    U = E[lf(0x19bf, sJ.ah)](0x1);
+                if (T[lf(sJ.ai, '2#Qk')](lf(sJ.aj, sJ.ak)) && T[lf(sJ.al, 'Gn7Q')](lf(0x22b, '7NO9')) && T[lf(sJ.am, sJ.x)](lf(0xadb, 'n7E3'))) {
+                    const V = T[lf(0x18bb, 'GzjL')](lf(0x4fb, 'NxG1')),
+                        W = T[lf(0xc03, '5M6D')](lf(0x1b8, 'Pt3!')),
+                        X = T[lf(sJ.an, 'Pt3!')](lf(sJ.ao, 'T3Fv')) > -0x1 ? T[lf(0x1773, '[]Y1')](lf(sJ.ap, '7NO9')) : T[lf(sJ.aq, sJ.ar)](lf(sJ.as, 'PSkb')) > -0x1 ? T[lf(0x188, sJ.i)](lf(0x1b20, 'jODS')) : T[lf(0xe22, sJ.at)](lf(sJ.au, '6UCx')),
+                        Y = T[lf(sJ.av, sJ.aw)](lf(0x879, sJ.ax));
+                    U[lf(sJ.ay, '2#Qk')](Z => {
+                        const lj = lf,
+                            a0 = Z[lj(0x3f7, 'dn8p')](',')[lj(sH.c, sH.f)](a3 => a3[lj(0x1d92, 'PSkb')]());
+                        if (Y !== -0x1 && a0[Y]?.[lj(sH.g, sH.h)]() !== lj(0x1c58, 'IcEg')) return;
+                        const a1 = G[lj(sH.i, sH.j)](a0[V]) ? '[' + a0[V] + ']' : a0[V],
+                            a2 = a1 + ':' + a0[W] + '#' + a0[X];
+                        if (p) {
+                            const a3 = a2 + '\x20[' + p + ']';
+                            h[lj(0x1cd5, '[]Y1')](a3);
+                        } else h[lj(sH.k, sH.l)](a2);
+                        if (q) i[lj(sH.m, '$p[^')](a1 + ':' + a0[W]);
+                    });
+                } else {
+                    if (T[lf(0xb2e, 'mRB^')](Z => Z[lf(0x7c0, 'CeJW')]('IP')) && T[lf(0xa06, sJ.az)](Z => Z[lf(0x7c0, 'CeJW')](lf(0x1d66, '%oj0'))) && T[lf(sJ.aA, 'V#kN')](Z => Z[lf(0xc84, '#sM9')](lf(0xbe6, 'CeJW')))) {
+                        const Z = T[lf(sJ.aB, sJ.aC)](a3 => a3[lf(0x19a4, 'egod')]('IP')),
+                            a0 = T[lf(sJ.aD, sJ.aE)](a3 => a3[lf(0x267, 'Pt3!')](lf(0xebb, 'd%lH'))),
+                            a1 = T[lf(0xa5b, sJ.aF)](a3 => a3[lf(0x1508, 'ZgMu')](lf(0xbe6, 'CeJW'))),
+                            a2 = H[lf(0x1f05, sJ.a9)][lf(0x5cd, 'b)3q')](lf(0x1a62, sJ.aG)) || f;
+                        U[lf(sJ.aH, 'Mmsl')](a3 => {
+                            const lk = lf,
+                                a4 = a3[lk(sI.c, 'dbGg')](',')[lk(sI.f, sI.g)](a7 => a7[lk(0x1445, 'CeJW')]()),
+                                a5 = G[lk(0x18e2, sI.h)](a4[Z]) ? '[' + a4[Z] + ']' : a4[Z],
+                                a6 = a5 + ':' + a2 + lk(0x99d, sI.i) + a4[a0] + lk(0x302, sI.j) + a4[a1] + lk(0x175a, sI.k);
+                            if (p) {
+                                const a7 = a6 + '\x20[' + p + ']';
+                                h[lk(sI.l, 'M5Ii')](a7);
+                            } else h[lk(sI.m, 'dZbH')](a6);
+                            if (q) i[lk(0x1825, sI.n)](a5 + ':' + a2);
+                        });
+                    }
+                }
+            }
+        } catch (a3) {}
+    }));
+    const l = j[le(sK.i, '7NO9')]() ? [...new Set(j[le(0x293, '7NO9')](/\r?\n/)[le(sK.j, 'dn8p')](m => m[le(0x1aa0, '6UCx')]() !== ''))] : [];
+    return [Array[le(0x1cce, '%oj0')](h), l, k, Array[le(0x111a, sK.k)](i)];
+}
+
+async function fetchProxyParams(c, f, g) {
+    const sO = { c: '8Ys%', f: 0x5c6, g: 0xb2d, h: 0x169a, i: 0x11e9, j: 0x10a4, k: 'T3Fv', l: 0x644, m: 0xc3a, n: 0xb98, o: 'NMJQ', p: '5M6D', q: 'T3Fv', r: 'vel(', s: 0x1945, t: 0x117f, u: 0x6fc, v: 0x1cad, w: 'oeP*', x: '$BSl', y: 0x1f1c, z: 'dZbH', A: 'zs!c', B: '7NO9', C: 0x1eb6, D: 'w(Wr', E: 0xf4, F: 'Pt3!', G: 0x182a, H: 0x4c8, I: 0x1654, J: 'rsIZ', K: 0x17dc, L: 'dZbH', M: 'mRB^', N: 0x7b4, O: 0x157d, P: 'Gn7Q', Q: 'b)3q', R: 0x199e, S: 0x18ab, T: '6UCx', U: 'Mmsl', V: 0xa56, W: 0x6d6, X: 'IcEg', Y: 0x681, Z: 0x547, a0: 'C2T0', a1: 0xb26, a2: 'dn8p', a3: 0x1a56, a4: 0x19d5, a5: 'yxI7', a6: 'wCGK', a7: 0x1d4d, a8: 0xf52, a9: 0x901, aa: 'ZgMu', ab: 0x1a7f, ac: '2#Qk', ad: 0x118d, ae: 'zs!c', af: 'Pt3!', ag: 0xcde, ah: 0x5cd, ai: 'b)3q', aj: 0x19b7, ak: 0x9b5, al: '$p[^', am: 0x827, an: '60r9', ao: 0x66c, ap: '89Hn', aq: 'Mmsl', ar: '8Ys%', as: 'CeJW', at: '1qbp', au: 0x11b5, av: 'NMJQ', aw: 'PSkb', ax: '*lLT', ay: 0x1be8, az: 'NxG1', aA: 0x71b },
+        sN = { c: 'GzjL', f: 0x955, g: 0x19a9, h: '%oj0', i: 0x1793 },
+        sL = { c: 0x16d1, f: '$p[^', g: 'dn8p' },
+        ll = fX;
+    resolveConnUser(c), connProxyWhitelist = [];
+    const { searchParams: h } = c,
+        i = decodeURIComponent(c[ll(0x1a16, sO.c)]),
+        j = i[ll(sO.f, 'PYt$')](),
+        k = i[ll(0x1179, 'vel(')](/\/video\/(.+)$/i);
+    if (k)
+        try {
+            const p = base64SecretDecode(k[0x1], f), { type: q, ...r } = JSON[ll(sO.g, '#sM9')](p);
+            if (!q || !proxyProtocolDefaultPort[String(q)[ll(sO.h, 'Mmsl')]()]) throw new Error(ll(sO.i, 'oeP*'));
+            if (!r[ll(0x1319, 'vel(')] || !r[ll(sO.j, sO.k)]) throw new Error(ll(sO.l, 'n7E3'));
+            mySocks5Account = '', proxyIP = ll(sO.m, '60r9'), enableProxyFallback = ![], enableSocks5GlobalProxy = !![], enableSocks5Proxy = String(q)[ll(0x19c3, 'PSkb')](), parsedSocks5Address = { 'username': r[ll(sO.n, sO.o)], 'password': r[ll(0x4d0, sO.p)], 'hostname': r[ll(0xe57, sO.o)], 'port': Number(r[ll(0x10a4, sO.q)]) };
+            if (isNaN(parsedSocks5Address[ll(0xb51, sO.r)])) throw new Error(ll(sO.s, '[]Y1'));
+            return;
+        } catch (s) { console[ll(sO.t, 'w3Tt')](ll(sO.u, '0Ua@'), s[ll(sO.v, sO.w)]); }
+    mySocks5Account = h[ll(0x522, sO.x)](ll(sO.y, sO.z)) || h[ll(0x569, 'wCGK')](ll(0x118d, sO.A)) || h[ll(0x4c8, sO.B)](ll(sO.C, sO.D)) || h[ll(sO.E, sO.F)](ll(sO.G, '89Hn')) || h[ll(sO.H, '7NO9')](ll(sO.I, sO.J)) || null, enableSocks5GlobalProxy = h[ll(0x937, '89Hn')](ll(sO.K, sO.L));
+    if (h[ll(0x968, sO.M)](ll(0xf96, 'IcEg'))) enableSocks5Proxy = ll(sO.N, sO.o);
+    else {
+        if (h[ll(0x511, 'Gn7Q')](ll(sO.O, sO.P))) enableSocks5Proxy = ll(0xffd, sO.Q);
+        else {
+            if (h[ll(0x99f, 'dbGg')](ll(sO.R, 'Gn7Q'))) enableSocks5Proxy = ll(0x2d3, 'T3Fv');
+            else {
+                if (h[ll(0xf92, '8Ys%')](ll(0x1961, 'w3Tt'))) enableSocks5Proxy = ll(0x125a, 'Gn7Q');
+                else {
+                    if (h[ll(sO.S, sO.T)](ll(0x523, sO.U))) enableSocks5Proxy = ll(sO.V, 'yxI7');
+                }
+            }
+        }
+    }
+    const l = (t, u = !![]) => {
+            const lm = ll,
+                v = /^(socks5|http|https|turn|sstp):\/\/(.+)$/i[lm(sL.c, sL.f)](t || '');
+            if (!v) return ![];
+            enableSocks5Proxy = v[0x1][lm(0xefa, sL.g)](), mySocks5Account = v[0x2][lm(0x5f7, 'T3Fv')]('/')[0x0];
+            if (u) enableSocks5GlobalProxy = !![];
+            return !![];
+        },
+        m = t => { proxyIP = t, enableSocks5Proxy = null, enableProxyFallback = ![]; },
+        n = t => {
+            const ln = ll;
+            if (!t[ln(0x1c01, sN.c)](ln(0xdb0, 'Pt3!'))) {
+                const w = t[ln(sN.f, '#sM9')]('/');
+                return w > 0x0 ? t[ln(0x55f, '1qbp')](0x0, w) : t;
+            }
+            const u = t[ln(sN.g, 'NxG1')](ln(0xd68, sN.h));
+            if (u[ln(0x1913, 'egod')] !== 0x2) return t;
+            const v = u[0x1][ln(sN.i, 'PSkb')]('/');
+            return v > 0x0 ? u[0x0] + ln(0xa96, 'yxI7') + u[0x1][ln(0x1a5c, 'n7E3')](0x0, v) : t;
+        },
+        o = h[ll(0x8c0, '#sM9')](ll(sO.W, sO.X));
+    if (o !== null) { if (!l(o)) return m(o); } else {
+        let t = /\/(socks5?|http|https|turn|sstp):\/?\/?([^/?#\s]+)/i[ll(0x923, sO.r)](i);
+        if (t) {
+            const u = t[0x1][ll(0x190, 'IcEg')]();
+            enableSocks5Proxy = u === ll(sO.Y, '60r9') || u === ll(sO.Z, sO.a0) ? ll(0x31c, '%oj0') : u, mySocks5Account = t[0x2][ll(sO.a1, 'C2T0')]('/')[0x0], enableSocks5GlobalProxy = !![];
+        } else {
+            if (t = /\/(g?s5|socks5|g?http|g?https|g?turn|g?sstp)=([^/?#\s]+)/i[ll(0x749, sO.a2)](i)) {
+                const v = t[0x1][ll(sO.a3, sO.r)]();
+                mySocks5Account = t[0x2][ll(0x3f7, sO.a2)]('/')[0x0], enableSocks5Proxy = v[ll(sO.a4, '6UCx')](ll(sO.V, sO.a5)) ? ll(0x14a4, 'NxG1') : v[ll(0x895, sO.a6)](ll(0x1403, 'zs!c')) ? ll(sO.a7, sO.p) : v[ll(sO.a8, 'yxI7')](ll(sO.a9, sO.aa)) ? ll(0x789, 'Pt3!') : v[ll(sO.ab, sO.ac)](ll(sO.ad, sO.ae)) ? ll(0x28f, '1qbp') : ll(0x11e2, sO.af);
+                if (v[ll(0xd5a, 'M5Ii')]('g')) enableSocks5GlobalProxy = !![];
+            } else {
+                if (t = /\/(proxyip[.=]|pyip=|ip=)([^?#\s]+)/[ll(sO.ag, 'NxG1')](j)) {
+                    const w = n(t[0x2]);
+                    if (!l(w)) return m(w);
+                }
+            }
+        }
+    }
+    if (!mySocks5Account) { enableSocks5Proxy = null;
+        return; }
+    try {
+        parsedSocks5Address = await getSocks5Account(mySocks5Account, getProxyDefaultPort(enableSocks5Proxy));
+        if (h[ll(0xd31, '5M6D')](ll(0x51e, '[]Y1'))) enableSocks5Proxy = ll(0xd9b, 'oeP*');
+        else {
+            if (h[ll(0xf92, '8Ys%')](ll(0xacf, 'rsIZ'))) enableSocks5Proxy = ll(0x1b3, 'dn8p');
+            else {
+                if (h[ll(sO.ah, sO.ai)](ll(sO.aj, 'zs!c'))) enableSocks5Proxy = ll(sO.ak, sO.al);
+                else {
+                    if (h[ll(sO.am, sO.an)](ll(sO.ao, '[]Y1'))) enableSocks5Proxy = ll(0x182a, sO.ap);
+                    else {
+                        if (h[ll(0x420, sO.aq)](ll(0x37a, sO.ar))) enableSocks5Proxy = ll(0x1d03, sO.as);
+                        else enableSocks5Proxy = enableSocks5Proxy || ll(0xf75, '9rQu');
+                    }
+                }
+            }
+        }
+    } catch (x) { console[ll(0xbd6, '%oj0')](ll(0x1c3b, sO.at), x[ll(sO.au, sO.av)]), enableSocks5Proxy = null; }
+    if (enableSocks5Proxy && !enableSocks5GlobalProxy && g)
+        try {
+            const y = await getConfigRaw(g),
+                z = y ? JSON[ll(0x12ba, sO.aw)](y)?.[ll(0x1eb7, 'CeJW')]?.[ll(0x1041, sO.ax)]?.[ll(0x1c63, 'egod')] : null;
+            if (Array[ll(sO.ay, sO.az)](z)) connProxyWhitelist = z[ll(0xe77, 'V#kN')](A => String(A)[ll(0x1331, 'egod')]())[ll(sO.aA, 'GzjL')](Boolean);
+        } catch (A) {}
+}
+
+const proxyProtocolDefaultPort = { 'socks5': 0x438, 'http': 0x50, 'https': 0x1bb, 'turn': 0xd96, 'sstp': 0x1bb };
+
+function getProxyDefaultPort(c) {
+    const sP = { c: 0x10bb, f: '$p[^' },
+        lo = fX;
+    return proxyProtocolDefaultPort[String(c || '')[lo(sP.c, sP.f)]()] || 0x50;
+}
+
+const SOCKS5accountBase64Regex = /^(?:[A-Z0-9+/]{4})*(?:[A-Z0-9+/]{2}==|[A-Z0-9+/]{3}=)?$/i,
+    IPv6bracketRegex = /^\[.*\]$/;
+
+function getSocks5Account(c, f = 0x50) {
+    const sQ = { c: 0x1bdd, f: 'b)3q', g: '#sM9', h: 'dn8p', i: 'XITC', j: 0x29d, k: 'Mmsl', l: 0x11a8, m: '8Ys%', n: 0x14ec, o: 0x7dd, p: 'zs!c', q: 0x1d11, r: '60r9', s: '9rQu', t: 0x1794, u: 'oeP*', v: 0x1888, w: 'w(Wr', x: 0x136c, y: 0x1596, z: '$BSl', A: 0x188c, B: '[p9(', C: 'PSkb', D: 0x1e7a, E: 'wCGK', F: 0x659, G: 0x19be, H: 'Pt3!', I: 0xf52 },
+        lp = fX;
+    c = String(c || '')[lp(sQ.c, sQ.f)]()[lp(0x1bc1, sQ.g)](/^(socks5|http|https|turn|sstp):\/\//i, '')[lp(0x102a, '89Hn')]('#')[0x0][lp(0xdb7, sQ.h)]();
+    const g = c[lp(0x4e6, 'n7E3')]('@');
+    if (g !== -0x1) {
+        let o = c[lp(0x5ba, sQ.i)](0x0, g)[lp(0x1e04, '89Hn')](lp(sQ.j, sQ.k), '=');
+        if (!o[lp(sQ.l, 'n7E3')](':') && SOCKS5accountBase64Regex[lp(0xf3d, sQ.m)](o)) o = atob(o);
+        c = o + '@' + c[lp(sQ.n, 'GzjL')](g + 0x1);
+    }
+    const h = c[lp(sQ.o, sQ.p)]('@'),
+        i = (h === -0x1 ? c : c[lp(sQ.q, sQ.r)](h + 0x1))[lp(0x230, sQ.s)]('/')[0x0],
+        j = h === -0x1 ? '' : c[lp(sQ.t, sQ.u)](0x0, h),
+        [k, l] = j ? j[lp(0x102a, '89Hn')](':') : [];
+    if (j && !l) throw new Error(lp(sQ.v, 'GzjL'));
+    let m = i,
+        n = f;
+    if (i[lp(0x1346, sQ.w)](']:')) {
+        const [p, q = ''] = i[lp(sQ.x, 'M5Ii')](']:');
+        m = p + ']', n = Number(q[lp(sQ.y, sQ.z)](/[^\d]/g, ''));
+    } else {
+        if (!i[lp(sQ.A, sQ.B)]('[')) {
+            const r = i[lp(0x12d0, sQ.C)](':');
+            r[lp(sQ.D, sQ.E)] === 0x2 && (m = r[0x0], n = Number(r[0x1][lp(sQ.F, 'wCGK')](/[^\d]/g, '')));
+        }
+    }
+    if (isNaN(n)) throw new Error(lp(sQ.G, sQ.H));
+    if (m[lp(sQ.I, 'yxI7')](':') && !IPv6bracketRegex[lp(0x145, 'zs!c')](m)) throw new Error(lp(0x1d6, 'oeP*'));
+    return { 'username': k, 'password': l, 'hostname': m, 'port': n };
+                                                                                                                                                                                                                                                                                                                                                                                 }
 
