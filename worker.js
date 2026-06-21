@@ -3842,3 +3842,66 @@ if (E === g4(0x16fe, 'wCGK'))
         return en[g4(mS.wR, '8Ys%')][g4(0x1970, 'vel(')](g4(mS.wS, mS.wT), g4(mS.wU, mS.wV)), en;
     } else {
         if (E === g4(0x1123, '[p9(')) {
+            const eo = await MD5MD5(D + B),
+    ep = ['1', g4(0xfd9, 'CeJW')][g4(mS.wW, 'Pt3!')](g[g4(mS.wX, 'PSkb')]) && p[g4(0x154b, 'dn8p')][g4(mS.wY, mS.wZ)](g4(mS.eF, '6UCx')) === g4(0x3b9, mS.ol) && p[g4(0x1639, mS.f9)][g4(0x119, mS.fT)](g4(0x1d08, mS.pI)) === g4(mS.x0, mS.sN) && q[g4(mS.x1, mS.x2)]()[g4(mS.x3, mS.x4)](g4(0x9ee, mS.mY)),
+    eq = p[g4(0x1ad, mS.x5)][g4(0x72f, mS.x6)](g4(0xf9, mS.x7)),
+    er = p[g4(0x1170, 'w(Wr')][g4(0x1320, 'NxG1')](g4(0x18ee, '$BSl')),
+    es = p[g4(mS.x8, 'Gn7Q')][g4(0x99f, 'dbGg')](g4(mS.x9, mS.xa));
+let et = '';
+const eu = savedUsersAuth && Date[g4(0x194d, '[]Y1')]() - savedUsersAuthAt < 0x1d4c0 && Array[g4(0x18a9, mS.xb)](savedUsersAuth[g4(mS.xc, mS.xd)]) ? savedUsersAuth[g4(0x941, '#sM9')] : networkSettings && Array[g4(0x1be1, '60r9')](networkSettings[g4(0x1389, mS.xe)]) ? networkSettings[g4(mS.xf, '$p[^')] : null;
+if (eu && (eq || er && es)) {
+    const eC = eu[g4(mS.xg, 'ZgMu')](eE => eE && eE[g4(0xe25, 'ZgMu')] && es === eE[g4(0x1b7e, 'zs!c')]),
+        eD = eq ? eu[g4(mS.xh, 'd%lH')](eE => eE && eE[g4(0x788, '[p9(')] === eq) : eC[g4(mS.xi, mS.eh)] === 0x1 ? eC[0x0] : eC[g4(mS.xj, '%oj0')](eE => String(eE[g4(0x1615, 'b)3q')] || '')[g4(0x867, 'oeP*')]() === String(er)[g4(0x5c6, 'PYt$')]()) || eC[0x0];
+    if (eD) {
+        if (eD[g4(0xaf9, 'C2T0')] === ![]) return new Response(g4(mS.xk, 'mRB^'), { 'status': 0x193 });
+        if (eD[g4(0xf48, mS.xl)]) {
+            const eE = Date[g4(mS.xm, mS.xn)](eD[g4(mS.xo, 'PYt$')]);
+            if (!isNaN(eE) && Date[g4(0xaf6, '5M6D')]() > eE) return new Response(g4(0x164e, mS.pV), { 'status': 0x193 });
+        }
+        if (eD[g4(0xc74, mS.w1)])
+            try {
+                const eF = await usageGet(g, g4(0x14ff, mS.fO) + eD['id']);
+                if (eF && eF[g4(mS.xp, '#sM9')] >= eD[g4(mS.xq, mS.no)]) return new Response(g4(0x1243, mS.wQ), { 'status': 0x193 });
+            } catch (eG) {}
+        et = eD[g4(mS.xr, 'oeP*')];
+    }
+}
+const ev = eq === eo || et !== '',
+    ew = Math[g4(mS.xs, 'T3Fv')](Date[g4(mS.xt, 'NxG1')]() / 0x5265c00),
+    ey = base64SecretEncode(eo, B),
+    [ez, eA] = await Promise[g4(mS.xu, '%oj0')]([MD5MD5(ey + ew), MD5MD5(ey + (ew - 0x1))]),
+    eB = eq === ez || eq === eA;
+if (ev || eB || ep) {
+    config_JSON = await readConfigJson(g, D, B, q);
+    if (ep) h[g4(0x1a8f, '7NO9')](requestLogRecord(g, f, F, g4(0xbf0, mS.xv), config_JSON, ![]));
+    else h[g4(0x1bd8, mS.oB)](requestLogRecord(g, f, F, g4(0xd33, mS.xw), config_JSON));
+    h[g4(0x1102, mS.xx)](flushUsage(g));
+    const eH = q[g4(mS.xy, mS.xz)](),
+        eI = { 'content-type': g4(0x1121, mS.f), 'Profile-Update-Interval': config_JSON[g4(mS.xA, 'mRB^')][g4(0x4e4, 'b)3q')], 'Profile-web-page-url': p[g4(0xccb, 'yxI7')] + '//' + p[g4(0x1d88, mS.m)] + g4(mS.xB, mS.xC), 'Cache-Control': g4(mS.e1, 'XITC') };
+    try {
+        const eN = et;
+        let eO = 0x0,
+            eP = 0x0,
+            eQ = 0x3e80000000000,
+            eR = 0xf4849500;
+        const eS = eN && networkSettings && Array[g4(mS.xD, '[]Y1')](networkSettings[g4(0x941, '#sM9')]) ? networkSettings[g4(0x1628, 'PYt$')][g4(0x1ce8, 'PYt$')](eT => eT && eT[g4(0x13d, 'M5Ii')] === eN) : null;
+        if (eS) {
+            const eT = await usageGet(g, g4(0x186b, mS.u8) + eS['id']) || {};
+            eO = eT['up'] || 0x0, eP = eT[g4(mS.xE, '[p9(')] || 0x0;
+            if (eS[g4(0x1151, mS.bc)]) eQ = eS[g4(0x17e5, '8Ys%')];
+            if (eS[g4(mS.xF, '7NO9')]) {
+                const eU = Date[g4(mS.xG, mS.xH)](eS[g4(mS.xI, 'dZbH')]);
+                if (!isNaN(eU)) eR = Math[g4(mS.xJ, mS.xK)](eU / 0x3e8);
+            }
+        } else {
+            const eV = await usageGet(g, g4(mS.xL, mS.xM) + getMonthKey(new Date())) || { 'up': 0x0, 'down': 0x0 };
+            eO = eV['up'] || 0x0, eP = eV[g4(0x16e7, mS.u)] || 0x0;
+        }
+        eI[g4(0x393, 'Gn7Q')] = g4(0xf5f, '#sM9') + eO + g4(mS.xN, 'n7E3') + eP + g4(mS.xO, mS.ru) + eQ + g4(mS.xP, mS.vL) + eR;
+    } catch (eW) {}
+    const eJ = p[g4(mS.xQ, '*lLT')][g4(0x9ab, '2#Qk')](g4(mS.xR, 'dn8p')) || p[g4(0x976, mS.xS)][g4(mS.xT, mS.c8)](g4(mS.xU, mS.vU)) || f[g4(0xd88, mS.f)][g4(0x8c0, mS.xV)](g4(0x137c, 'V#kN')) || f[g4(0x1a34, 'NMJQ')][g4(0x5cd, 'b)3q')](g4(0x1194, '6UCx')) || eH[g4(0x895, mS.xW)](g4(0x1939, mS.oK)) || eH[g4(mS.xX, 'GzjL')](g4(0x6c3, 'ZgMu')[g4(0x163b, mS.xY)]()) || ep,
+        eK = eJ ? g4(0xd74, mS.uQ) : p[g4(0x8a8, mS.fb)][g4(0x115f, mS.fu)](g4(0x199, mS.di)) ? p[g4(mS.xZ, mS.y0)][g4(mS.y1, 'zs!c')](g4(0x2a1, mS.y2)) : p[g4(0x1e0a, mS.aq)][g4(mS.y3, mS.fB)](g4(mS.y4, 'M5Ii')) || eH[g4(mS.y5, 'd%lH')](g4(mS.y6, 'GzjL')) || eH[g4(0x19d5, mS.y7)](g4(mS.y8, mS.y9)) || eH[g4(mS.ya, mS.yb)](g4(mS.yc, mS.yd)) ? g4(0x13c4, 'dn8p') : p[g4(0x718, 'Gn7Q')][g4(0x14db, mS.ye)]('sb') || p[g4(mS.xZ, mS.fB)][g4(mS.yf, '8Ys%')](g4(0x24e, '2#Qk')) || eH[g4(0xf52, mS.yg)](g4(mS.yh, 'XITC')) || eH[g4(mS.yi, 'oeP*')](g4(mS.yj, mS.yk)) ? g4(mS.yl, 'dbGg') : p[g4(0x1942, mS.ym)][g4(0x714, 'Gn7Q')](g4(0x1884, mS.dA)) || eH[g4(mS.yn, '89Hn')](g4(mS.yo, '7NO9')) ? g4(mS.yp, 'n7E3') : p[g4(0x1be7, mS.yq)][g4(mS.yr, '$BSl')](g4(0x40b, '89Hn')) || eH[g4(mS.ys, 'PYt$')](g4(mS.yt, mS.yu)) ? g4(mS.yv, 'Pt3!') : p[g4(0x976, mS.ah)][g4(mS.yw, mS.ak)](g4(mS.yx, mS.yy)) || eH[g4(mS.yz, 'd%lH')](g4(0x1b83, 'ZgMu')) ? g4(0x10e4, 'NxG1') : g4(0xe80, mS.yb);
+    if (!eH[g4(mS.yA, '[p9(')](g4(0x629, mS.yB))) eI[g4(mS.yC, 'dn8p')] = g4(mS.yD, 'w(Wr') + encodeURIComponent(config_JSON[g4(0x352, mS.q8)][g4(0x18b9, 'dZbH')]);
+    const eL = (p[g4(0x1639, 'egod')][g4(mS.yE, '6UCx')](g4(0x1841, '#sM9')) || eH[g4(0xe1f, mS.ua)](g4(mS.yF, 'Pt3!'))) && config_JSON[g4(mS.yG, mS.sA)] !== 'ss' ? g4(mS.yH, '6UCx') + g4(0x17f6, mS.yI) : config_JSON[g4(0x717, 'dn8p')];
+    let eM = '';
+    if (eK === g4(mS.yJ, mS.yK)) {
