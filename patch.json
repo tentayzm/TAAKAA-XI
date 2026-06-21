@@ -1,0 +1,61 @@
+{
+  "version": "2.0.0",
+  "name": "TaaKaa-XI",
+  "colors": {
+    "primary": "#FF6B00",
+    "secondary": "#1A1A1A",
+    "accent": "#FF8C00",
+    "bg": "#0D0D0D",
+    "text": "#FFFFFF"
+  },
+  "replacements": [
+    { "from": "Nova-Proxy", "to": "TaaKaa-XI" },
+    { "from": "Nova", "to": "TaaKaa" },
+    { "from": "novaproxy", "to": "taakaaxi" },
+    { "from": "NOVA", "to": "TAAKAA" },
+    { "from": "novaWorker", "to": "taakaaWorker" },
+    { "from": "#00C853", "to": "#FF6B00" },
+    { "from": "#4CAF50", "to": "#FF6B00" },
+    { "from": "#2196F3", "to": "#FF8C00" },
+    { "from": "#1976D2", "to": "#E55A00" },
+    { "from": "v1.0.0", "to": "v2.0.0" },
+    { "from": "V1.0.0", "to": "V2.0.0" },
+    { "from": "Nova-Sub", "to": "TaaKaa-XI-Sub" },
+    { "from": "This service is not free", "to": "This service is not free - TaaKaa XI" },
+    { "from": "nova_config", "to": "taakaa_config" },
+    { "from": "nova_users", "to": "taakaa_users" }
+  ],
+  "ignore": {
+    "colors": ["#FF6B00", "#1A1A1A", "#FF8C00", "#0D0D0D"],
+    "names": ["TaaKaa", "TaaKaa-XI"]
+  },
+  "menu": {
+    "buttons": [
+      { "text": "🇮🇷 ایران", "url": "/location/ir" },
+      { "text": "🇺🇸 آمریکا", "url": "/location/us" },
+      { "text": "🇩🇪 آلمان", "url": "/location/de" },
+      { "text": "🇳🇱 هلند", "url": "/location/nl" },
+      { "text": "🇯🇵 ژاپن", "url": "/location/jp" },
+      { "text": "🇸🇬 سنگاپور", "url": "/location/sg" },
+      { "text": "👑 Owners", "url": "/owners" },
+      { "text": "🧩 Fragment", "url": "/fragment-info" }
+    ]
+  },
+  "flags": {
+    "IR": "🇮🇷",
+    "US": "🇺🇸",
+    "DE": "🇩🇪",
+    "NL": "🇳🇱",
+    "JP": "🇯🇵",
+    "SG": "🇸🇬",
+    "GB": "🇬🇧",
+    "FR": "🇫🇷",
+    "CA": "🇨🇦",
+    "AU": "🇦🇺",
+    "BR": "🇧🇷",
+    "IN": "🇮🇳",
+    "KR": "🇰🇷",
+    "RU": "🇷🇺",
+    "CN": "🇨🇳"
+  }
+}
