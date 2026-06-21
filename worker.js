@@ -4020,3 +4020,574 @@ if (ev || eB || ep) {
         } else return new Response(g4(0x1bcc, mS.bO) + fu[g4(0x1c4b, 'Mmsl')], { 'status': fu[g4(mS.Ap, mS.sn)] });
     } catch (fv) { return new Response(g4(mS.Aq, '$p[^') + fv[g4(0x1068, 'mRB^')], { 'status': 0x193 }); }
     }
+                        if (!eH[g4(0x166c, '$BSl')](g4(mS.Ar, mS.ce)) && ev) {
+                            let fw = config_JSON[g4(mS.As, mS.ad)];
+                            try {
+                                const fA = JSON[g4(0x8fa, mS.At)](await g['KV'][g4(0x511, mS.Au)](g4(mS.Av, mS.Aw)) || g4(mS.Ax, '$p[^'));
+                                if (fA && Array[g4(0x14a0, '89Hn')](fA[g4(mS.Ay, mS.vZ)])) {
+                                    const fB = new Set(fA[g4(0x1d3f, 'yxI7')][g4(mS.Az, 'PYt$')](fD => fD && fD['ok'] === ![])[g4(0x1098, 'dn8p')](fD => fD[g4(0x2f8, '60r9')])),
+                                        fC = config_JSON[g4(mS.AA, mS.xl)][g4(0x2c5, 'CeJW')](fD => !fB[g4(0x14c2, 'n7E3')](fD));
+                                    if (fC[g4(mS.AB, 'w3Tt')]) fw = fC;
+                                }
+                            } catch (fD) {}
+                            const fx = [...fw][g4(mS.AC, 'M5Ii')](() => Math[g4(0xeaf, 'mRB^')]() - 0.5);
+                            let fy = 0x0,
+                                fz = null;
+                            eM = eM[g4(mS.AD, 'Mmsl')](/00000000-0000-4000-8000-000000000000/g, config_JSON[g4(0x1112, mS.AE)])[g4(0x5da, mS.m)](/MDAwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAw/g, btoa(config_JSON[g4(mS.AF, mS.xn)]))[g4(mS.AG, mS.fi)](/example\.com/g, () => {
+                                const g7 = g4;
+                                if (fy % 0x2 === 0x0) {
+                                    const fE = fx[Math[g7(mP.c, 'jODS')](fy / 0x2) % fx[g7(0x17b8, 'dZbH')]];
+                                    fz = replaceStarWithRandom(fE);
+                                }
+                                return fy++, fz;
+                            });
+                        }
+                        if (eK === g4(0x1171, '9rQu') && (!eH[g4(mS.AH, mS.z0)](g4(mS.AI, mS.pB)) || p[g4(0x15d2, '9rQu')][g4(mS.AJ, mS.yQ)](g4(0x8c4, '*lLT')) || p[g4(0x15d2, '9rQu')][g4(0x2bd, mS.AK)](g4(mS.AL, 'jODS')))) eM = btoa(eM);
+                        if (eK === g4(mS.AM, mS.Ao)) eM = await SingboxsubConfigFileHotpatch(eM, config_JSON, networkSettings), eI[g4(0x6d8, mS.AN)] = g4(mS.AO, mS.AP);
+                        else eK === g4(0x14a, mS.AQ) && (eM = ClashsubConfigFileHotpatch(eM, config_JSON, networkSettings), eI[g4(mS.AR, '89Hn')] = g4(0x5a0, '#sM9'));
+                        return new Response(eM, { 'status': 0xc8, 'headers': eI });
+                    }
+                } else {
+                    if (E === g4(mS.AS, mS.tX)) {
+                        const fE = f[g4(mS.AT, '[]Y1')][g4(0x18ab, '6UCx')](g4(mS.AU, mS.AV)) || '',
+                            fF = fE[g4(0x1c80, mS.t8)](';')[g4(mS.AW, mS.p6)](fG => fG[g4(0x434, 'zs!c')]()[g4(0x134a, 'ZgMu')](g4(0x1e3c, 'V#kN')))?.[g4(0x1b72, mS.AX)]('=')[0x1];
+                        if (fF && await verifySessionToken(fF, q, z, x)) return fetch(new Request(g4(0x289, mS.uT), { 'headers': { 'Referer': g4(0x135a, mS.AY) } }));
+                    } else {
+                        if (E === g4(mS.AZ, 'NMJQ')) return new Response(g4(0xab1, 'yxI7'), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.B0, mS.B1) } });
+                    }
+                }
+            }
+        }
+    }
+                                        }
+export default taakaaXiWorker;
+
+async function handleXhttpRequest(c, f, g, h) {
+    const n3 = { c: 0x432, f: 0x1922, g: '7NO9', h: 0x1877, i: 'oeP*', j: 0x1d52, k: 0x1742, l: '6UCx', m: 0x15b4, n: '6UCx', o: '1qbp', p: 0x19f, q: 0x1ade, r: 'zs!c', s: 0x1dde, t: 'dbGg', u: 'IcEg', v: 0xec, w: 'ZgMu', x: 'V#kN', y: 0x4fd, z: '8Ys%', A: 0xf6d },
+        n2 = { c: 0x97a, f: 'Gn7Q', g: 0x1262, h: 'd%lH', i: 0x54f, j: 'n7E3', k: 0x1c8f, l: 0x6a3, m: 'IcEg', n: 0x1e20, o: '5M6D', p: '#sM9', q: 0x3aa, r: 0x628, s: 0xf43, t: '0Ua@', u: 0x6bf, v: 'Gn7Q', w: 0x732, x: 0x77a, y: '9rQu', z: 0xe0c, A: '[p9(', B: '*lLT', C: 'ZgMu', D: 0x17a1, E: 'V#kN', F: 0x37c, G: 'GzjL', H: 0x686, I: 0x97c, J: 0x572, K: '$p[^', L: 0x177c, M: 0x1b3e, N: 0x19ac, O: '7NO9' },
+        n0 = { c: 0x669, f: 'd%lH' },
+        mX = { c: 0x124b, f: 'IcEg', g: 0x1e6b, h: '*lLT', i: '6UCx', j: 0x4fa, k: 0xcc9 },
+        mW = { c: 0x1a36, f: '89Hn', g: 0x11e5, h: 'GzjL' },
+        mV = { c: '%oj0' },
+        gb = fX;
+    if (connRejectReason) return new Response(gb(n3.c, 'n7E3') + connRejectReason + ')', { 'status': 0x193 });
+    if (!c[gb(n3.f, n3.g)]) return new Response(gb(n3.h, n3.i), { 'status': 0x190 });
+    const i = c[gb(n3.j, 'dn8p')][gb(n3.k, n3.l)](),
+        j = await readXhttpFirstPacket(i, f);
+    if (!j) {
+        try { i[gb(n3.m, n3.n)](); } catch (s) {}
+        return new Response(gb(0x1d58, n3.o), { 'status': 0x190 });
+    }
+    if (isBlockedSite(j[gb(n3.p, 'Pt3!')])) {
+        try { i[gb(n3.q, 'NMJQ')](); } catch (t) {}
+        return networkSettings && networkSettings[gb(0x89b, 'PYt$')] && isAdultDomain(j[gb(0xa4e, n3.r)]) ? taakaaXiBlockPage(c) : new Response(gb(n3.s, n3.t), { 'status': 0x193 });
+    }
+    if (j[gb(0x18c1, 'dbGg')] && j[gb(0x971, n3.u)] !== gb(n3.v, '*lLT') && j[gb(0x10e3, n3.w)] !== 0x35) {
+        try { i[gb(0x7be, n3.x)](); } catch (u) {}
+        return new Response(gb(n3.y, '[p9('), { 'status': 0x190 });
+    }
+    const k = { 'socket': null, 'connectingPromise': null, 'retryConnect': null };
+    let l = null,
+        m = null;
+    const n = { 'up': 0x0, 'down': 0x0 },
+        o = new Headers({ 'Content-Type': gb(0x1022, n3.z), 'X-Accel-Buffering': 'no', 'Cache-Control': gb(n3.A, 'XITC') }),
+        p = () => {
+            const gc = gb;
+            if (m) {
+                try { m[gc(0x1b3e, mV.c)](); } catch (v) {}
+                m = null;
+            }
+            l = null;
+        },
+        q = () => {
+            const gd = gb,
+                v = k[gd(mW.c, mW.f)];
+            if (!v) return null;
+            return v !== l && (p(), l = v, m = v[gd(mW.g, 'IcEg')][gd(0xd03, mW.h)]()), m;
+        };
+    let r = null;
+    return new Response(new ReadableStream({
+        async 'start'(v) {
+            const n1 = { c: 0x12de, f: 'V#kN' },
+                mZ = { c: 0x1d4b, f: 'wCGK', g: 0xdd2, h: '89Hn' },
+                mY = { c: 0xf79 },
+                ge = gb;
+            let w = ![],
+                x = j[ge(n2.c, n2.f)];
+            const y = { 'cache': new Uint8Array(0x0) },
+                z = { 'readyState': WebSocket[ge(n2.g, 'dZbH')], 'send'(C) {
+                        const gf = ge;
+                        if (w) return;
+                        try {
+                            const D = C instanceof Uint8Array ? C : C instanceof ArrayBuffer ? new Uint8Array(C) : ArrayBuffer[gf(mX.c, mX.f)](C) ? new Uint8Array(C[gf(mX.g, '[p9(')], C[gf(0x1748, 'CeJW')], C[gf(0xf42, mX.h)]) : new Uint8Array(C);
+                            v[gf(0xc1b, mX.i)](D), n[gf(0x1609, '#sM9')] += D[gf(mX.j, 'dbGg')];
+                        } catch (E) { w = !![], this[gf(mX.k, '1qbp')] = WebSocket[gf(0x1322, '#sM9')]; }
+                    }, 'close'() {
+                        const gg = ge;
+                        if (w) return;
+                        w = !![], this[gg(mY.c, 'oeP*')] = WebSocket[gg(0x1322, '#sM9')];
+                        try { v[gg(0x17d4, 'd%lH')](); } catch (C) {}
+                    } },
+                A = r = createUpstreamWriteQueue({ 'getWriter': q, 'releaseWriter': p, 'retryConnection': async() => {
+                        const gh = ge;
+                        if (typeof k[gh(mZ.c, mZ.f)] !== gh(mZ.g, mZ.h)) throw new Error(gh(0x19ca, 'T3Fv'));
+                        await k[gh(0x660, 'IcEg')]();
+                    }, 'closeConnection': () => {
+                        const gi = ge;
+                        try { k[gi(n0.c, n0.f)]?.[gi(0x6c4, 'PYt$')](); } catch (C) {}
+                        closeSocketQuietly(z);
+                    }, 'name': ge(0x16d8, n2.h) }),
+                B = async(C, D = !![]) => { const gj = ge; return A[gj(n1.c, n1.f)](C, D); };
+            try {
+                if (j[ge(0x1724, 'mRB^')]) {
+                    if (j[ge(n2.i, n2.j)]?.[ge(0x1786, 'Gn7Q')]) {
+                        if (j[ge(n2.k, 'egod')] === ge(0x408, 'dZbH')) await forwardTrojanUdpData(j[ge(n2.l, n2.m)], z, y, c);
+                        else await forwardataudp(j[ge(n2.n, n2.o)], z, x, c);
+                        x = null;
+                    }
+                } else {
+                    if (j[ge(0xbd9, n2.p)]?.[ge(n2.q, n2.j)]) n['up'] += j[ge(n2.r, 'NxG1')][ge(n2.s, n2.t)];
+                    await forwardataTCP(j[ge(0x1284, 'jODS')], j[ge(n2.u, n2.v)], j[ge(n2.w, 'egod')], z, j[ge(n2.x, '2#Qk')], k, f, c, n);
+                }
+                while (!![]) {
+                    const { done: C, value: D } = await i[ge(0x1c43, n2.y)]();
+                    if (C) break;
+                    if (!D || D[ge(0x9b2, 'T3Fv')] === 0x0) continue;
+                    if (D[ge(n2.z, n2.A)]) n['up'] += D[ge(0xf42, n2.B)];
+                    if (j[ge(0x1be0, n2.C)]) {
+                        if (j[ge(n2.D, n2.E)] === ge(0xae1, '%oj0')) await forwardTrojanUdpData(D, z, y, c);
+                        else await forwardataudp(D, z, x, c);
+                        x = null;
+                    } else {
+                        if (!await B(D)) throw new Error(ge(n2.F, n2.G));
+                    }
+                }
+                if (!j[ge(0x1a2b, 'w3Tt')]) {
+                    await A[ge(0x1e90, 'NxG1')]();
+                    const E = q();
+                    if (E)
+                        try { await E[ge(n2.H, 'NMJQ')](); } catch (F) {}
+                }
+            } catch (G) {
+                log(ge(n2.I, n2.m) + (G?.[ge(n2.J, n2.K)] || G)), closeSocketQuietly(z);
+            } finally {
+                A[ge(n2.L, n2.B)](), p();
+                try { i[ge(n2.M, '%oj0')](); } catch (H) {}
+                recordUsage(g, n['up'], n[ge(n2.N, n2.O)], h);
+            }
+        }
+    }), { 'status': 0xc8, 'headers': o });
+}
+
+function validDataLength(c) {
+    const n4 = { c: 'ZgMu', f: 0xeeb, g: 'T3Fv', h: '60r9' },
+        gk = fX;
+    if (!c) return 0x0;
+    if (typeof c[gk(0xea8, n4.c)] === gk(n4.f, '0Ua@')) return c[gk(0x9b2, n4.g)];
+    if (typeof c[gk(0x111e, n4.h)] === gk(0x1ab8, n4.g)) return c[gk(0x1c85, '6UCx')];
+    return 0x0;
+}
+
+async function readXhttpFirstPacket(c, f) {
+    const n7 = { c: '1qbp', f: 0x981, g: 'M5Ii', h: '#sM9', i: 0x1b90, j: '$p[^', k: '60r9', l: 0x935, m: 0x12ee, n: 'Gn7Q', o: 'yxI7', p: 0x14d6, q: '2#Qk', r: 0x1d19, s: 'Pt3!', t: 0xfdb, u: '6UCx', v: 0xf3b, w: 0x3ab, x: 0xea4, y: 0x67d, z: '[p9(' },
+        n6 = { c: 0x5a6, f: 0x9b2, g: 0x12aa, h: '*lLT', i: 0xcd5, j: 0xe85, k: '%oj0', l: 0x1f0f, m: 'M5Ii', n: 0xed7, o: 0x10f, p: 'IcEg', q: '[p9(', r: 0x130c, s: 'd%lH', t: 'M5Ii', u: 'w(Wr', v: 0x635, w: 0x17ba, x: 'egod', y: 'Pt3!', z: 'vel(', A: 0x69b, B: 'C2T0' },
+        n5 = { c: 0x983, f: '60r9', g: 0x140c, h: '#sM9', i: 0x1bc7, j: 0x6fa, k: 'w(Wr', l: 0x1407, m: 0x1c64, n: 'NMJQ', o: 'w3Tt', p: 'd%lH', q: 0xd24, r: 0x495, s: '*lLT', t: 'zs!c' },
+        gn = fX,
+        g = VLESStextDecode,
+        h = o => {
+            const gl = b,
+                p = o[gl(0x107a, 'yxI7')];
+            if (p < 0x12) return { 'status': gl(n5.c, n5.f) };
+            if (!UUIDbyteMatch(o, 0x1, f)) return { 'status': gl(0x1014, '6UCx') };
+            const q = o[0x11],
+                r = 0x12 + q;
+            if (p < r + 0x1) return { 'status': gl(0x1342, 'vel(') };
+            const s = o[r];
+            if (s !== 0x1 && s !== 0x2) return { 'status': gl(0x16db, '$p[^') };
+            const t = r + 0x1;
+            if (p < t + 0x3) return { 'status': gl(0xe97, '%oj0') };
+            const u = o[t] << 0x8 | o[t + 0x1],
+                v = o[t + 0x2],
+                w = t + 0x3;
+            let x = -0x1,
+                y = '';
+            if (v === 0x1) {
+                if (p < w + 0x4) return { 'status': gl(n5.g, n5.h) };
+                y = o[w] + '.' + o[w + 0x1] + '.' + o[w + 0x2] + '.' + o[w + 0x3], x = w + 0x4;
+            } else {
+                if (v === 0x2) {
+                    if (p < w + 0x1) return { 'status': gl(n5.i, '0Ua@') };
+                    const z = o[w];
+                    if (p < w + 0x1 + z) return { 'status': gl(n5.j, n5.k) };
+                    y = g[gl(n5.l, 'mRB^')](o[gl(0x147e, 'PSkb')](w + 0x1, w + 0x1 + z)), x = w + 0x1 + z;
+                } else {
+                    if (v === 0x3) {
+                        if (p < w + 0x10) return { 'status': gl(n5.m, n5.n) };
+                        const A = [];
+                        for (let B = 0x0; B < 0x8; B++) {
+                            const C = w + B * 0x2;
+                            A[gl(0x8a9, n5.o)]((o[C] << 0x8 | o[C + 0x1])[gl(0x345, n5.p)](0x10));
+                        }
+                        y = A[gl(n5.q, 'CeJW')](':'), x = w + 0x10;
+                    } else return { 'status': gl(n5.r, n5.s) };
+                }
+            }
+            if (!y) return { 'status': gl(0x17ba, 'egod') };
+            return { 'status': 'ok', 'result': { 'protocol': 'vl' + gl(0xea, n5.t), 'hostname': y, 'port': u, 'isUDP': s === 0x2, 'rawData': o[gl(0x1b90, '$p[^')](x), 'respHeader': new Uint8Array([o[0x0], 0x0]) } };
+        },
+        i = o => {
+            const gm = b,
+                p = sha224(f),
+                q = new TextEncoder()[gm(n6.c, '89Hn')](p),
+                r = o[gm(n6.f, 'T3Fv')];
+            if (r < 0x3a) return { 'status': gm(n6.g, n6.h) };
+            if (o[0x38] !== 0xd || o[0x39] !== 0xa) return { 'status': gm(n6.i, 'yxI7') };
+            for (let A = 0x0; A < 0x38; A++) {
+                if (o[A] !== q[A]) return { 'status': gm(n6.j, n6.k) };
+            }
+            const s = 0x3a;
+            if (r < s + 0x2) return { 'status': gm(n6.l, n6.m) };
+            const t = o[s];
+            if (t !== 0x1 && t !== 0x3) return { 'status': gm(0x1aa8, 'wCGK') };
+            const u = t === 0x3,
+                v = o[s + 0x1];
+            let w = s + 0x2,
+                x = '';
+            if (v === 0x1) {
+                if (r < w + 0x4) return { 'status': gm(n6.n, 'Gn7Q') };
+                x = o[w] + '.' + o[w + 0x1] + '.' + o[w + 0x2] + '.' + o[w + 0x3], w += 0x4;
+            } else {
+                if (v === 0x3) {
+                    if (r < w + 0x1) return { 'status': gm(n6.o, n6.p) };
+                    const B = o[w];
+                    if (r < w + 0x1 + B) return { 'status': gm(0x2b6, 'oeP*') };
+                    x = g[gm(0x142f, n6.q)](o[gm(n6.r, n6.s)](w + 0x1, w + 0x1 + B)), w += 0x1 + B;
+                } else {
+                    if (v === 0x4) {
+                        if (r < w + 0x10) return { 'status': gm(0x1f0f, n6.t) };
+                        const C = [];
+                        for (let D = 0x0; D < 0x8; D++) {
+                            const E = w + D * 0x2;
+                            C[gm(0xfa7, n6.u)]((o[E] << 0x8 | o[E + 0x1])[gm(0x1966, 'dn8p')](0x10));
+                        }
+                        x = C[gm(0xb92, 'zs!c')](':'), w += 0x10;
+                    } else return { 'status': gm(n6.v, 'vel(') };
+                }
+            }
+            if (!x) return { 'status': gm(n6.w, n6.x) };
+            if (r < w + 0x4) return { 'status': gm(0x1a26, n6.y) };
+            const y = o[w] << 0x8 | o[w + 0x1];
+            if (o[w + 0x2] !== 0xd || o[w + 0x3] !== 0xa) return { 'status': gm(0x635, n6.z) };
+            const z = w + 0x4;
+            return { 'status': 'ok', 'result': { 'protocol': gm(n6.A, 'Mmsl'), 'hostname': x, 'port': y, 'isUDP': u, 'rawData': o[gm(0xd4c, n6.B)](z), 'respHeader': null } };
+        };
+    let j = new Uint8Array(0x400),
+        k = 0x0;
+    while (!![]) {
+        const { value: o, done: p } = await c[gn(0xdad, n7.c)]();
+        if (p) {
+            if (k === 0x0) return null;
+            break;
+        }
+        const q = o instanceof Uint8Array ? o : new Uint8Array(o);
+        if (k + q[gn(0xa21, 'Mmsl')] > j[gn(0x62c, 'mRB^')]) {
+            const u = new Uint8Array(Math[gn(n7.f, n7.g)](j[gn(0xea8, 'ZgMu')] * 0x2, k + q[gn(0x1bf5, '1qbp')]));
+            u[gn(0x12e4, n7.h)](j[gn(n7.i, n7.j)](0x0, k)), j = u;
+        }
+        j[gn(0xfb9, 'C2T0')](q, k), k += q[gn(0x1920, n7.k)];
+        const r = j[gn(n7.l, '5M6D')](0x0, k),
+            s = i(r);
+        if (s[gn(0x1cbc, 'dZbH')] === 'ok') return { ...s[gn(n7.m, n7.n)], 'reader': c };
+        const t = h(r);
+        if (t[gn(0x19a6, n7.o)] === 'ok') return { ...t[gn(0xcd9, 'CeJW')], 'reader': c };
+        if (s[gn(n7.p, n7.q)] === gn(n7.r, n7.s) && t[gn(0x1659, 'GzjL')] === gn(n7.t, 'dn8p')) return null;
+    }
+    const l = j[gn(0x57d, n7.u)](0x0, k),
+        m = i(l);
+    if (m[gn(n7.v, 'rsIZ')] === 'ok') return { ...m[gn(n7.w, '*lLT')], 'reader': c };
+    const n = h(l);
+    if (n[gn(n7.x, 'T3Fv')] === 'ok') return { ...n[gn(n7.y, n7.z)], 'reader': c };
+    return null;
+}
+async function handleGrpcRequest(c, f, g, h) {
+    const nk = { c: 'ZgMu', f: 'oeP*', g: 'n7E3', h: 0xdec, i: 0x5b8, j: 0x981 },
+        nj = { c: 'CeJW', f: 'NMJQ', g: 0x1ade, h: 'NMJQ' },
+        ni = { c: 0x45e, f: 'w(Wr', g: 0x808, h: 0x1ef, i: 0x712, j: '$BSl', k: 'rsIZ', l: 'mRB^', m: 0x1dec, n: 'zs!c', o: 'ZgMu', p: 0x7ba, q: 0x23b, r: 'wCGK', s: 0x14a8, t: 0x10c8, u: 0xd13, v: 'vel(', w: 0x241, x: 'Mmsl', y: 0x1bf5, z: '1qbp', A: 'jODS', B: 0x1ee8, C: 0x1241, D: 'IcEg', E: 0x1a19, F: 0x95e, G: 'n7E3', H: 0x844, I: 'd%lH', J: 0x1255, K: 'T3Fv', L: 0x1425, M: 0x1565, N: 0x8a4, O: '7NO9', P: 0x13f7, Q: 0x1644, R: '1qbp', S: 0xc18, T: 0xa52, U: 0xb1b, V: 'M5Ii' },
+        nh = { c: 0x1607 },
+        ng = { c: 0x106a, f: 0x1e43, g: 'CeJW' },
+        ne = { c: 0x818, f: '89Hn' },
+        nd = { c: 0x1674, f: 0x163f, g: '[]Y1', h: 0xaa5, i: 'M5Ii', j: 0x43e, k: 'V#kN', l: '60r9', m: 0xa7f, n: 'dZbH' },
+        n9 = { c: 0xed2, f: 0x2b2, g: 0x10fe, h: 'd%lH' },
+        go = fX;
+    if (!c[go(0x1150, 'w(Wr')]) return new Response(go(0x1d6d, nk.c), { 'status': 0x190 });
+    const i = c[go(0x638, nk.f)][go(0xee4, nk.g)](),
+        j = { 'socket': null, 'connectingPromise': null, 'retryConnect': null },
+        k = { 'up': 0x0, 'down': 0x0 };
+    let l = ![];
+    const m = { 'cache': new Uint8Array(0x0) };
+    let n = null,
+        o = null,
+        p = null,
+        q = null;
+    const r = new Headers({ 'Content-Type': go(nk.h, 'oeP*'), 'grpc-status': '0', 'X-Accel-Buffering': 'no', 'Cache-Control': go(nk.i, 'Mmsl') }),
+        s = downstreamGrainChunkBytes,
+        t = Math[go(nk.j, 'M5Ii')](downstreamGrainSilentMs, 0x1);
+    return new Response(new ReadableStream({
+        async 'start'(u) {
+            const nf = { c: 0x1587, f: 'wCGK' },
+                na = { c: 0x139d, f: 'Gn7Q', g: 'n7E3', h: 0x1afb, i: '[]Y1', j: 0x1799, k: 'dn8p' },
+                n8 = { c: 0x107a, f: 0x1786, g: 'Gn7Q', h: 0xb28, i: 0x9b2, j: 'T3Fv', k: 'wCGK', l: 0x7ba, m: 'oeP*' },
+                gp = go;
+            let v = ![],
+                w = [],
+                x = 0x0,
+                y = null,
+                z = ![];
+            const A = { 'readyState': WebSocket[gp(ni.c, ni.f)], 'send'(H) {
+                    const gq = gp;
+                    if (v) return;
+                    const I = H instanceof Uint8Array ? H : new Uint8Array(H);
+                    k[gq(0xf2a, 'IcEg')] += I[gq(n8.c, 'yxI7')];
+                    const J = [];
+                    let K = I[gq(n8.f, n8.g)] >>> 0x0;
+                    while (K > 0x7f) { J[gq(0x8d8, 'zs!c')](K & 0x7f | 0x80), K >>>= 0x7; }
+                    J[gq(0x34d, 'NxG1')](K);
+                    const L = new Uint8Array(J),
+                        M = 0x1 + L[gq(n8.h, 'PSkb')] + I[gq(n8.i, n8.j)],
+                        N = new Uint8Array(0x5 + M);
+                    N[0x0] = 0x0, N[0x1] = M >>> 0x18 & 0xff, N[0x2] = M >>> 0x10 & 0xff, N[0x3] = M >>> 0x8 & 0xff, N[0x4] = M & 0xff, N[0x5] = 0xa, N[gq(0xe36, 'T3Fv')](L, 0x6), N[gq(0x1e0, '5M6D')](I, 0x6 + L[gq(0xaca, 'ZgMu')]), w[gq(0x1711, n8.k)](N), x += N[gq(n8.l, n8.m)], C();
+                }, 'close'() {
+                    const gr = gp;
+                    if (this[gr(n9.c, 'n7E3')] === WebSocket[gr(n9.f, 'V#kN')]) return;
+                    B(!![]), v = !![], this[gr(n9.g, '*lLT')] = WebSocket[gr(0x1c6c, 'PYt$')];
+                    try { u[gr(0x17d4, n9.h)](); } catch (H) {}
+                } },
+                B = (H = ![]) => {
+                    const gs = gp;
+                    z = ![];
+                    y && (clearTimeout(y), y = null);
+                    if (!H && v || x === 0x0) return;
+                    const I = new Uint8Array(x);
+                    let J = 0x0;
+                    for (const K of w) { I[gs(na.c, na.f)](K, J), J += K[gs(0x3aa, na.g)]; }
+                    w = [], x = 0x0;
+                    try { u[gs(na.h, na.i)](I); } catch (L) { v = !![], A[gs(na.j, na.k)] = WebSocket[gs(0x6af, 'oeP*')]; }
+                },
+                C = () => {
+                    if (x >= s) { B(); return; }
+                    if (z || y) return;
+                    z = !![], queueMicrotask(() => { z = ![]; if (v || x === 0x0 || y) return; y = setTimeout(B, t); });
+                },
+                D = () => {
+                    const gt = gp;
+                    if (v) return;
+                    q?.[gt(nd.c, 'dn8p')](), B(!![]), v = !![], A[gt(nd.f, nd.g)] = WebSocket[gt(0x568, 'M5Ii')];
+                    if (y) clearTimeout(y);
+                    if (p) { try { p[gt(nd.h, nd.i)](); } catch (H) {} p = null; }
+                    o = null;
+                    try { i[gt(nd.j, '*lLT')](); } catch (I) {}
+                    try { j[gt(0x16ec, nd.k)]?.[gt(0x173f, nd.l)](); } catch (J) {}
+                    try { u[gt(nd.m, nd.n)](); } catch (K) {}
+                },
+                E = () => {
+                    const gu = gp;
+                    if (p) { try { p[gu(ne.c, ne.f)](); } catch (H) {} p = null; }
+                    o = null;
+                },
+                F = q = createUpstreamWriteQueue({ 'getWriter': () => {
+                        const gv = gp,
+                            H = j[gv(0x16ec, 'V#kN')];
+                        if (!H) return null;
+                        return H !== o && (E(), o = H, p = H[gv(nf.c, 'PSkb')][gv(0x936, nf.f)]()), p;
+                    }, 'releaseWriter': E, 'retryConnection': async() => {
+                        const gw = gp;
+                        if (typeof j[gw(ng.c, '89Hn')] !== gw(0x1416, 'w3Tt')) throw new Error(gw(0x630, '$p[^'));
+                        await j[gw(ng.f, ng.g)]();
+                    }, 'closeConnection': D, 'name': gp(ni.g, 'PYt$') }),
+                G = async(H, I = !![]) => { const gx = gp; return F[gx(nh.c, '8Ys%')](H, I); };
+            try {
+                let H = new Uint8Array(0x0);
+                while (!![]) {
+                    const { done: I, value: J } = await i[gp(ni.h, '6UCx')]();
+                    if (I) break;
+                    if (!J || J[gp(ni.i, ni.j)] === 0x0) continue;
+                    const K = J instanceof Uint8Array ? J : new Uint8Array(J),
+                        L = new Uint8Array(H[gp(0x919, 'C2T0')] + K[gp(0x1523, ni.k)]);
+                    L[gp(0x15ed, ni.l)](H, 0x0), L[gp(ni.m, ni.n)](K, H[gp(0xaca, ni.o)]), H = L;
+                    while (H[gp(0x1e77, 'IcEg')] >= 0x5) {
+                        const M = H[0x1] << 0x18 >>> 0x0 | H[0x2] << 0x10 | H[0x3] << 0x8 | H[0x4],
+                            N = 0x5 + M;
+                        if (H[gp(ni.p, 'oeP*')] < N) break;
+                        const O = H[gp(ni.q, ni.r)](0x5, N);
+                        H = H[gp(ni.s, 'vel(')](N);
+                        if (!O[gp(ni.t, 'd%lH')]) continue;
+                        let P = O;
+                        if (P[gp(ni.u, ni.v)] >= 0x2 && P[0x0] === 0xa) {
+                            let Q = 0x0,
+                                R = 0x1,
+                                S = ![];
+                            while (R < P[gp(0x1812, 'jODS')]) {
+                                const T = P[R++];
+                                if ((T & 0x80) === 0x0) { S = !![]; break; }
+                                Q += 0x7;
+                                if (Q > 0x23) break;
+                            }
+                            if (S) P = P[gp(ni.w, ni.x)](R);
+                        }
+                        if (!P[gp(ni.y, ni.z)]) continue;
+                        if (l) {
+                            if (n) await forwardTrojanUdpData(P, A, m, c);
+                            else await forwardataudp(P, A, null, c);
+                            continue;
+                        }
+                        if (j[gp(0x1ea2, ni.A)]) {
+                            k['up'] += P[gp(ni.B, '7NO9')];
+                            if (!await G(P)) throw new Error(gp(ni.C, ni.D));
+                        } else {
+                            const U = dataToUint8Array(P);
+                            if (n === null) n = isTrojanFirstPacket(U, f);
+                            if (n) {
+                                const V = parseTrojanRequest(U, f);
+                                if (V?.[gp(ni.E, '89Hn')]) throw new Error(V[gp(0x407, '60r9')] || gp(ni.F, '#sM9'));
+                                const { port: W, hostname: X, rawClientData: Y, isUDP: Z } = V;
+                                log(gp(0x1477, ni.G) + X + ':' + W + gp(ni.H, ni.I) + (Z ? 'is' : ''));
+                                if (isBlockedSite(X)) throw new Error(gp(ni.J, ni.K));
+                                Z ? (l = !![], validDataLength(Y) > 0x0 && (k['up'] += validDataLength(Y), await forwardTrojanUdpData(Y, A, m, c))) : (k['up'] += validDataLength(Y), await forwardataTCP(X, W, Y, A, null, j, f, c, k));
+                            } else {
+                                n = ![];
+                                const a0 = parseVlessRequest(U, f);
+                                if (a0?.[gp(ni.L, '[p9(')]) throw new Error(a0[gp(0x11b5, 'NMJQ')] || gp(ni.M, 'zs!c'));
+                                const { port: a1, hostname: a2, version: a3, isUDP: a4, rawClientData: a5 } = a0;
+                                log(gp(0x5a9, '*lLT') + a2 + ':' + a1 + gp(ni.N, 'IcEg') + (a4 ? 'is' : ''));
+                                if (isBlockedSite(a2)) throw new Error(gp(0x1126, ni.O));
+                                if (a4) {
+                                    if (a1 !== 0x35) throw new Error(gp(0x11ef, '$BSl'));
+                                    l = !![];
+                                }
+                                const a6 = new Uint8Array([a3, 0x0]);
+                                A[gp(ni.P, ni.z)](a6);
+                                const a7 = a5;
+                                if (l) {
+                                    if (n) await forwardTrojanUdpData(a7, A, m, c);
+                                    else await forwardataudp(a7, A, null, c);
+                                } else k['up'] += validDataLength(a7), await forwardataTCP(a2, a1, a7, A, null, j, f, c, k);
+                            }
+                        }
+                    }
+                    B();
+                }
+                await F[gp(ni.Q, ni.R)]();
+            } catch (a8) { log(gp(ni.S, '7NO9') + (a8?.[gp(ni.T, '9rQu')] || a8)); } finally { F[gp(ni.U, '$p[^')](), E(), D(), recordUsage(g, k['up'], k[gp(0x26d, ni.V)], h); }
+        },
+        'cancel'() {
+            const gy = go;
+            q?.[gy(0x177c, '*lLT')]();
+            try { j[gy(0x987, nj.c)]?.[gy(0x686, nj.f)](); } catch (u) {}
+            try { i[gy(nj.g, nj.h)](); } catch (v) {}
+        }
+    }), { 'status': 0xc8, 'headers': r });
+}
+
+function isValidWsEarlyData(c, f) {
+    const nl = { c: 'n7E3', f: 0x10c8, g: 'dZbH', h: 0x107a, i: 'yxI7' },
+        gz = fX;
+    if (!c?.[gz(0x3aa, nl.c)]) return ![];
+    if (c[gz(nl.f, nl.g)] >= 0x12 && UUIDbyteMatch(c, 0x1, f)) return !![];
+    if (c[gz(nl.h, nl.i)] < 0x3a || c[0x38] !== 0xd || c[0x39] !== 0xa) return ![];
+    const g = sha224(f);
+    for (let h = 0x0; h < 0x38; h++) {
+        if (c[h] !== g[gz(0x1b1f, 'M5Ii')](h)) return ![];
+    }
+    return !![];
+}
+
+function decodeWsEarlyData(c, f) {
+    const nm = { c: 0x11da, f: '[]Y1', g: 0x1cd8, h: 0x1733, i: 0x12e7, j: '$BSl', k: 'w(Wr', l: 0x479, m: 0x3b7, n: '[]Y1', o: 'mRB^', p: 'V#kN', q: 0x185f, r: '0Ua@' },
+        gA = fX;
+    if (!c) return null;
+    if (c[gA(nm.c, nm.f)] > WSearlyDataMaxHeaderLength) throw new Error(gA(nm.g, 'w3Tt'));
+    let g;
+    const h = Uint8Array;
+    if (typeof h[gA(nm.h, 'PSkb')] === gA(nm.i, nm.j))
+        try { g = h[gA(0x1ea9, 'NxG1')](c, { 'alphabet': gA(0x1b7b, nm.k) }); } catch (j) {}
+    if (!g) {
+        let k = c[gA(nm.l, 'PYt$')](/-/g, '+')[gA(nm.m, nm.n)](/_/g, '/');
+        const l = k[gA(0x5e1, nm.o)] % 0x4;
+        if (l) k += '='[gA(0x1bf0, nm.p)](0x4 - l);
+        let m;
+        try { m = atob(k); } catch (n) { return null; }
+        g = new Uint8Array(m[gA(0x9a0, 'V#kN')]);
+        for (let o = 0x0; o < m[gA(0x919, 'C2T0')]; o++) g[o] = m[gA(nm.q, nm.r)](o);
+    }
+    if (g[gA(0x521, nm.f)] > WSearlyDataMaxBytes) throw new Error(gA(0x9f7, 'GzjL'));
+    return isValidWsEarlyData(g, f) ? g : null;
+}
+
+async function backendDiagnostic(c, f) {
+    const nn = { c: '#sM9', f: 0x716, g: 'w(Wr', h: 0x1c23, i: 0xda9, j: '89Hn', k: 0x1bd6, l: 'wCGK', m: 0xb29, n: 0x93e, o: '*lLT', p: '5M6D', q: 0x1a92, r: 'dbGg', s: 0x1454, t: 0x592, u: 0x368, v: 0x14b6, w: 'zs!c', x: 0x1088, y: '*lLT', z: 0x1103, A: 'n7E3', B: 0x1df5, C: 'mRB^', D: 0x1f1, E: 0x10a7, F: 'oeP*', G: 'd%lH', H: 0xebd, I: 0x492, J: 0x1083, K: '[]Y1', L: '2#Qk', M: 0x1d62, N: 0x299, O: 0x198e, P: '89Hn', Q: 0x112d, R: '#sM9', S: 0x98f, T: 0x6b2, U: 'oeP*', V: 0x1636, W: 0x1b29, X: 0x252, Y: 'NMJQ', Z: 0xc2c, a0: 'd%lH', a1: 0xffe, a2: 0x1026, a3: '9rQu', a4: 'jODS', a5: 0x5ce, a6: 'NxG1', a7: 0x183c, a8: 'PSkb', a9: 0x5c9, aa: 'egod', ab: 0x1d9c, ac: 0x109b, ad: 0xab2, ae: 0x34d, af: 0x19e7, ag: 0x1a5c, ah: 'n7E3', ai: 'b)3q', aj: 'NMJQ', ak: 'ZgMu', al: 0x5ae, am: '[p9(', an: 0xb02, ao: 0x1572, ap: 'M5Ii', aq: 0x734, ar: 'GzjL', as: 0x1399, at: 0x151c, au: 0x239, av: 0x350, aw: 'jODS', ax: 0xcaf, ay: '89Hn', az: '60r9', aA: 0x3d9, aB: 'GzjL', aC: 0x545, aD: 0x54d, aE: 'rsIZ', aF: '0Ua@', aG: 0x1e39, aH: 0x34e, aI: 0x167c, aJ: 'yxI7', aK: 0xbc1, aL: '2#Qk', aM: 0x1301, aN: 'XITC', aO: 0x840, aP: 0x1330, aQ: 0x799, aR: '8Ys%' },
+        gB = fX,
+        g = { 'ok': ![], 'steps': [] },
+        i = backendModeConfig(c);
+    g[gB(0x711, nn.c)] = i['on'], g[gB(nn.f, nn.g)] = i[gB(nn.h, 'mRB^')] || gB(nn.i, nn.j);
+    if (!i['on']) return g[gB(nn.k, nn.l)][gB(nn.m, 'oeP*')](gB(nn.n, '9rQu')), new Response(JSON[gB(0x840, nn.o)](g, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': gB(0x1990, nn.p), 'Cache-Control': gB(nn.q, nn.r) } });
+    let j = '';
+    try {
+        const l = new URL(i[gB(nn.s, '7NO9')]);
+        if (l[gB(0x17f3, 'dbGg')] === '/' || !l[gB(nn.t, '$p[^')]) l[gB(nn.u, 'CeJW')] = gB(0x1364, 'b)3q');
+        j = l[gB(nn.v, nn.w)]();
+    } catch (m) { return g[gB(nn.x, nn.y)][gB(nn.z, nn.A)](gB(nn.B, nn.C) + (m && m[gB(nn.D, 'n7E3')])), new Response(JSON[gB(nn.E, nn.F)](g, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': gB(0x17e1, nn.G) }); }
+    g[gB(nn.H, 'PYt$')] = j;
+    const k = Date[gB(nn.I, '2#Qk')]();
+    try {
+        const n = new Headers();
+        n[gB(nn.J, nn.K)](gB(0x1bb3, nn.L), gB(0x1a47, '[]Y1')), n[gB(nn.M, '$BSl')](gB(nn.N, 'b)3q'), gB(nn.O, nn.F)), n[gB(0x12e4, '#sM9')](gB(0xf64, nn.P), '13'), n[gB(0x15ed, 'mRB^')](gB(nn.Q, 'C2T0'), gB(0x191c, nn.R));
+        const o = await fetch(j, { 'method': gB(nn.S, '[]Y1'), 'headers': n, 'redirect': gB(nn.T, nn.U) });
+        g[gB(0x1937, 'w3Tt')] = Date[gB(0x194d, nn.K)]() - k, g[gB(nn.V, 'dn8p')] = o[gB(nn.W, '[p9(')], g[gB(0x189, nn.w)] = !!o[gB(nn.X, nn.Y)];
+        if (o[gB(0x8dd, nn.F)] === 0x65 && o[gB(nn.Z, nn.a0)]) { g['ok'] = !![], g[gB(nn.a1, 'PSkb')][gB(nn.a2, nn.a3)](gB(0x1472, nn.a4)); try { o[gB(0x1f17, 'vel(')][gB(nn.a5, nn.a6)](), o[gB(0xaf8, '89Hn')][gB(nn.a7, nn.a8)](0x3e8, gB(nn.a9, nn.aa)); } catch (p) {} } else {
+            if (o[gB(nn.ab, nn.p)] === 0x65 && !o[gB(nn.ac, 'PYt$')]) g[gB(nn.ad, 'XITC')][gB(nn.ae, 'NxG1')](gB(0x1ad6, 'Gn7Q'));
+            else {
+                let q = '';
+                try { q = (await o[gB(nn.af, 'w(Wr')]())[gB(nn.ag, nn.ah)](0x0, 0x12c); } catch (s) {}
+                g[gB(0x16f4, nn.ai)] = q || gB(0x94b, nn.aj), g[gB(0x159c, 'egod')] = o[gB(0x657, nn.ak)][gB(0x8ed, nn.a3)](gB(nn.al, nn.am)) || '';
+                if (o[gB(nn.an, 'ZgMu')] === 0x193) {
+                    let t = ![];
+                    try { const u = new URL(j)[gB(nn.ao, nn.ap)]; t = /^\d{1,3}(\.\d{1,3}){3}$/[gB(nn.aq, 'egod')](u) || u[gB(0x1c01, nn.ar)](':'); } catch (v) {}
+                    t && g[gB(nn.as, '60r9')] != null && g[gB(nn.at, nn.ah)] < 0x32 ? (g[gB(nn.au, '$BSl')][gB(nn.av, nn.aw)](gB(0x18c0, '89Hn') + g[gB(nn.ax, '*lLT')] + gB(0x138a, nn.ay)), g[gB(0xdab, nn.az)] = gB(nn.aA, 'w3Tt')) : g[gB(0x82d, nn.aB)][gB(0xae2, 'T3Fv')](gB(nn.aC, nn.C));
+                } else g[gB(0xaD, '2#Qk')][gB(0x3e5, 'mRB^')](gB(0x526, nn.aE) + o[gB(0x14a6, nn.aF)] + gB(nn.aG, 'dZbH'));
+            }
+        }
+    } catch (w) { g[gB(0x1465, 'ZgMu')] = Date[gB(0x6eb, 'T3Fv')]() - k, g[gB(nn.aH, nn.aF)] = w && w[gB(nn.aI, nn.aJ)] ? w[gB(nn.aK, '#sM9')] : String(w), g[gB(0x13f1, '#sM9')][gB(0xfc7, nn.G)](gB(0x792, nn.aL)), g[gB(0xed1, '0Ua@')] = gB(nn.aM, nn.aN); }
+    return new Response(JSON[gB(nn.aO, '*lLT')](g, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': gB(nn.aP, '6UCx'), 'Cache-Control': gB(nn.aQ, nn.aR) } });
+}
+
+function backendModeConfig(c) {
+    const no = { c: 0x166f, f: '6UCx', g: '8Ys%', h: '5M6D', i: 0x1576, j: 0xcef, k: '*lLT', l: 0x710, m: 'NMJQ' },
+        gC = fX,
+        f = networkSettings || {},
+        g = f[gC(no.c, '60r9')] && String(f[gC(0x14ba, no.f)])[gC(0x68a, '$BSl')]() || c && c[gC(0x762, no.g)] && String(c[gC(0x1cfd, no.h)])[gC(0x3b5, 'M5Ii')]() || '',
+        h = (f[gC(no.i, no.g)] === !![] || c && (c[gC(no.j, 'vel(')] === gC(0x1b22, no.k) || c[gC(0x11cf, '60r9')] === !![])) && /^https?:\/\//i[gC(no.l, no.m)](g);
+    return { 'on': h, 'url': g };
+}
+
+function isBackendExcludedPath(c, f) {
+    const np = { c: 0x5c6, f: 'PYt$', g: 0x196f, h: 'XITC', i: 0x1520, j: 0x81f, k: '6UCx', l: 0x4b0, m: '2#Qk', n: 'V#kN', o: 0x50f, p: 'wCGK', q: '9rQu', r: 'NMJQ', s: 0x1802, t: '[p9(', u: 0xd5a, v: 0x118a, w: '7NO9', x: 0x394, y: '[p9(', z: 0x13e2, A: 'M5Ii', B: 0x1d28, C: '8Ys%', D: 0x1157, E: 'Mmsl' },
+        gD = fX,
+        g = (c || '')[gD(np.c, np.f)](),
+        h = (f || '')[gD(np.g, np.h)]();
+    if (g === gD(np.i, '7NO9') || g === gD(np.j, np.k) || h === gD(0xed8, np.h) || h === gD(np.l, np.m)) return !![];
+    if (g === gD(0x163a, np.n) || g === gD(0x1adb, '9rQu') || g === gD(np.o, np.p) || g === gD(0x140b, np.q) || g === gD(0x14fb, np.r) || g === gD(0xc41, 'IcEg') || g === gD(np.s, 'NMJQ')) return !![];
+    if (g === gD(0x1123, np.t) || g[gD(np.u, 'M5Ii')](gD(np.v, 'oeP*')) || g === gD(0x1084, np.w) || g[gD(0x190d, 'NMJQ')](gD(np.x, np.y)) || g === gD(np.z, np.A) || g[gD(np.B, 'w(Wr')](gD(0x1de0, 'd%lH'))) return !![];
+    if (g === gD(0xc5a, np.C) || g[gD(np.D, np.E)](gD(0x1edf, 'egod'))) return !![];
+    return ![];
+}
+
+function backendTargetUrl(c, f) {
+    const nq = { c: 0x119a, f: 0xfad, g: 'T3Fv', h: 'egod', i: '$p[^', j: 0x1c9e, k: '$p[^' },
+        gE = fX;
+    let g;
+    try { g = new URL(c); } catch (i) { return null; }
+    const h = f && f[gE(nq.c, 'M5Ii')] ? f[gE(nq.f, nq.g)] : '';
+    if (h && h !== '/') g[gE(0x260, nq.h)] = h;
+    return g[gE(0x1b2b, nq.i)] = f && f[gE(0x3ca, 'GzjL')] || '', g[gE(nq.j, nq.k)]();
+                        }
+
