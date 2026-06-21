@@ -3473,3 +3473,227 @@ if (a5 === g4(mS.fx, mS.fy))
                                                         if (ct) ck = ct[0x1];
                                                         else return cc(g4(0x192d, mS.pk));
                                                 }
+                                                                                                                                                                            try {
+                                                                                                                            const cu = await fetch(CF_API + g4(mS.pl, mS.es) + ci + g4(0x18d0, mS.aN) + ck + g4(0xa7d, mS.oJ), { 'headers': cfHeaders(cg) }),
+                                                                                                                                cv = await cfJson(cu);
+                                                                                                                            if (!cv || !cv[g4(0x1789, mS.pm)]) return cc(g4(mS.pn, 'Pt3!'));
+                                                                                                                        } catch (cw) { return cc(g4(0xca3, '[]Y1')); }
+                                                                                                                        let cl = TAAKAA_WORKER_SRC_FALLBACK,
+                                                                                                                            cm = '';
+                                                                                                                        try {
+                                                                                                                            const cx = await fetch(TAAKAA_VERSION_URL, { 'headers': { 'User-Agent': g4(mS.po, '[p9(') } });
+                                                                                                                            if (cx['ok']) {
+                                                                                                                                const cy = await cx[g4(0x574, 'b)3q')]();
+                                                                                                                                if (cy[g4(mS.pp, 'M5Ii')]) cl = cy[g4(mS.pq, '5M6D')];
+                                                                                                                                cm = String(cy[g4(0x1568, mS.pr)] || '')[g4(0x6f0, mS.oW)](/^[vV]/, '');
+                                                                                                                            }
+                                                                                                                        } catch (cz) {}
+                                                                                                                        let cn = '';
+                                                                                                                        try {
+                                                                                                                            const cA = await fetch(cl, { 'headers': { 'User-Agent': g4(mS.ps, mS.eu) } });
+                                                                                                                            if (!cA['ok']) throw new Error(g4(mS.pt, mS.pu) + cA[g4(0x29f, '$BSl')]);
+                                                                                                                            cn = await cA[g4(mS.pv, mS.pw)]();
+                                                                                                                        } catch (cB) { return cc(g4(mS.px, 'dZbH'), { 'detail': cB && cB[g4(0x45f, 'PSkb')] || String(cB) }); }
+                                                                                                                        if (cn[g4(mS.py, mS.pz)] < 0x3e8 || !/export\s+default|addEventListener\s*\(/[g4(0x734, 'egod')](cn)) return cc(g4(mS.pA, mS.pB));
+                                                                                                                        try {
+                                                                                                                            const cC = new FormData();
+                                                                                                                            cC[g4(0x1e0d, 'V#kN')](g4(mS.pC, '1qbp'), new Blob([JSON[g4(mS.pD, 'Mmsl')]({ 'main_module': g4(0x1781, mS.f0) })], { 'type': g4(0xeae, mS.nE) })), cC[g4(mS.pE, mS.aD)](g4(mS.pF, '%oj0'), new Blob([cn], { 'type': g4(mS.pG, mS.fL) }), g4(mS.pH, mS.pI));
+                                                                                                                            const cD = await fetch(CF_API + g4(mS.pJ, mS.aw) + ci + g4(0x1efe, 'PYt$') + ck + g4(mS.pK, mS.pL), { 'method': g4(0x1760, 'GzjL'), 'headers': cfHeaders(cg), 'body': cC }),
+                                                                                                                                cE = await cfJson(cD);
+                                                                                                                            if (!cE || !cE[g4(0x182c, 'IcEg')]) {
+                                                                                                                                const cF = cE && cE[g4(mS.pM, 'V#kN')] && cE[g4(0x1851, mS.pN)][0x0] && cE[g4(mS.pO, mS.n8)][0x0][g4(0xa52, mS.pP)] || g4(0x1396, 'XITC') + cD[g4(mS.pQ, mS.W)];
+                                                                                                                                return cc(g4(0x47a, mS.bm), { 'detail': cF });
+                                                                                                                            }
+                                                                                                                        } catch (cG) { return cc(g4(mS.pR, mS.pS), { 'detail': cG && cG[g4(mS.pT, 'V#kN')] || String(cG) }); }
+                                                                                                                        return h[g4(0x1102, 'zs!c')](requestLogRecord(g, f, F, g4(mS.pU, '1qbp'), config_JSON)), new Response(JSON[g4(0x16a5, mS.pV)]({ 'success': !![], 'version': cm || undefined }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4b6, mS.es), 'Cache-Control': g4(0x128c, '1qbp') } });
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+try {
+    config_JSON = await readConfigJson(g, D, B, q);
+} catch (cH) {
+    console[g4(mS.pW, '$p[^')](g4(0x32a, '[p9(') + cH[g4(mS.pX, 'w3Tt')]);
+    const cI = new Date()[g4(0x1055, mS.bg)]();
+    config_JSON = { 'TIME': cI, 'HOST': D, 'HOSTS': [D], 'UUID': B, 'PATH': '/', 'protocolType': g4(0x1ef6, '1qbp'), 'transportProtocol': 'ws', 'gRPCmode': g4(0x85c, '6UCx'), 'skipCertVerify': ![], 'enable0RTT': ![], 'tlsFragment': null, 'randomPath': ![], 'Fingerprint': g4(0x12e5, 'yxI7'), 'optimizedSubGeneration': { 'local': !![], 'localIPPool': { 'randomIP': !![], 'randomCount': 0x10, 'specifiedPorts': -0x1 }, 'SUB': null, 'SUBNAME': g4(0x1b50, 'T3Fv'), 'SUBUpdateTime': 0x3, 'TOKEN': await MD5MD5(D + B) }, 'CF': { 'Email': null, 'GlobalAPIKey': null, 'AccountID': null, 'APIToken': null, 'UsageAPI': null, 'Usage': { 'success': ![], 'pages': 0x0, 'workers': 0x0, 'total': 0x0, 'max': 0x186a0 } }, 'TG': { 'enabled': ![], 'BotToken': null, 'ChatID': null }, 'loadTime': g4(mS.pY, mS.nY) };
+}
+if (E === g4(0x16fe, 'wCGK'))
+    try {
+        return config_JSON = await readConfigJson(g, D, B, q, !![]), h[g4(0x943, 'T3Fv')](requestLogRecord(g, f, F, g4(0x1ed, mS.fy), config_JSON)), config_JSON[g4(0x30c, '*lLT')] = g4(0x51d, 'XITC'), new Response(JSON[g4(mS.dZ, 'yxI7')](config_JSON, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4d7, mS.pZ) } });
+    } catch (cJ) {
+        const cK = { 'msg': g4(mS.q0, 'Gn7Q') + cJ[g4(0x640, mS.q1)], 'error': cJ[g4(0x1537, 'V#kN')] };
+        return new Response(JSON[g4(mS.q2, mS.q3)](cK, null, 0x2), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(mS.q4, mS.pN) } });
+    } else {
+        if (f[g4(0x1590, mS.q5)] === g4(mS.eP, 'dn8p')) {
+            if (E === g4(mS.q6, '$p[^'))
+                try {
+                    const cL = await f[g4(mS.dt, mS.dR)]();
+                    if (!cL[g4(0x202, mS.aY)] || !cL[g4(0x870, 'dn8p')]) return new Response(JSON[g4(0x1c7e, mS.U)]({ 'error': g4(mS.q7, '60r9') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x1660, mS.q8) } });
+                    return await putConfig(g, JSON[g4(0x1bfa, 'XITC')](cL, null, 0x2)), h[g4(mS.q9, mS.qa)](requestLogRecord(g, f, F, g4(mS.qb, mS.nE), config_JSON)), new Response(JSON[g4(0x1b1c, '0Ua@')]({ 'success': !![], 'message': g4(0x1844, mS.qc) }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x134e, mS.qd) } });
+                } catch (cM) {
+                    return console[g4(mS.qe, 'yxI7')](g4(0xbba, 'yxI7'), cM), new Response(JSON[g4(mS.qf, '8Ys%')]({ 'error': g4(mS.qg, mS.qh) + cM[g4(0xdbd, 'w3Tt')] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(mS.qi, mS.qj) } });
+                } else {
+                if (E === g4(0x11f0, '%oj0'))
+                    try {
+                        const cN = await f[g4(mS.qk, mS.ql)](),
+                            cO = { 'Email': null, 'GlobalAPIKey': null, 'AccountID': null, 'APIToken': null, 'UsageAPI': null };
+                        if (!cN[g4(0x1028, mS.eu)] || cN[g4(0x1ac0, mS.eE)] !== !![]) {
+                            if (cN[g4(mS.qm, mS.qn)] && cN[g4(0x5d3, mS.q3)]) cO[g4(0xcee, '9rQu')] = cN[g4(0x1317, mS.qo)], cO[g4(mS.qp, mS.b3)] = cN[g4(mS.qq, mS.qr)];
+                            else {
+                                if (cN[g4(0x166, mS.qs)] && cN[g4(mS.qt, mS.cF)]) cO[g4(mS.qu, mS.qv)] = cN[g4(mS.qw, 'PSkb')], cO[g4(mS.qx, '[p9(')] = cN[g4(0x135b, 'IcEg')];
+                                else {
+                                    if (cN[g4(mS.qy, '0Ua@')]) cO[g4(0x6f4, mS.qz)] = cN[g4(0x1756, mS.eE)];
+                                    else return new Response(JSON[g4(mS.qA, mS.pw)]({ 'error': g4(0xda6, mS.bg) }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x6ff, mS.fB) } });
+                                }
+                            }
+                        }
+                        return await g['KV'][g4(0x108d, 'M5Ii')](g4(0x1af, 'PYt$'), JSON[g4(mS.nQ, mS.ql)](cO, null, 0x2)), h[g4(mS.qB, mS.p6)](requestLogRecord(g, f, F, g4(0x3b6, 'vel('), config_JSON)), new Response(JSON[g4(0x1ca4, 'V#kN')]({ 'success': !![], 'message': g4(0xcff, 'mRB^') }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.qC, '89Hn') } });
+                    } catch (cP) {
+                        return console[g4(0xdc0, mS.eu)](g4(0xf2b, mS.ox), cP), new Response(JSON[g4(mS.qD, 'NMJQ')]({ 'error': g4(mS.qE, mS.qF) + cP[g4(mS.qG, 'Gn7Q')] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0xf5a, mS.qH) } });
+                    } else {
+                    if (E === g4(0x2e1, mS.oZ))
+                        try {
+                            const cQ = await f[g4(mS.qI, mS.qJ)]();
+                            let cR = null,
+                                cS = null;
+                            if (cQ[g4(0x158b, mS.qo)] && cQ[g4(mS.qK, mS.qL)] === !![]) {
+                                const cT = { 'BotToken': null, 'ChatID': null };
+                                await g['KV'][g4(0x13ff, mS.f)](g4(0x1749, mS.qM), JSON[g4(mS.qN, mS.fi)](cT, null, 0x2));
+                            } else {
+                                if (!cQ[g4(mS.qO, mS.pr)] || !cQ[g4(0x186a, mS.qP)]) return new Response(JSON[g4(0x30e, mS.aw)]({ 'error': g4(0xfb2, mS.qQ) }), { 'status': 0x190, 'headers': { 'Content-Type': g4(0x96d, mS.qR) } });
+                                await g['KV'][g4(mS.qS, mS.fA)](g4(mS.qT, mS.qU), JSON[g4(0x13f9, mS.qV)](cQ, null, 0x2));
+                                try {
+                                    const cU = p[g4(mS.qW, 'oeP*')] + '//' + p[g4(mS.qX, '60r9')] + g4(mS.qY, '9rQu'),
+                                        cV = await fetch(g4(mS.qZ, mS.r0) + cQ[g4(0xc96, 'Gn7Q')] + g4(mS.r1, mS.nk) + encodeURIComponent(cU) + g4(0x1cf8, '89Hn')),
+                                        cW = await cV[g4(0x978, mS.r2)]()[g4(mS.r3, mS.ap)](() => ({}));
+                                    h[g4(mS.q9, mS.L)](tgSetMyCommands(cQ[g4(mS.qO, mS.pr)])), cR = !!cW['ok'];
+                                    if (!cW['ok']) cS = cW[g4(0x1d7f, mS.r4)] || g4(0x1245, mS.r5);
+                                } catch (cX) { cR = ![], cS = cX[g4(0xf66, mS.pB)]; }
+                            }
+                            return h[g4(mS.r6, 'b)3q')](requestLogRecord(g, f, F, g4(0x76f, mS.nM), config_JSON)), new Response(JSON[g4(0x108b, '60r9')]({ 'success': !![], 'message': g4(0x18a6, mS.r7), 'webhookSet': cR, 'webhookError': cS }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1273, '8Ys%') } });
+                        } catch (cY) {
+                            return console[g4(0x455, mS.fO)](g4(0xde3, mS.oK), cY), new Response(JSON[g4(0xb53, mS.r8)]({ 'error': g4(mS.r9, 'yxI7') + cY[g4(0x1f1, 'n7E3')] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x646, mS.c6) } });
+                        } else {
+                        if (E === g4(0x6fd, mS.ra))
+                            try {
+                                const cZ = JSON[g4(mS.rb, '#sM9')](await g['KV'][g4(0x75e, 'dZbH')](g4(mS.rc, '$p[^')) || '{}');
+                                if (f[g4(mS.rd, mS.fF)] === g4(mS.dv, 'b)3q')) {
+                                    const d7 = await f[g4(mS.re, 'C2T0')]();
+                                    cZ[g4(mS.rf, mS.fb)] = !!d7[g4(mS.rg, mS.fq)], cZ[g4(mS.rh, 'w(Wr')] = Array[g4(mS.ri, mS.rj)](d7[g4(mS.rk, 'CeJW')]) ? d7[g4(0x1b8c, '9rQu')] : [];
+                                    {
+                                        const d8 = {};
+                                        for (const da of cZ[g4(mS.rl, '89Hn')]) {
+                                            if (da && da[g4(0xb59, mS.bj)]) d8[String(da[g4(0x122c, mS.rm)])[g4(mS.rn, '%oj0')]()] = 0x1;
+                                        }
+                                        const d9 = () => typeof crypto !== g4(0xdef, '%oj0') && crypto[g4(0x510, '89Hn')] ? crypto[g4(0x1100, 'V#kN')]()[g4(0x659, 'wCGK')](/-/g, '') : Math[g4(0x16c, 'rsIZ')]()[g4(0x63e, 'XITC')](0x10)[g4(0x9ed, 'Mmsl')](0x2) + Math[g4(0x1850, 'XITC')]()[g4(0x21c, 'mRB^')](0x10)[g4(0xcc4, '0Ua@')](0x2);
+                                        for (let db = 0x0; db < cZ[g4(mS.ro, mS.ot)][g4(0x1913, 'egod')]; db++) {
+                                            const dc = cZ[g4(0xcdb, '$BSl')][db];
+                                            if (!dc) continue;
+                                            if (!dc[g4(mS.rp, mS.nY)]) dc[g4(mS.rq, 'd%lH')] = d9()[g4(mS.rr, mS.mY)](0x0, 0xc);
+                                            if (!dc[g4(mS.rs, mS.eE)]) {
+                                                let dd = String(dc[g4(mS.rt, mS.ru)] || g4(0x4ea, 'w(Wr') + (db + 0x1))[g4(0xf68, mS.rv)]()[g4(mS.rw, '[p9(')](/[^a-z0-9]+/g, '-')[g4(0x13de, mS.rx)](/^-+|-+$/g, '')[g4(mS.ry, mS.rz)](0x0, 0x18) || g4(mS.rA, mS.cm) + (db + 0x1),
+                                                    de = dd,
+                                                    df = 0x2;
+                                                while (d8[de]) { de = dd + df, df++; }
+                                                d8[de] = 0x1, dc[g4(mS.rB, 'CeJW')] = de;
+                                            }
+                                        }
+                                    }
+                                    await g['KV'][g4(0xd25, mS.rC)](g4(0x53a, mS.rD), JSON[g4(mS.rE, mS.cY)](cZ, null, 0x2));
+                                    try { await g['KV'][g4(0x264, mS.nj)](g4(mS.rF, mS.fo)); } catch (dg) {}
+                                    return savedUsersAuth = { 'multiUser': cZ[g4(mS.rG, mS.rH)], 'users': cZ[g4(0x603, mS.rI)] }, savedUsersAuthAt = Date[g4(mS.rJ, 'rsIZ')](), h[g4(mS.rK, mS.qa)](requestLogRecord(g, f, F, g4(mS.rL, '[p9('), config_JSON)), new Response(JSON[g4(0x36b, '[]Y1')]({ 'success': !![], 'count': cZ[g4(mS.rM, 'dZbH')][g4(0x925, '89Hn')], 'multiUser': cZ[g4(mS.rf, '$p[^')] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x71a, mS.ay), 'Cache-Control': g4(mS.rN, 'mRB^') } });
+                                }
+                                let d0 = !!cZ[g4(mS.rO, '8Ys%')],
+                                    d1 = Array[g4(mS.rP, '[]Y1')](cZ[g4(0x10aa, 'egod')]) ? cZ[g4(mS.rQ, mS.rR)] : [];
+                                savedUsersAuth && Date[g4(mS.rS, '0Ua@')]() - savedUsersAuthAt < 0x1d4c0 && (d0 = !!savedUsersAuth[g4(0x14e, mS.rT)], d1 = savedUsersAuth[g4(mS.rU, 'M5Ii')]);
+                                const d2 = {},
+                                    d3 = {},
+                                    d4 = {},
+                                    d5 = getDateKey(new Date());
+                                let d6 = ![];
+                                for (const dh of d1) {
+                                    if (!dh || !dh['id']) continue;
+                                    try {
+                                        const di = await usageGet(g, g4(0x14ad, 'GzjL') + dh['id']);
+                                        d2[dh['id']] = di && di[g4(0xf32, 'Gn7Q')] || 0x0, d3[dh['id']] = { 'up': di && di['up'] || 0x0, 'down': di && di[g4(0xa91, 'rsIZ')] || 0x0 };
+                                    } catch (dj) { d2[dh['id']] = 0x0, d3[dh['id']] = { 'up': 0x0, 'down': 0x0 }; }
+                                    try {
+                                        const dk = await usageGet(g, g4(mS.rV, '%oj0') + dh['id'] + ':' + d5);
+                                        d4[dh['id']] = dk && dk[g4(0xf32, 'Gn7Q')] || 0x0;
+                                    } catch (dl) { d4[dh['id']] = 0x0; }
+                                    if (dh[g4(0x17b6, mS.rW)] !== ![]) {
+                                        let dm = null;
+                                        if (dh[g4(mS.rX, mS.es)] && d2[dh['id']] >= dh[g4(mS.rY, mS.rZ)]) dm = g4(0x12bc, '89Hn');
+                                        else {
+                                            if (dh[g4(mS.s0, 'CeJW')] && d4[dh['id']] >= dh[g4(mS.s1, mS.pz)]) dm = g4(0x1e51, 'T3Fv');
+                                            else {
+                                                if (dh[g4(mS.s2, '1qbp')]) {
+                                                    const dn = Date[g4(mS.dk, mS.bB)](dh[g4(mS.s3, mS.qj)]);
+                                                    if (!isNaN(dn) && Date[g4(0x11be, mS.s4)]() > dn) dm = g4(0x1a61, mS.s5);
+                                                }
+                                            }
+                                        }
+                                        dm && (dh[g4(0x17b6, mS.ou)] = ![], dh[g4(mS.s6, '60r9')] = dm, dh[g4(0x281, mS.es)] = Date[g4(mS.s7, mS.r7)](), dh[g4(0x8b9, 'GzjL')] = !![], d6 = !![]);
+                                    }
+                                }
+                                if (d6)
+                                    try {
+                                        cZ[g4(0x6f3, 'w3Tt')] = d1, await g['KV'][g4(0x966, 'GzjL')](g4(mS.s8, mS.s9), JSON[g4(mS.sa, '7NO9')](cZ, null, 0x2)), cachedNetworkSettings = null, savedUsersAuth = { 'multiUser': d0, 'users': d1 }, savedUsersAuthAt = Date[g4(mS.sb, mS.fJ)]();
+                                    } catch (dp) {}
+                                return new Response(JSON[g4(0x324, mS.f9)]({ 'multiUser': d0, 'users': d1, 'usage': d2, 'usageIO': d3, 'usageDay': d4 }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x4d1, 'n7E3'), 'Cache-Control': g4(mS.sc, mS.sd) } });
+                            } catch (dq) {
+                                return new Response(JSON[g4(0xac3, 'IcEg')]({ 'error': String(dq && dq[g4(0x11b5, mS.aB)] || dq) }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(mS.se, mS.sf) } });
+                            } else {
+                            if (E === g4(mS.sg, 'rsIZ'))
+                                try {
+                                    if (f[g4(0x1c4a, 'd%lH')] !== g4(mS.sh, '#sM9')) return new Response(g4(mS.e6, '0Ua@'), { 'status': 0x195 });
+                                    const dr = await f[g4(mS.si, mS.r4)]()[g4(0x7af, mS.sj)](() => ({})),
+                                        ds = dr && dr['id'];
+                                    if (!ds) return new Response(JSON[g4(mS.sk, mS.cY)]({ 'error': g4(mS.sl, 'dn8p') }), { 'status': 0x190, 'headers': { 'Content-Type': g4(mS.dS, mS.sm) } });
+                                    await usageReset(g, g4(0x255, mS.sn) + ds);
+                                    const dt = new Date();
+                                    for (let dv = 0x0; dv < 0x28; dv++) {
+                                        const dw = new Date(dt);
+                                        dw[g4(mS.so, mS.sp)](dw[g4(mS.sq, '7NO9')]() - dv), await usageReset(g, g4(0x1f0, 'PYt$') + ds + ':' + getDateKey(dw));
+                                    }
+                                    if (userUsageCache[ds] != null) userUsageCache[ds] = 0x0;
+                                    if (userDayUsageCache[ds] != null) userDayUsageCache[ds] = 0x0;
+                                    const du = JSON[g4(0x110e, mS.aY)](await g['KV'][g4(0xe6f, mS.sr)](g4(mS.ss, mS.no)) || '{}');
+                                    if (Array[g4(mS.st, '[p9(')](du[g4(mS.su, 'Mmsl')])) {
+                                        const dx = du[g4(mS.sv, mS.sw)][g4(mS.sx, 'wCGK')](dy => dy && dy['id'] === ds);
+                                        dx && (dx[g4(mS.fl, mS.sy)] = !![], delete dx[g4(0x796, 'n7E3')], delete dx[g4(mS.sz, mS.sA)], delete dx[g4(0x1a04, '89Hn')]), await g['KV'][g4(mS.sB, 'Gn7Q')](g4(mS.sC, mS.qn), JSON[g4(0x401, 'NMJQ')](du, null, 0x2)), cachedNetworkSettings = null, savedUsersAuth = null;
+                                    }
+                                    return h[g4(mS.sD, '2#Qk')](requestLogRecord(g, f, F, g4(mS.sE, '*lLT'), config_JSON)), new Response(JSON[g4(0x9d5, mS.q5)]({ 'success': !![] }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x1172, mS.r8), 'Cache-Control': g4(mS.sF, '2#Qk') } });
+                                } catch (dy) {
+                                    return new Response(JSON[g4(mS.sG, '6UCx')]({ 'error': String(dy && dy[g4(0x17eb, mS.sH)] || dy) }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(mS.sI, mS.nb) } });
+                                } else {
+                                if (E === g4(mS.sJ, mS.sK))
+                                    try {
+                                        const dz = await f[g4(0x1469, '5M6D')](),
+                                            dA = { 'enableRouting': typeof dz[g4(0x9ad, 'dZbH')] === g4(0x1e9c, 'V#kN') ? dz[g4(0xf80, '2#Qk')] : !![], 'enableGeoIP': typeof dz[g4(0x95d, 'T3Fv')] === g4(0x862, 'wCGK') ? dz[g4(0x13fa, 'oeP*')] : !![], 'enableGeoSite': typeof dz[g4(mS.sL, 'NxG1')] === g4(0x199a, 'NxG1') ? dz[g4(mS.sM, mS.sN)] : !![], 'enableAdBlock': typeof dz[g4(mS.sO, '$p[^')] === g4(0x1378, mS.sP) ? dz[g4(mS.sQ, mS.oJ)] : !![], 'enablePornBlock': typeof dz[g4(mS.sR, mS.o8)] === g4(0x1378, '[]Y1') ? dz[g4(mS.sS, 'dZbH')] : ![], 'enableMalwareBlock': typeof dz[g4(0xe34, mS.sT)] === g4(0x1bf8, mS.qs) ? dz[g4(mS.sU, 'jODS')] : ![], 'enablePhishingBlock': typeof dz[g4(mS.sV, 'yxI7')] === g4(0x499, mS.n6) ? dz[g4(mS.sW, mS.sX)] : ![], 'blockQUIC': typeof dz[g4(mS.sY, mS.aF)] === g4(mS.sZ, mS.fs) ? dz[g4(0xb2f, '89Hn')] : ![], 'bypassChina': typeof dz[g4(0xb80, mS.t0)] === g4(0xa97, mS.o8) ? dz[g4(0x2c0, 'w(Wr')] : ![], 'bypassRussia': typeof dz[g4(mS.t1, 'rsIZ')] === g4(0xa97, mS.t2) ? dz[g4(0x21d, 'w(Wr')] : ![], 'bypassSanctions': typeof dz[g4(mS.t3, mS.eM)] === g4(mS.t4, '9rQu') ? dz[g4(0x1630, mS.t5)] : ![], 'backendMode': typeof dz[g4(mS.t6, 'XITC')] === g4(0x1bdb, mS.t7) ? dz[g4(0x12ea, mS.t8)] : ![], 'backendUrl': typeof dz[g4(0x104a, 'dn8p')] === g4(0xee2, mS.t9) && /^https?:\/\//i[g4(mS.ta, 'zs!c')](dz[g4(mS.tb, '[]Y1')][g4(mS.tc, mS.td)]()) ? dz[g4(mS.te, 'dZbH')][g4(0x1aa0, mS.o3)]()[g4(0x1d0f, '7NO9')](0x0, 0x12c) : '', 'enableDomesticBypass': typeof dz[g4(0x429, mS.tf)] === g4(mS.tg, '*lLT') ? dz[g4(mS.th, 'NxG1')] : !![], 'enableDoH': typeof dz[g4(mS.ti, mS.tj)] === g4(mS.tk, 'yxI7') ? dz[g4(mS.tl, mS.tm)] : !![], 'dohProvider': [g4(0x1411, 'oeP*'), g4(mS.tn, mS.to), g4(mS.tp, mS.bP), g4(0xc63, mS.tq)][g4(mS.tr, 'Mmsl')](dz[g4(0x4b2, 'dbGg')]) ? dz[g4(0x15d6, mS.o8)] : g4(mS.ts, mS.cR), 'enableLocalDNS': typeof dz[g4(mS.tt, mS.c8)] === g4(0x862, 'wCGK') ? dz[g4(mS.tu, 'mRB^')] : ![], 'localDNSIP': dz[g4(mS.tv, mS.O)] || g4(0xb23, mS.tw), 'localDNSPort': dz[g4(mS.tx, 'n7E3')] || '53', 'enableAntiSanctionDNS': typeof dz[g4(mS.ty, 'oeP*')] === g4(mS.tz, '8Ys%') ? dz[g4(mS.tA, 'd%lH')] : ![], 'antiSanctionDNSProvider': [g4(mS.tB, 'PYt$'), g4(mS.tC, 'n7E3'), g4(mS.tD, mS.tE), g4(0x6c7, '7NO9'), g4(0x10b2, 'CeJW'), g4(mS.tF, mS.tG), g4(0x90c, mS.pb)][g4(0x1dcf, mS.pk)](dz[g4(mS.tH, mS.nV)]) ? dz[g4(0x610, 'zs!c')] : g4(mS.tI, 'wCGK'), 'antiSanctionCustomDNS': dz[g4(0x4de, 'PSkb')] || '', 'enableFakeDNS': typeof dz[g4(0x35b, mS.dh)] === g4(0x12ed, 'mRB^') ? dz[g4(mS.tJ, mS.aB)] : ![], 'fakeDNSIP': dz[g4(mS.tK, '89Hn')] || g4(0x1b93, 'NxG1'), 'enableIPv6': typeof dz[g4(0xce3, 'w3Tt')] === g4(mS.tL, '2#Qk') ? dz[g4(0x10bc, '6UCx')] : !![], 'allowLAN': typeof dz[g4(mS.tM, mS.om)] === g4(0x1bf8, mS.i) ? dz[g4(mS.tN, mS.tO)] : ![], 'logLevel': [g4(mS.tP, mS.aP), g4(mS.tQ, mS.t7), g4(mS.tR, '$p[^'), g4(0xef4, mS.dc)][g4(mS.tS, mS.dC)](dz[g4(mS.tT, mS.tU)]) ? dz[g4(0x16f3, mS.bp)] : g4(0x6a8, '89Hn'), 'enableWarp': typeof dz[g4(mS.tV, '*lLT')] === g4(mS.tW, mS.eu) ? dz[g4(0x907, mS.pw)] : ![], 'warpMode': [g4(0x3a7, mS.tX), g4(0x1a87, 'mRB^'), g4(mS.tY, mS.B)][g4(0x1bf6, '9rQu')](dz[g4(mS.tZ, mS.u0)]) ? dz[g4(mS.u1, mS.rm)] : g4(mS.u2, mS.o2), 'warpEndpoint': dz[g4(0x121e, 'GzjL')] || '', 'warpAmnezia': typeof dz[g4(mS.u3, '$p[^')] === g4(0x31f, mS.u4) ? dz[g4(0x9e5, mS.od)] : ![], 'customRules': typeof dz[g4(mS.u5, 'T3Fv')] === g4(0xeb7, mS.u6) ? dz[g4(0x4f5, 'Mmsl')] : '', 'bypassCountries': Array[g4(mS.u7, '1qbp')](dz[g4(0x1765, mS.u8)]) ? [...new Set(dz[g4(0xd15, '#sM9')][g4(0x74b, 'PYt$')](dB => /^[a-z]{2}$/i[g4(0x710, 'NMJQ')](dB))[g4(mS.u9, mS.ua)](dB => dB[g4(0x1161, '5M6D')]()))][g4(mS.ub, 'PSkb')](0x0, 0x14) : [], 'blockCategories': Array[g4(0x233, mS.uc)](dz[g4(0x997, 'wCGK')]) ? dz[g4(mS.ud, mS.be)][g4(mS.ue, 'n7E3')](dB => [g4(0x1358, 'jODS'), g4(0xdf9, 'zs!c'), g4(0x10ab, 'V#kN'), g4(0xe4e, '89Hn')][g4(0x92e, '*lLT')](dB)) : [], 'warpNoise': dz[g4(mS.uf, mS.ug)] && typeof dz[g4(0x1d22, 'mRB^')] === g4(mS.uh, 'dn8p') ? { 'mode': ['', g4(0x110b, 'egod'), g4(mS.ui, mS.O)][g4(mS.uj, mS.u4)](dz[g4(mS.uk, mS.fn)][g4(mS.ul, 'w(Wr')]) ? dz[g4(mS.um, 'jODS')][g4(0x316, mS.t0)] : '', 'count': String(dz[g4(mS.un, '[]Y1')][g4(0x1c5, 'T3Fv')] || '')[g4(mS.uo, '60r9')](0x0, 0xc), 'size': String(dz[g4(mS.up, 'PYt$')][g4(0xf40, 'ZgMu')] || '')[g4(mS.uq, mS.ur)](0x0, 0xc), 'delay': String(dz[g4(0x662, '$BSl')][g4(0x1012, '%oj0')] || '')[g4(0x17f0, mS.nV)](0x0, 0xc) } : { 'mode': '', 'count': '', 'size': '', 'delay': '' } };
