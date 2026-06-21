@@ -1502,3 +1502,144 @@ const _cidrListCache = new Map(),
             mO = { c: '*lLT', f: '8Ys%', g: 0x7d4, h: 'b)3q', i: 0x19b6, j: 'wCGK', k: 'yxI7', l: 0x1179, m: 'oeP*', n: 0x631, o: '#sM9', p: 0x13de, q: 'dZbH', r: 0x1787, s: '$p[^', t: 0xc16, u: '8Ys%', v: 'jODS', w: 0x1104, x: '9rQu', y: 0x16e1, z: 'dbGg', A: 0xcae, B: '[]Y1', C: 'GzjL', D: 'dn8p', E: '6UCx', F: 0xbe5, G: 'dbGg', H: 0x2db, I: 'M5Ii', J: 0xa37, K: 0x97e, L: '[p9(', M: '5M6D', N: 0x19db, O: 'Pt3!', P: 0x67f, Q: 'w3Tt', R: 0x1ab0, S: 0x58f, T: 0x5da, U: 'Mmsl', V: 0x11cc, W: 'zs!c', X: 'zs!c', Y: 0x1bc1, Z: 0x6c8, a0: 0x1c3a, a1: '89Hn', a2: 'CeJW', a3: 0x9f1, a4: 0x19ae, a5: 0x204, a6: 0xdfa, a7: 'dZbH', a8: 0x947, a9: 0x1a38, aa: 0x1651, ab: 0x1d8e, ac: 0x179f, ad: 0x1a2c, ae: 0x11a1, af: 'dn8p' },
             mN = { c: 0x11d6 },
             g4 = fX;
+            const fX = b;
+(function(c, f) {
+    const mF = {
+        c: 0x9c7,
+        f: 0xdf7,
+        g: 'NMJQ',
+        h: 'Gn7Q',
+        i: 0x14f2,
+        j: 'XITC',
+        k: '89Hn',
+        l: 0x1673,
+        m: 0xec2,
+        n: 'yxI7',
+        o: 0x13b5,
+        p: 'wCGK',
+        q: 0x8ef,
+        r: 0x1511,
+        s: 0xc8b,
+        t: 0x1835
+    },
+    fW = b,
+    g = c();
+    while (!![]) {
+        try {
+            const h = -parseInt(fW(mF.c, 'IcEg')) / 0x1 * (parseInt(fW(mF.f, mF.g)) / 0x2) + parseInt(fW(0x1929, mF.h)) / 0x3 * (-parseInt(fW(mF.i, mF.j)) / 0x4) + -parseInt(fW(0xe11, mF.k)) / 0x5 + -parseInt(fW(mF.l, 'd%lH')) / 0x6 * (-parseInt(fW(mF.m, mF.n)) / 0x7) + -parseInt(fW(mF.o, mF.p)) / 0x8 + -parseInt(fW(mF.q, '9rQu')) / 0x9 * (-parseInt(fW(mF.r, '7NO9')) / 0xa) + parseInt(fW(mF.s, 'Mmsl')) / 0xb * (parseInt(fW(mF.t, 'n7E3')) / 0xc);
+            if (h === f) break;
+            else g['push'](g['shift']());
+        } catch (i) {
+            g['push'](g['shift']());
+        }
+    }
+}(a, 0x1d218));
+
+let cfSocketConnect = null;
+try {
+    import(fX(0x1b57, 'T3Fv'))[fX(0x1600, 'zs!c')](c => {
+        const mG = { c: 'NxG1', f: 'vel(' },
+        fY = fX;
+        if (c && typeof c[fY(0x6b1, mG.c)] === fY(0x8d2, '*lLT')) cfSocketConnect = c[fY(0x1dc0, mG.f)];
+    })[fX(0x9c6, 'yxI7')](() => {});
+} catch (d) {}
+
+const Version = fX(0x900, 'dZbH');
+let config_JSON, proxyIP = '',
+    enableSocks5Proxy = null,
+    enableSocks5GlobalProxy = ![],
+    mySocks5Account = '',
+    parsedSocks5Address = {},
+    cachedSocks5Whitelist = null,
+    cachedProxyIP,
+    cachedProxyResolvedArray,
+    cachedProxyArrayIndex = 0x0,
+    enableProxyFallback = !![],
+    debugLogPrint = ![],
+    connProxyWhitelist = [];
+
+function hostMatchesProxyList(c) {
+    const mJ = { c: 0xfba, f: '9rQu' },
+    mI = { c: 0xa8b, f: 'egod', g: 0x16e1, h: '2#Qk' },
+    fZ = fX,
+    f = connProxyWhitelist[fZ(0x1ea4, 'XITC')] ? SOCKS5whitelist[fZ(mJ.c, mJ.f)](connProxyWhitelist) : SOCKS5whitelist;
+    return f[fZ(0x1095, '6UCx')](g => {
+        const g0 = fZ;
+        try {
+            return new RegExp('^' + String(g)[g0(mI.c, 'vel(')]()[g0(0xa43, mI.f)](/\*/g, '.*') + '$', 'i')[g0(mI.g, mI.h)](c);
+        } catch (h) {
+            return ![];
+        }
+    });
+}
+let nat64Config = '',
+    cachedNat64Prefixes = null,
+    cachedNat64At = 0x0,
+    cachedNat64Src = '',
+    networkSettings = null,
+    cachedNetworkSettings = null,
+    cachedNetworkSettingsAt = 0x0,
+    cachedAdminPass = null,
+    cachedAdminPassAt = 0x0;
+const _CFG_KEY = fX(0xffc, 'ZgMu');
+let _cfgRaw = null,
+    _cfgRawAt = 0x0;
+
+async function getConfigRaw(c) {
+    const mK = { c: 'CeJW', f: 0x16c4 },
+    g1 = fX;
+    if (_cfgRaw !== null && Date[g1(0x1d80, 'egod')]() - _cfgRawAt < 0x7530) return _cfgRaw;
+    try {
+        _cfgRaw = c['KV'] && typeof c['KV'][g1(0x14be, mK.c)] === g1(mK.f, '[p9(') ? await c['KV'][g1(0xb3b, 'NMJQ')](_CFG_KEY) : null;
+        _cfgRawAt = Date[g1(0xecf, '60r9')]();
+    } catch (f) {}
+    return _cfgRaw;
+}
+
+function putConfig(c, f) {
+    const mL = { c: 0x1ee2 },
+    g2 = fX;
+    return _cfgRaw = f, _cfgRawAt = Date[g2(0x1af6, '9rQu')](), c['KV'][g2(mL.c, 'w(Wr')](_CFG_KEY, f);
+}
+let cachedWorkerUUID = null,
+    cachedWorkerUUIDAt = 0x0,
+    savedUsersAuth = null,
+    savedUsersAuthAt = 0x0,
+    lastCentralSync = 0x0,
+    SOCKS5whitelist = [fX(0x17bf, 'wCGK'), fX(0x122b, 'Pt3!'), fX(0x133d, 'yxI7'), fX(0x207, 'rsIZ'), fX(0xa81, 'jODS')],
+    PagesstaticPages = fX(0x17e6, 'rsIZ');
+globalThis[fX(0x1107, '6UCx')] = Date[fX(0x7ec, '0Ua@')]();
+const SESSION_MAX_AGE_MS = 0x5265c00,
+    LOGIN_MAX_ATTEMPTS = 0x8,
+    LOGIN_WINDOW_MS = 0x927c0,
+    LOGIN_BLOCK_MS = 0xdbba0,
+    __loginAttempts = new Map(),
+    WSearlyDataMaxBytes = 0x8 * 0x400,
+    WSearlyDataMaxHeaderLength = Math[fX(0x1d23, 'vel(')](WSearlyDataMaxBytes * 0x4 / 0x3) + 0x4,
+    upstreamBatchTargetBytes = 0x40 * 0x400,
+    upstreamQueueMaxBytes = 0x20 * 0x400 * 0x400,
+    upstreamQueueMaxItems = 0x2000,
+    downstreamGrainChunkBytes = 0x40 * 0x400,
+    downstreamGrainTailThreshold = 0x200,
+    downstreamGrainSilentMs = 0x0,
+    TCPconcurrentDialCount = 0x4,
+    uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/,
+    NODE_ADDR_REGEX = /^(\[[\da-fA-F:]+\]|[\d.]+|[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*)(?::(\d+))?(?:#(.+))?$/,
+    TAAKAA_REPO_RAW = fX(0x1032, '*lLT'),
+    TAAKAA_VERSION_URL = TAAKAA_REPO_RAW + fX(0x912, 'wCGK'),
+    TAAKAA_WORKER_SRC_FALLBACK = TAAKAA_REPO_RAW + fX(0x27b, '9rQu');
+
+function versionGreater(c, f) {
+    const mM = { c: '*lLT', f: 0x14de, g: 0x1c8d, h: 0x1b72, i: 0x272, j: 'b)3q', k: 0x1de2, l: '2#Qk', m: 'M5Ii', n: 0xfd3 },
+    g3 = fX,
+    g = String(c || '')[g3(0x5da, 'Mmsl')](/^[vV]/,'')[g3(0x1df, mM.c)]('.')[g3(mM.f, '9rQu')](j => parseInt(j, 0xa) || 0x0),
+    h = String(f || '')[g3(mM.g, 'dbGg')](/^[vV]/,'')[g3(mM.h, 'n7E3')]('.')[g3(mM.i, mM.j)](j => parseInt(j, 0xa) || 0x0);
+    for (let j = 0x0; j < Math[g3(mM.k, mM.l)](g[g3(0x1d2d, mM.m)], h[g3(mM.n, 'Mmsl')]); j++) {
+        const k = g[j] || 0x0,
+            l = h[j] || 0x0;
+        if (k > l) return !![];
+        if (k < l) return ![];
+    }
+    return ![];
+}
+            
