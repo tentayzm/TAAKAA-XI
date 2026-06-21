@@ -3703,7 +3703,6 @@ if (E === g4(0x16fe, 'wCGK'))
                                             return await g['KV'][g4(mS.uI, 'yxI7')](g4(mS.uJ, '[p9('), JSON[g4(mS.uK, mS.fE)](dA, null, 0x2)), cachedNetworkSettings = null, h[g4(0x1d94, mS.uL)](requestLogRecord(g, f, F, g4(0x381, mS.uM), config_JSON)), new Response(JSON[g4(0xeee, '1qbp')]({ 'success': !![], 'message': g4(0x5d1, 'V#kN') }), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.uN, '%oj0') } });
                                         } catch (dD) {
                                             return console[g4(0x781, 'GzjL')](g4(mS.uO, 'Gn7Q'), dD), new Response(JSON[g4(mS.uP, 'GzjL')]({ 'error': g4(0xbf1, 'Gn7Q') + dD[g4(0x7a5, mS.uQ)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x4d7, 'w(Wr') } });
-                                        } else {
                                         if (a5 === g4(0x1ee1, mS.rD))
                                             try {
                                                 const dE = await f[g4(mS.uR, 'zs!c')]();
@@ -3720,7 +3719,7 @@ if (E === g4(0x16fe, 'wCGK'))
                         }
                     }
                 }
-            } else {
+            } 
                 if (E === g4(0x10ec, 'dbGg')) return new Response(JSON[g4(0x1001, 'w3Tt')](config_JSON, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(mS.v5, 'rsIZ') } });
                 else {
                     if (E === g4(mS.v6, mS.r5))
@@ -3730,8 +3729,7 @@ if (E === g4(0x16fe, 'wCGK'))
                                 dI = dG ? JSON[g4(0x709, mS.va)](dG) : dH;
                             return new Response(JSON[g4(0x631, mS.oN)](dI, null, 0x2), { 'status': 0xc8, 'headers': { 'Content-Type': g4(0x121d, 'zs!c') } });
                         } catch (dJ) {
-                            return new Response(JSON[g4(mS.sG, '6UCx')]({ 'error': dJ[g4(0xdd4, mS.dh)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x4b6, mS.sd) } });
-                        } else {
+                            return new Response(JSON[g4(mS.sG, '6UCx')]({ 'error': dJ[g4(0xdd4, mS.dh)] }), { 'status': 0x1f4, 'headers': { 'Content-Type': g4(0x4b6, mS.sd) } }); 
                         if (E === g4(mS.vb, mS.vc))
                             try {
                                 const dK = JSON[g4(mS.vd, 'C2T0')](await g['KV'][g4(0x511, 'Gn7Q')](g4(0x916, '$BSl')) || '{}');
