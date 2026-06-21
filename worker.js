@@ -1,731 +1,1787 @@
 // ============================================================
-// TAAKAA-XI v6.5 – بخش ۱: Constants, Helpers, UserManager
+// TaaKaa-XI v1.0 - بخش ۱: Constants + Utils + Obfuscation
 // ============================================================
 
-const GB = 1024 * 1024 * 1024;
-const KB = 1024;
-const CACHE_TTL = 5000;
-const LOCK_TTL = 5;
-const TOAST_DURATION = 6000;
-const MAX_USERS_PER_PAGE = 50;
-const DAY_MS = 86400000;
-const MAX_TRAFFIC_GB = 1000;
-const MAX_EXPIRY_DAYS = 365;
-const MIN_EXPIRY_DAYS = 1;
-const MIN_TRAFFIC_GB = 1;
-const RATE_LIMIT_GENERATE = 10;
-const RATE_LIMIT_LOGIN = 5;
-const RATE_LIMIT_ADMIN = 100;
-const RATE_LIMIT_SUB = 50;
+const _0x4a2f = ['TaaKaa-XI', 'پنل TaaKaa-XI', 'مدیریت', 'کاربران', 'ترافیک', 'لاگ‌ها', 'پشتیبان‌گیری', 'تنظیمات'];
+const _0x9b8c = (s, n) => s.charCodeAt(n % s.length);
+const _0x3d7e = (s) => {
+  let r = 0;
+  for (let i = 0; i < s.length; i++) r = ((r << 5) - r + s.charCodeAt(i)) | 0;
+  return r;
+};
+
+// ====== CONSTANTS ======
+const APP_NAME = 'TaaKaa-XI';
+const APP_TAGLINE = 'سرویس برتر فیلترشکن';
+const APP_VERSION = '1.0.0';
+const APP_AUTHOR = 'TaaKaa-XI Team';
+const BUILDER_TAG = 'This service isnt free-TaaKaa-XI';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Max-Age': '86400'
+  'Access-Control-Max-Age': '86400',
 };
 
-const RATE_LIMITS = {
-  generate: RATE_LIMIT_GENERATE,
-  login: RATE_LIMIT_LOGIN,
-  admin: RATE_LIMIT_ADMIN,
-  sub: RATE_LIMIT_SUB
+// ====== FLAG HELPER ======
+const FLAGS = {
+  DE: '🇩🇪', NL: '🇳🇱', US: '🇺🇸', GB: '🇬🇧', FR: '🇫🇷',
+  CA: '🇨🇦', JP: '🇯🇵', SG: '🇸🇬', TR: '🇹🇷', AE: '🇦🇪',
+  IT: '🇮🇹', ES: '🇪🇸', SE: '🇸🇪', NO: '🇳🇴', FI: '🇫🇮',
+  CH: '🇨🇭', AT: '🇦🇹', BE: '🇧🇪', DK: '🇩🇰', IE: '🇮🇪',
+  PL: '🇵🇱', CZ: '🇨🇿', RO: '🇷🇴', HU: '🇭🇺', GR: '🇬🇷',
+  PT: '🇵🇹', BR: '🇧🇷', AR: '🇦🇷', MX: '🇲🇽', AU: '🇦🇺',
+  IN: '🇮🇳', HK: '🇭🇰', KR: '🇰🇷', TW: '🇹🇼', TH: '🇹🇭',
+  MY: '🇲🇾', ID: '🇮🇩', PH: '🇵🇭', VN: '🇻🇳', RU: '🇷🇺',
+  UA: '🇺🇦', IR: '🇮🇷', SA: '🇸🇦', EG: '🇪🇬', ZA: '🇿🇦',
 };
 
-const OPERATOR_CONFIG = {
-  'irancell': { fragment: '1-3', network: 'tcp', country: 'NL' },
-  'hamrahe-aval': { fragment: '3-5', network: 'ws', country: 'FR' },
-  'rightel': { fragment: '3-7', network: 'ws', country: 'US' },
-  'mobin-net': { fragment: '2-5', network: 'grpc', country: 'DE' },
-  'shatel': { fragment: '4-8', network: 'ws', country: 'SG' },
-  'mokhaberat': { fragment: '2-6', network: 'grpc', country: 'UK' }
-};
-
-const FLAG_MAP = {
-  'US': '🇺🇸', 'DE': '🇩🇪', 'UK': '🇬🇧', 'FR': '🇫🇷',
-  'CA': '🇨🇦', 'JP': '🇯🇵', 'SG': '🇸🇬', 'AU': '🇦🇺',
-  'IR': '🇮🇷', 'RU': '🇷🇺', 'NL': '🇳🇱', 'IT': '🇮🇹',
-  'ES': '🇪🇸', 'BR': '🇧🇷', 'IN': '🇮🇳', 'AE': '🇦🇪',
-  'TR': '🇹🇷'
-};
-const DEFAULT_FLAG = '🌍';
-
-function generateUUID() {
-  try { return crypto.randomUUID(); } catch {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
+function getFlag(code) {
+  return FLAGS[code] || '🌐';
 }
 
-function base64Encode(str) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  let binary = '';
-  for (let i = 0; i < data.length; i++) binary += String.fromCharCode(data[i]);
-  return btoa(binary);
-}
-
-function validateUserId(userId) {
-  return /^[a-zA-Z0-9_-]{1,64}$/.test(userId);
-}
-
-function validateExpiryDays(days) {
-  return !isNaN(days) && days >= MIN_EXPIRY_DAYS && days <= MAX_EXPIRY_DAYS;
-}
-
-function validateTrafficGB(gb) {
-  return !isNaN(gb) && gb >= MIN_TRAFFIC_GB && gb <= MAX_TRAFFIC_GB;
-}
-
-function sanitizeHTML(str) {
-  if (!str) return '';
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-  return str.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
-
-function checkAdminAuth(request, adminPass) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader) return false;
-  return authHeader.replace(/^Bearer\s+/i, '') === adminPass;
-}
-
-function createCorsResponse(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status: status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-  });
-}
-
-async function checkRateLimit(env, ip, action) {
+// ====== ENCODER / DECODER ======
+const _enc = (str) => {
   try {
-    const key = 'rate:' + action + ':' + ip;
-    const current = parseInt(await env.KV.get(key) || '0');
-    const limit = RATE_LIMITS[action] || 10;
-    if (current >= limit) return false;
-    await env.KV.put(key, String(current + 1), { expirationTtl: 3600 });
-    return true;
-  } catch { return true; }
-}
+    return btoa(String.fromCharCode(...new TextEncoder().encode(str)));
+  } catch {
+    return btoa(str);
+  }
+};
 
-function getFlag(country) { return FLAG_MAP[country] || DEFAULT_FLAG; }
+const _dec = (b64) => {
+  try {
+    return new TextDecoder().decode(Uint8Array.from(atob(b64), c => c.charCodeAt(0)));
+  } catch {
+    return atob(b64);
+  }
+};
 
-function buildVlessUrl(p) {
-  return 'vless://' + p.uuid + '@' + p.address + ':' + p.port +
-    '?encryption=' + p.encryption + '&flow=' + p.flow +
-    '&security=' + p.security + '&sni=' + p.sni +
-    '&fp=chrome&type=' + p.network + '&path=/&fragment=' + p.fragment +
-    '&ech=' + p.ech + '&warp=' + p.warp + '#' + encodeURIComponent(p.name);
-}
+// ====== HASH (UUID-like) ======
+const _h = (s) => {
+  let h = _0x3d7e(s);
+  const hex = '0123456789abcdef';
+  let r = '';
+  for (let i = 0; i < 36; i++) {
+    if (i === 8 || i === 13 || i === 18 || i === 23) r += '-';
+    else if (i === 14) r += '4';
+    else {
+      const x = (h + _0x9b8c(s, i)) & 0xf;
+      r += hex[(i === 19) ? (x & 0x3) | 0x8 : x];
+      h = ((h << 5) - h + s.charCodeAt(i % s.length)) | 0;
+    }
+  }
+  return r;
+};
 
-function buildTrojanUrl(p) {
-  return 'trojan://' + p.password + '@' + p.address + ':' + p.port +
-    '?sni=' + p.sni + '&security=' + p.security +
-    '&fragment=' + p.fragment + '&ech=' + p.ech +
-    '#' + encodeURIComponent(p.name);
-}
+// ====== VALIDATORS ======
+const isValidUUID = (u) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(u);
 
-// ===== کلاس مدیریت کاربران =====
+const isValidCountry = (c) => FLAGS.hasOwnProperty(c);
+
+const isValidDays = (d) => Number.isInteger(d) && d > 0 && d <= 3650;
+
+const isValidGB = (g) => Number.isInteger(g) && g > 0 && g <= 100000;
+
+// ====== UTILS ======
+const json = (data, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+
+const text = (data, status = 200, contentType = 'text/plain') =>
+  new Response(data, {
+    status,
+    headers: { 'Content-Type': contentType, ...CORS_HEADERS },
+  });
+
+const html = (data, status = 200) =>
+  new Response(data, {
+    status,
+    headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
+  });
+
+const error = (msg, status = 400) => json({ success: false, error: msg }, status);
+
+const ok = (data = {}) => json({ success: true, ...data });
+
+const getDate = (daysFromNow = 30) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysFromNow);
+  return d.toISOString();
+};
+
+const parseGB = (bytes) => Math.round((bytes / (1024 ** 3)) * 100) / 100;
+
+const safeJSON = (s, fallback = null) => {
+  try { return JSON.parse(s); } catch { return fallback; }
+};
+
+// ====== RATE LIMIT (simple) ======
+const _rateLimitMap = new Map();
+const rateLimit = (key, max = 60, window = 60000) => {
+  const now = Date.now();
+  const record = _rateLimitMap.get(key) || { count: 0, reset: now + window };
+  if (now > record.reset) {
+    record.count = 0;
+    record.reset = now + window;
+  }
+  record.count++;
+  _rateLimitMap.set(key, record);
+  return {
+    allowed: record.count <= max,
+    remaining: Math.max(0, max - record.count),
+    reset: record.reset,
+  };
+};
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۲: UserManager + KV + Backup System
+// ============================================================
+
 class UserManager {
-  constructor(kv, db, ctx) {
-    this.kv = kv; this.db = db; this.ctx = ctx;
-    this._usersCache = null; this._cacheTime = 0;
+  constructor(kv, ctx) {
+    this.kv = kv;
+    this.ctx = ctx;
+    this.cacheKey = 'TaaKaa-XI:users:v2';
+    this.backupKey = 'TaaKaa-XI:backup:v2';
+    this.logsKey = 'TaaKaa-XI:logs:v2';
   }
 
+  // ====== GET ALL USERS ======
   async getUsers() {
-    const now = Date.now();
-    if (this._usersCache && (now - this._cacheTime) < CACHE_TTL) return this._usersCache;
     try {
-      const data = await this.kv.get('users', 'json');
-      this._usersCache = data || {};
-      this._cacheTime = now;
-      return this._usersCache;
-    } catch { return {}; }
+      const data = await this.kv.get(this.cacheKey);
+      return data ? JSON.parse(data) : {};
+    } catch (e) {
+      console.error('TaaKaa-XI: getUsers error:', e);
+      return await this.getBackup();
+    }
   }
 
-  async saveUsers(users) {
-    try {
-      await this.kv.put('users', JSON.stringify(users));
-      this._usersCache = users;
-      this._cacheTime = Date.now();
-    } catch {}
-  }
-
-  async acquireLock(userId, ttl = 5) {
-    try {
-      const key = 'lock:user:' + userId;
-      if (await this.kv.get(key)) return false;
-      await this.kv.put(key, '1', { expirationTtl: ttl });
-      return true;
-    } catch { return true; }
-  }
-
-  async releaseLock(userId) {
-    try { await this.kv.delete('lock:user:' + userId); } catch {}
-  }
-
-  async createUser(userId, expiryDays, trafficGB) {
-    if (!validateUserId(userId)) return { success: false, error: 'UserId نامعتبر است' };
-    let days = expiryDays, gb = trafficGB;
-    if (!validateExpiryDays(days)) days = 30;
-    if (!validateTrafficGB(gb)) gb = 10;
-
-    const locked = await this.acquireLock(userId);
-    if (!locked) return { success: false, error: 'در حال پردازش' };
-
-    try {
-      const users = await this.getUsers();
-      if (users[userId]) return { success: false, error: 'کاربر قبلاً وجود دارد' };
-
-      const uuid = generateUUID();
-      const expiryDate = new Date(Date.now() + days * DAY_MS).toISOString();
-      users[userId] = {
-        uuid, expiryDate, trafficLimit: gb * GB, trafficUsed: 0,
-        createdAt: new Date().toISOString(), isActive: true, devices: [], ipHistory: []
-      };
-
-      await this.saveUsers(users);
-      if (this.ctx) {
-        this.ctx.waitUntil(
-          this.db.prepare(
-            'INSERT INTO users (id, uuid, expiry_date, traffic_limit, created_at) VALUES (?, ?, ?, ?, ?)'
-          ).bind(userId, uuid, expiryDate, gb * GB, new Date().toISOString()).run()
-        );
-      }
-      return { success: true, user: users[userId] };
-    } finally { await this.releaseLock(userId); }
-  }
-
-  async renewUser(userId, expiryDays, trafficGB, resetTraffic = false) {
-    if (!validateUserId(userId)) return { success: false, error: 'UserId نامعتبر است' };
-    const users = await this.getUsers();
-    if (!users[userId]) return { success: false, error: 'کاربر یافت نشد' };
-
-    let days = expiryDays, gb = trafficGB;
-    if (!validateExpiryDays(days)) days = 30;
-    if (!validateTrafficGB(gb)) gb = 10;
-
-    const locked = await this.acquireLock(userId);
-    if (!locked) return { success: false, error: 'در حال پردازش' };
-
-    try {
-      users[userId].expiryDate = new Date(Date.now() + days * DAY_MS).toISOString();
-      users[userId].trafficLimit = gb * GB;
-      if (resetTraffic) users[userId].trafficUsed = 0;
-      users[userId].isActive = true;
-      await this.saveUsers(users);
-      return { success: true, user: users[userId] };
-    } finally { await this.releaseLock(userId); }
-  }
-
+  // ====== GET ONE USER ======
   async getUser(userId) {
-    if (!userId) return null;
     const users = await this.getUsers();
     return users[userId] || null;
   }
 
-  async deleteUser(userId) {
-    const users = await this.getUsers();
-    if (!users[userId]) return { success: false, error: 'کاربر یافت نشد' };
-    delete users[userId];
-    await this.saveUsers(users);
-    if (this.ctx) {
-      this.ctx.waitUntil(this.db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run());
+  // ====== SAVE USERS (atomic) ======
+  async saveUsers(users) {
+    try {
+      await this.autoBackup(users);
+      await this.kv.put(this.cacheKey, JSON.stringify(users));
+      return true;
+    } catch (e) {
+      console.error('TaaKaa-XI: saveUsers error:', e);
+      return false;
     }
-    return { success: true };
   }
 
+  // ====== CREATE USER ======
+  async createUser(userId, userData) {
+    const users = await this.getUsers();
+    if (users[userId]) {
+      throw new Error('کاربر از قبل وجود دارد');
+    }
+    users[userId] = {
+      ...userData,
+      createdAt: new Date().toISOString(),
+      lastAccess: null,
+      accessCount: 0,
+      trafficUsed: 0,
+    };
+    await this.saveUsers(users);
+    await this.log(`کاربر ساخته شد: ${userId}`, 'info');
+    return users[userId];
+  }
+
+  // ====== UPDATE USER ======
+  async updateUser(userId, updates) {
+    const users = await this.getUsers();
+    if (!users[userId]) throw new Error('کاربر یافت نشد');
+    users[userId] = { ...users[userId], ...updates };
+    await this.saveUsers(users);
+    return users[userId];
+  }
+
+  // ====== DELETE USER ======
+  async deleteUser(userId) {
+    const users = await this.getUsers();
+    if (!users[userId]) throw new Error('کاربر یافت نشد');
+    delete users[userId];
+    await this.saveUsers(users);
+    await this.log(`کاربر حذف شد: ${userId}`, 'warn');
+    return true;
+  }
+
+  // ====== RENEW USER ======
+  async renewUser(userId, days) {
+    const user = await this.getUser(userId);
+    if (!user) throw new Error('کاربر یافت نشد');
+    const now = new Date();
+    const expiry = new Date(user.expiryDate);
+    const base = expiry > now ? expiry : now;
+    base.setDate(base.getDate() + days);
+    return await this.updateUser(userId, {
+      expiryDate: base.toISOString(),
+      trafficUsed: 0,
+    });
+  }
+
+  // ====== CHECK VALIDITY ======
   async checkUserValidity(userId) {
     const user = await this.getUser(userId);
     if (!user) return { valid: false, reason: 'کاربر یافت نشد' };
-
-    const now = new Date();
-    if (now > new Date(user.expiryDate)) {
-      user.isActive = false;
-      const users = await this.getUsers();
-      users[userId] = user;
-      await this.saveUsers(users);
-      return { valid: false, reason: 'مدت زمان اعتبار به پایان رسیده است' };
+    if (new Date(user.expiryDate) < new Date()) {
+      return { valid: false, reason: 'اشتراک منقضی شده' };
     }
-    if (user.trafficUsed >= user.trafficLimit) {
-      user.isActive = false;
-      const users = await this.getUsers();
-      users[userId] = user;
-      await this.saveUsers(users);
-      return { valid: false, reason: 'محدودیت حجم مصرف شده است' };
+    if ((user.trafficUsed || 0) >= (user.trafficLimit || 0)) {
+      return { valid: false, reason: 'ترافیک تمام شده' };
     }
-    return { valid: true };
+    await this.updateUser(userId, {
+      lastAccess: new Date().toISOString(),
+      accessCount: (user.accessCount || 0) + 1,
+    });
+    return { valid: true, user };
   }
 
-  async recordUsage(userId, bytes) {
-    if (!userId || typeof bytes !== 'number' || bytes <= 0) return;
-    const locked = await this.acquireLock(userId, 2);
-    if (!locked) return;
-    try {
-      const users = await this.getUsers();
-      if (!users[userId]) return;
-      users[userId].trafficUsed += bytes;
-      if (users[userId].trafficUsed >= users[userId].trafficLimit) {
-        users[userId].isActive = false;
-      }
-      await this.saveUsers(users);
-    } finally { await this.releaseLock(userId); }
+  // ====== USAGE TRACKING ======
+  async trackUsage(userId, bytes) {
+    const user = await this.getUser(userId);
+    if (!user) return;
+    await this.updateUser(userId, {
+      trafficUsed: (user.trafficUsed || 0) + bytes,
+    });
   }
 
-  async cleanupExpiredUsers() {
+  // ====== GET STATS ======
+  async getStats() {
     const users = await this.getUsers();
+    const arr = Object.values(users);
     const now = new Date();
-    let deleted = 0;
-    for (const [id, user] of Object.entries(users)) {
-      if (new Date(user.expiryDate) < now) { delete users[id]; deleted++; }
-    }
-    if (deleted > 0) await this.saveUsers(users);
-    return deleted;
-  }
-
-  async backupUsers() {
-    try {
-      const users = await this.getUsers();
-      await this.kv.put('users_backup', JSON.stringify({
-        timestamp: new Date().toISOString(),
-        count: Object.keys(users).length,
-        data: users
-      }));
-      return true;
-    } catch { return false; }
-  }
-        }
-// ============================================================
-// TAAKAA-XI v6.5 – بخش ۲: ConfigGenerator
-// ============================================================
-
-class ConfigGenerator {
-  constructor(env) { this.env = env; }
-
-  generateVLESS(userId, userData, operator) {
-    const uuid = userData.uuid || this.env.UUID;
-    const country = userData.country || 'DE';
-    const flag = getFlag(country);
-    const config = OPERATOR_CONFIG[operator] || {};
-    const frag = config.fragment || '2-5';
-    const network = config.network || 'tcp';
-
     return {
-      type: 'vless', uuid, address: this.env.PROXYIP, port: 443,
-      encryption: 'none', flow: 'xtls-rprx-vision', network,
-      security: 'tls', sni: this.env.PROXYIP, expiry: userData.expiryDate,
-      userId, country, flag,
-      fragment: this.env.ENABLE_FRAGMENT !== 'false' ? frag : 'off',
-      ech: this.env.ENABLE_ECH !== 'false' ? 'true' : 'false',
-      warp: this.env.ENABLE_WARP !== 'false' ? 'true' : 'false'
+      total: arr.length,
+      active: arr.filter(u => new Date(u.expiryDate) > now).length,
+      expired: arr.filter(u => new Date(u.expiryDate) <= now).length,
+      totalTraffic: arr.reduce((s, u) => s + (u.trafficUsed || 0), 0),
+      totalTrafficGB: parseGB(arr.reduce((s, u) => s + (u.trafficUsed || 0), 0)),
     };
   }
 
-  generateTrojan(userId, userData, operator) {
+  // ====== BACKUP ======
+  async autoBackup(users) {
+    try {
+      await this.kv.put(this.backupKey, JSON.stringify(users));
+    } catch (e) {}
+  }
+
+  async getBackup() {
+    try {
+      const data = await this.kv.get(this.backupKey);
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  // ====== LOGS ======
+  async log(message, level = 'info') {
+    try {
+      const logs = await this.getLogs();
+      logs.push({
+        time: new Date().toISOString(),
+        message,
+        level,
+      });
+      if (logs.length > 1000) logs.shift();
+      await this.kv.put(this.logsKey, JSON.stringify(logs));
+    } catch (e) {}
+  }
+
+  async getLogs() {
+    try {
+      const data = await this.kv.get(this.logsKey);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // ====== CLEANUP EXPIRED ======
+  async cleanupExpired() {
+    const users = await this.getUsers();
+    const now = new Date();
+    let removed = 0;
+    for (const [id, user] of Object.entries(users)) {
+      if (new Date(user.expiryDate) < now) {
+        delete users[id];
+        removed++;
+      }
+    }
+    if (removed > 0) await this.saveUsers(users);
+    return removed;
+  }
+}
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۳: ConfigGenerator (VLESS/Trojan/VMess)
+// ============================================================
+
+class ConfigGenerator {
+  constructor(env) {
+    this.env = env;
+    this.CLEAN_IPS = [
+      '162.159.152.1', '162.159.153.1', '162.159.154.1',
+      '162.159.192.1', '162.159.195.1',
+      '104.16.0.1', '104.16.1.1', '104.16.16.1',
+      '141.101.64.1', '141.101.65.1', '141.101.66.1',
+      '198.41.192.1', '198.41.208.1',
+      '188.114.96.1', '188.114.97.1', '188.114.98.1',
+      '173.245.48.1', '173.245.49.1',
+      '103.21.244.1', '103.21.245.1',
+      '103.22.200.1', '103.22.201.1',
+      '103.31.4.1', '103.31.5.1',
+      '107.154.0.1', '107.154.1.1',
+      '197.234.240.1', '197.234.241.1',
+    ];
+  }
+
+  getProxyIP() {
+    if (this.env.PROXYIP) return this.env.PROXYIP;
+    return this.CLEAN_IPS[Math.floor(Math.random() * this.CLEAN_IPS.length)];
+  }
+
+  getProxyIPList() {
+    const custom = this.env.PROXYIP ? [this.env.PROXYIP] : [];
+    return [...custom, ...this.CLEAN_IPS].slice(0, 5);
+  }
+
+  generateVLESS(userId, userData, operator = 'default') {
+    const uuid = userData.uuid || this.env.UUID || _h('TaaKaa-XI:' + userId);
+    const country = userData.country || 'DE';
+    const flag = getFlag(country);
+    const address = this.getProxyIP();
+    const frag = userData.fragment || '2-5';
+    
+    const params = new URLSearchParams();
+    params.set('encryption', 'none');
+    params.set('flow', 'xtls-rprx-vision');
+    params.set('security', 'tls');
+    params.set('sni', address);
+    params.set('fp', 'chrome');
+    params.set('type', 'tcp');
+    params.set('path', '/');
+    
+    if (this.env.ENABLE_FRAGMENT !== 'false') {
+      params.set('fragment', frag);
+    }
+    if (this.env.ENABLE_ECH !== 'false') {
+      params.set('ech', 'true');
+    }
+    if (this.env.ENABLE_WARP !== 'false') {
+      params.set('warp', 'true');
+    }
+    
+    const configName = encodeURIComponent(
+      `${BUILDER_TAG} ${flag} ${country}`
+    );
+    
+    const link = `vless://${uuid}@${address}:443?${params.toString()}#${configName}`;
+    
+    return {
+      type: 'vless',
+      link,
+      uuid,
+      address,
+      port: 443,
+      expiry: userData.expiryDate,
+      userId,
+      country,
+      flag,
+    };
+  }
+
+  generateTrojan(userId, userData, operator = 'default') {
+    const password = userData.password || userData.uuid || this.env.TR_PASS || 'TaaKaa-XI';
     const country = userData.country || 'US';
     const flag = getFlag(country);
-    const config = OPERATOR_CONFIG[operator] || {};
-    const frag = config.fragment || '3-7';
-
+    const address = this.getProxyIP();
+    const frag = userData.fragment || '3-7';
+    
+    const params = new URLSearchParams();
+    params.set('security', 'tls');
+    params.set('sni', address);
+    params.set('type', 'tcp');
+    
+    if (this.env.ENABLE_FRAGMENT !== 'false') {
+      params.set('fragment', frag);
+    }
+    if (this.env.ENABLE_ECH !== 'false') {
+      params.set('ech', 'true');
+    }
+    
+    const configName = encodeURIComponent(
+      `${BUILDER_TAG} ${flag} ${country}`
+    );
+    
+    const link = `trojan://${password}@${address}:443?${params.toString()}#${configName}`;
+    
     return {
-      type: 'trojan', password: userData.uuid || this.env.TR_PASS,
-      address: this.env.PROXYIP, port: 443, sni: this.env.PROXYIP,
-      security: 'tls', expiry: userData.expiryDate, userId, country, flag,
-      fragment: this.env.ENABLE_FRAGMENT !== 'false' ? frag : 'off',
-      ech: this.env.ENABLE_ECH !== 'false' ? 'true' : 'false'
+      type: 'trojan',
+      link,
+      password,
+      address,
+      port: 443,
+      expiry: userData.expiryDate,
+      userId,
+      country,
+      flag,
     };
   }
 
   generateVMess(userId, userData) {
-    const uuid = userData.uuid || this.env.UUID;
+    const uuid = userData.uuid || this.env.UUID || _h('TaaKaa-XI:vmess:' + userId);
     const country = userData.country || 'SG';
     const flag = getFlag(country);
+    const address = this.getProxyIP();
+    
     const obj = {
-      v: '2', ps: 'TAAKAA-' + userId + ' ' + flag + ' ' + country,
-      add: this.env.PROXYIP, port: 443, id: uuid, aid: '0',
-      net: 'tcp', type: 'none', host: this.env.PROXYIP, path: '/',
-      tls: 'tls', sni: this.env.PROXYIP, fp: 'chrome'
+      v: '2',
+      ps: `${BUILDER_TAG} ${flag} ${country}`,
+      add: address,
+      port: '443',
+      id: uuid,
+      aid: '0',
+      net: 'tcp',
+      type: 'none',
+      host: address,
+      path: '/',
+      tls: 'tls',
+      sni: address,
+      fp: 'chrome',
     };
-    return { type: 'vmess', link: 'vmess://' + base64Encode(JSON.stringify(obj)), expiry: userData.expiryDate, country, flag };
-  }
-
-  generateShareLinks(userId, userData, operator) {
-    const links = [];
-    const country = userData.country || 'DE';
-    const flag = getFlag(country);
-    const name = 'TAAKAA-' + userId + ' ' + flag + ' ' + country;
-
-    if (this.env.ENABLE_VLESS !== 'false') {
-      const v = this.generateVLESS(userId, userData, operator);
-      links.push({ type: 'vless', link: buildVlessUrl({
-        uuid: v.uuid, address: v.address, port: v.port,
-        encryption: v.encryption, flow: v.flow, security: v.security,
-        sni: v.sni, network: v.network, fragment: v.fragment,
-        ech: v.ech, warp: v.warp, name: name
-      }), expiry: v.expiry, country, flag });
-    }
-
-    if (this.env.ENABLE_TROJAN !== 'false') {
-      const t = this.generateTrojan(userId, userData, operator);
-      links.push({ type: 'trojan', link: buildTrojanUrl({
-        password: t.password, address: t.address, port: t.port,
-        sni: t.sni, security: t.security, fragment: t.fragment,
-        ech: t.ech, name: name
-      }), expiry: t.expiry, country, flag });
-    }
-
-    if (this.env.ENABLE_VMESS !== 'false') {
-      const vmess = this.generateVMess(userId, userData);
-      links.push({ type: 'vmess', link: vmess.link, expiry: vmess.expiry, country, flag });
-    }
-
-    return links;
-  }
-
-  generateFullConfig(userId, userData, operator) {
-    const links = this.generateShareLinks(userId, userData, operator);
-    const expiry = userData.expiryDate;
-    const trafficLimit = userData.trafficLimit;
-    const trafficUsed = userData.trafficUsed || 0;
-    const trafficRemaining = trafficLimit - trafficUsed;
-
+    
+    const link = `vmess://${_enc(JSON.stringify(obj))}`;
+    
     return {
-      userId, expiry, trafficLimit, trafficUsed, trafficRemaining,
-      trafficLimitGB: Math.round(trafficLimit / GB * 100) / 100,
-      trafficUsedGB: Math.round(trafficUsed / GB * 100) / 100,
-      trafficRemainingGB: Math.round(trafficRemaining / GB * 100) / 100,
-      expiryDate: new Date(expiry).toLocaleDateString('fa-IR'),
-      links,
-      isActive: trafficRemaining > 0 && new Date(expiry) > new Date()
+      type: 'vmess',
+      link,
+      uuid,
+      address,
+      port: 443,
+      expiry: userData.expiryDate,
+      userId,
+      country,
+      flag,
     };
   }
-                                          }
+
+  generateFullConfig(userId, userData) {
+    const configs = [];
+    
+    if (this.env.ENABLE_VLESS !== 'false') {
+      configs.push(this.generateVLESS(userId, userData));
+    }
+    if (this.env.ENABLE_TROJAN !== 'false') {
+      configs.push(this.generateTrojan(userId, userData));
+    }
+    if (this.env.ENABLE_VMESS !== 'false') {
+      configs.push(this.generateVMess(userId, userData));
+    }
+    
+    return {
+      userId,
+      links: configs,
+      expiry: userData.expiryDate,
+      country: userData.country || 'DE',
+      flag: getFlag(userData.country || 'DE'),
+      trafficLimit: userData.trafficLimit || 10737418240,
+      trafficUsed: userData.trafficUsed || 0,
+    };
+  }
+  }
 // ============================================================
-// TAAKAA-XI v6.5 – بخش ۳: HTML_PANEL (مشکی-نارنجی)
+// TaaKaa-XI v1.0 - بخش ۴: Backend Proxy (VLESS WS Handler)
 // ============================================================
 
-const HTML_PANEL = `<!DOCTYPE html>
+class VLESSHandler {
+  constructor(env) {
+    this.env = env;
+    this.uuid = env.UUID || '90cd4a77-141a-43c9-991b-08263cfe9c10';
+  }
+
+  isValidUUID(uuid) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+  }
+
+  parseVlessHeader(buffer) {
+    if (buffer.byteLength < 24) return null;
+    
+    const view = new DataView(buffer);
+    const version = view.getUint8(0);
+    if (version !== 0) return null;
+    
+    const uuid = new Uint8Array(buffer, 1, 16);
+    const uuidStr = Array.from(uuid).map(b => b.toString(16).padStart(2, '0')).join('');
+    const formatted = `${uuidStr.slice(0,8)}-${uuidStr.slice(8,12)}-${uuidStr.slice(12,16)}-${uuidStr.slice(16,20)}-${uuidStr.slice(20,32)}`;
+    
+    const addon = view.getUint8(17);
+    const cmd = view.getUint8(18);
+    const port = view.getUint16(19);
+    
+    let addrType = view.getUint8(21);
+    let addr = '';
+    let offset = 22;
+    
+    if (addrType === 1) {
+      addr = `${view.getUint8(22)}.${view.getUint8(23)}.${view.getUint8(24)}.${view.getUint8(25)}`;
+      offset = 26;
+    } else if (addrType === 2) {
+      const len = view.getUint8(22);
+      const bytes = new Uint8Array(buffer, 23, len);
+      addr = new TextDecoder().decode(bytes);
+      offset = 23 + len;
+    } else if (addrType === 3) {
+      const bytes = new Uint8Array(buffer, 22, 16);
+      const parts = [];
+      for (let i = 0; i < 16; i += 2) {
+        parts.push(((bytes[i] << 8) | bytes[i+1]).toString(16));
+      }
+      addr = parts.join(':');
+      offset = 38;
+    } else {
+      return null;
+    }
+    
+    return {
+      uuid: formatted,
+      cmd,
+      port,
+      addr,
+      addrType,
+      dataOffset: offset,
+      isUDP: cmd === 2,
+    };
+  }
+
+  buildVlessResponse() {
+    return new Uint8Array([0, 0]);
+  }
+
+  async handleVlessWS(request) {
+    if (request.headers.get('Upgrade') !== 'websocket') {
+      return new Response('Expected WebSocket', { status: 400 });
+    }
+    
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/').filter(Boolean);
+    let userUUID = pathSegments[pathSegments.length - 1];
+    if (pathSegments[0] === 'vless' && pathSegments[1]) {
+      userUUID = pathSegments[1];
+    }
+    
+    if (!this.isValidUUID(userUUID)) {
+      return new Response('Invalid UUID', { status: 400 });
+    }
+    
+    const pair = new WebSocketPair();
+    const [client, server] = [pair[0], pair[1]];
+    
+    server.accept();
+    
+    let remoteSocket = null;
+    let remoteWriter = null;
+    let isConnected = false;
+    let bytesUp = 0;
+    let bytesDown = 0;
+    
+    server.addEventListener('message', async (event) => {
+      try {
+        const data = new Uint8Array(event.data);
+        
+        if (!isConnected) {
+          const header = this.parseVlessHeader(data);
+          if (!header) {
+            server.close(1002, 'Invalid VLESS header');
+            return;
+          }
+          
+          if (header.uuid.toLowerCase() !== userUUID.toLowerCase()) {
+            server.close(1002, 'UUID mismatch');
+            return;
+          }
+          
+          try {
+            const conn = await fetch(`http://${header.addr}:${header.port}`);
+            remoteSocket = conn;
+            isConnected = true;
+            server.send(this.buildVlessResponse());
+          } catch (e) {
+            server.close(1002, 'Connection failed');
+          }
+        } else {
+          if (remoteSocket) {
+            // Forward data
+          }
+        }
+      } catch (e) {
+        server.close(1002, 'Error');
+      }
+    });
+    
+    server.addEventListener('close', () => {
+      if (remoteSocket) {
+        try { remoteSocket.close(); } catch {}
+      }
+    });
+    
+    return new Response(null, { status: 101, webSocket: client });
+  }
+        }
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۵: Trojan Handler + Multi-IP Fallback
+// ============================================================
+
+class TrojanHandler {
+  constructor(env) {
+    this.env = env;
+    this.password = env.TR_PASS || 'TaaKaa-XI-Secret-2026';
+  }
+
+  async sha224(text) {
+    const data = new TextEncoder().encode(text);
+    const hash = await crypto.subtle.digest('SHA-224', data);
+    return new Uint8Array(hash);
+  }
+
+  parseTrojanRequest(buffer) {
+    if (buffer.byteLength < 65) return null;
+    const view = new DataView(buffer);
+    const viewArr = new Uint8Array(buffer);
+    
+    let firstCRLF = -1;
+    for (let i = 0; i < buffer.byteLength - 1; i++) {
+      if (viewArr[i] === 0x0d && viewArr[i+1] === 0x0a) {
+        firstCRLF = i;
+        break;
+      }
+    }
+    if (firstCRLF === -1) return null;
+    
+    const hexHash = Array.from(viewArr.slice(0, firstCRLF))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    let offset = firstCRLF + 2;
+    const cmd = viewArr[offset];
+    offset++;
+    
+    const addrType = viewArr[offset];
+    offset++;
+    
+    let addr = '';
+    if (addrType === 1) {
+      addr = `${viewArr[offset]}.${viewArr[offset+1]}.${viewArr[offset+2]}.${viewArr[offset+3]}`;
+      offset += 4;
+    } else if (addrType === 3) {
+      const len = viewArr[offset];
+      offset++;
+      addr = new TextDecoder().decode(viewArr.slice(offset, offset + len));
+      offset += len;
+    } else if (addrType === 4) {
+      const parts = [];
+      for (let i = 0; i < 16; i += 2) {
+        parts.push(((viewArr[offset+i] << 8) | viewArr[offset+i+1]).toString(16));
+      }
+      addr = parts.join(':');
+      offset += 16;
+    } else {
+      return null;
+    }
+    
+    const port = (viewArr[offset] << 8) | viewArr[offset+1];
+    offset += 2;
+    
+    if (viewArr[offset] !== 0x0d || viewArr[offset+1] !== 0x0a) {
+      return null;
+    }
+    offset += 2;
+    
+    return {
+      hexHash,
+      cmd,
+      addr,
+      port,
+      dataOffset: offset,
+      isUDP: cmd === 0x03,
+    };
+  }
+
+  async verifyPassword(hexHash, password) {
+    const hash = await this.sha224(password);
+    const computed = Array.from(hash).map(b => b.toString(16).padStart(2, '0')).join('');
+    return computed.toLowerCase() === hexHash.toLowerCase();
+  }
+
+  async handleTrojanWS(request) {
+    if (request.headers.get('Upgrade') !== 'websocket') {
+      return new Response('Expected WebSocket', { status: 400 });
+    }
+    
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/').filter(Boolean);
+    let userPass = pathSegments[pathSegments.length - 1];
+    if (pathSegments[0] === 'trojan' && pathSegments[1]) {
+      userPass = pathSegments[1];
+    }
+    
+    const pair = new WebSocketPair();
+    const [client, server] = [pair[0], pair[1]];
+    
+    server.accept();
+    
+    let remoteSocket = null;
+    let isConnected = false;
+    
+    server.addEventListener('message', async (event) => {
+      try {
+        const data = new Uint8Array(event.data);
+        
+        if (!isConnected) {
+          const header = this.parseTrojanRequest(data);
+          if (!header) {
+            server.close(1002, 'Invalid Trojan header');
+            return;
+          }
+          
+          const valid = await this.verifyPassword(header.hexHash, userPass);
+          if (!valid) {
+            server.close(1002, 'Invalid password');
+            return;
+          }
+          
+          try {
+            const conn = await fetch(`http://${header.addr}:${header.port}`);
+            remoteSocket = conn;
+            isConnected = true;
+          } catch (e) {
+            server.close(1002, 'Connection failed');
+          }
+        }
+      } catch (e) {
+        server.close(1002, 'Error');
+      }
+    });
+    
+    server.addEventListener('close', () => {
+      if (remoteSocket) {
+        try { remoteSocket.close(); } catch {}
+      }
+    });
+    
+    return new Response(null, { status: 101, webSocket: client });
+  }
+  }
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۶: HTML Panel UI - Login + Dashboard
+// ============================================================
+
+const LOGIN_HTML = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TAAKAA-XI | پنل مدیریت</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<title>ورود - TaaKaa-XI</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--primary:#FF6B00;--secondary:#FF9500;--success:#00FF88;--bg:#0A0A0A;--card-bg:#1A1A1A;--border:#2A2A2A}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:#fff;min-height:100vh}
-.app-container{max-width:1400px;margin:0 auto;padding:20px}
-.card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:20px}
-.btn{background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;border-radius:10px;padding:12px 24px;color:#fff;font-weight:600;cursor:pointer;width:100%;transition:all 0.3s}
-.btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,107,0,0.3)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
-input,select{width:100%;padding:12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:#fff;margin:6px 0;transition:border 0.3s}
-input:focus,select:focus{outline:none;border-color:var(--primary)}
-.form-group{margin-bottom:12px}
-.form-group label{display:block;color:rgba(255,255,255,0.7);font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
-.header{display:flex;justify-content:space-between;padding:16px 24px;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;margin-bottom:24px}
-.logo{font-size:24px;font-weight:900;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin-bottom:24px}
-.stat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px}
-.stat-label{color:rgba(255,255,255,0.4);font-size:11px;text-transform:uppercase}
-.stat-value{font-size:24px;font-weight:700}
-.toast-container{position:fixed;top:20px;left:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:400px}
-.toast{background:rgba(0,0,0,0.95);border-radius:12px;padding:14px 18px;color:#fff;font-size:14px;border-right:4px solid var(--success)}
-.toast.error{border-right-color:#ff4444}
-.toast.info{border-right-color:var(--secondary)}
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--primary);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--secondary)}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.container {
+  background: rgba(20, 20, 20, 0.95);
+  border: 2px solid #ff6b1a;
+  border-radius: 20px;
+  padding: 40px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(255, 107, 26, 0.3);
+}
+.logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.logo h1 {
+  font-size: 42px;
+  color: #ff6b1a;
+  text-shadow: 0 0 20px rgba(255, 107, 26, 0.5);
+  margin-bottom: 8px;
+}
+.logo p { color: #888; font-size: 14px; }
+.input-group {
+  margin-bottom: 20px;
+}
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #ff6b1a;
+  font-size: 14px;
+}
+.input-group input {
+  width: 100%;
+  padding: 14px 18px;
+  background: #0a0a0a;
+  border: 2px solid #333;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 15px;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.input-group input:focus {
+  outline: none;
+  border-color: #ff6b1a;
+  box-shadow: 0 0 15px rgba(255, 107, 26, 0.3);
+}
+.btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff6b1a 0%, #ff8c42 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(255, 107, 26, 0.4);
+}
+.btn:active { transform: translateY(0); }
+.error {
+  background: rgba(255, 50, 50, 0.15);
+  border: 1px solid #ff3232;
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  display: none;
+}
+.footer {
+  text-align: center;
+  margin-top: 25px;
+  color: #666;
+  font-size: 12px;
+}
+.builder-tag {
+  color: #ff6b1a;
+  font-weight: bold;
+}
 </style>
 </head>
 <body>
-<div id="loginSection" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
-  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:24px;padding:48px 40px;max-width:420px;width:100%">
-    <h1 style="text-align:center;font-size:28px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent">⚡ TAAKAA-XI</h1>
-    <p style="text-align:center;color:rgba(255,255,255,0.7);margin-bottom:32px">پنل مدیریت پیشرفته</p>
-    <input type="password" id="loginPass" placeholder="رمز عبور" style="width:100%;padding:14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;color:#fff;margin-bottom:16px;font-size:16px">
-    <button class="btn" onclick="login()" style="font-size:16px">🚀 ورود</button>
-    <div id="loginError" style="color:#ff4444;text-align:center;margin-top:12px;display:none">❌ رمز اشتباه است!</div>
+<div class="container">
+  <div class="logo">
+    <h1>⚡ TaaKaa-XI</h1>
+    <p>${APP_TAGLINE}</p>
+  </div>
+  <div class="error" id="error"></div>
+  <form id="loginForm">
+    <div class="input-group">
+      <label>🔑 رمز عبور ادمین</label>
+      <input type="password" id="password" placeholder="رمز عبور خود را وارد کنید" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">ورود به پنل</button>
+  </form>
+  <div class="footer">
+    <div>ساخته شده توسط <span class="builder-tag">${BUILDER_TAG}</span></div>
+    <div style="margin-top: 5px;">نسخه ${APP_VERSION}</div>
   </div>
 </div>
-<div id="adminPanel" style="display:none">
-<div class="app-container">
-<div class="header"><span class="logo">⚡ TAAKAA-XI</span><button onclick="logout()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:#fff;cursor:pointer">🚪 خروج</button></div>
-<div class="stats-grid">
-<div class="stat-card"><div class="stat-label">👥 کل کاربران</div><div class="stat-value" id="statTotal">0</div></div>
-<div class="stat-card"><div class="stat-label">🟢 فعال</div><div class="stat-value" style="color:var(--success)" id="statActive">0</div></div>
-<div class="stat-card"><div class="stat-label">📊 حجم باقی‌مانده</div><div class="stat-value" style="color:var(--secondary)" id="statTraffic">0 GB</div></div>
-</div>
-<div class="grid-2">
-<div class="card"><h3 style="color:var(--secondary)">⚡ ساخت کانفیگ</h3>
-<div class="form-group"><label>🆔 آیدی کاربر</label><input type="text" id="userId" placeholder="مثال: 123456789"></div>
-<div class="form-group"><label>🌍 منطقه</label><select id="countrySelect"><option value="DE">🇩🇪 آلمان</option><option value="US">🇺🇸 آمریکا</option><option value="UK">🇬🇧 انگلستان</option><option value="FR">🇫🇷 فرانسه</option><option value="SG">🇸🇬 سنگاپور</option><option value="NL">🇳🇱 هلند</option><option value="TR">🇹🇷 ترکیه</option></select></div>
-<div class="form-group"><label>📅 مدت اعتبار</label><select id="expiryDays"><option value="7">۷ روز</option><option value="15">۱۵ روز</option><option value="30" selected>۳۰ روز</option><option value="60">۶۰ روز</option><option value="90">۹۰ روز</option></select></div>
-<div class="form-group"><label>📊 حجم</label><select id="trafficGB"><option value="5">۵ GB</option><option value="10" selected>۱۰ GB</option><option value="20">۲۰ GB</option><option value="50">۵۰ GB</option><option value="100">۱۰۰ GB</option></select></div>
-<button class="btn" onclick="generateConfig()">⚡ ساخت کانفیگ</button>
-<div id="statusMsg" style="margin-top:12px;display:none"></div>
-</div>
-<div class="card"><h3 style="color:var(--secondary)">📋 اطلاعات کاربر</h3><div id="userInfo" style="color:rgba(255,255,255,0.4);text-align:center;padding:30px 0">کانفیگ بسازید</div></div>
-</div>
-<div class="card"><h3 style="color:var(--secondary)">🔗 لینک اشتراک</h3>
-<div style="display:flex;gap:12px"><input type="text" id="subUserId" placeholder="آیدی کاربر" style="flex:1"><button class="btn" onclick="generateSubLink()" style="width:auto;padding:12px 24px">📥 دریافت</button></div>
-<div id="subResult" style="margin-top:12px;display:none"><code id="subLink" style="color:var(--success);word-break:break-all"></code>
-<button onclick="copyText(document.getElementById('subLink').textContent)" style="margin-top:8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:#fff;cursor:pointer">📋 کپی</button></div>
-</div>
-<div class="card"><h3 style="color:var(--secondary)">🛠️ مدیریت کاربران</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-<div><div class="form-group"><label>🆔 آیدی جدید</label><input type="text" id="newUserId" placeholder="123456789"></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-<div class="form-group"><label>📅 اعتبار</label><input type="number" id="newExpiryDays" value="30"></div>
-<div class="form-group"><label>📊 حجم</label><input type="number" id="newTrafficGB" value="10"></div>
-</div>
-<button class="btn" onclick="addUser()" style="background:linear-gradient(135deg,#00C853,#00E676)">➕ افزودن کاربر</button>
-</div>
-<div id="statsContent" style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">در حال بارگذاری...</div>
-</div>
-<div style="margin-top:16px"><input type="text" id="userSearch" placeholder="🔍 جستجوی کاربر..." style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:#fff;margin-bottom:12px" oninput="filterUsers()">
-<div id="userList" style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">در حال بارگذاری...</div>
-</div>
-</div>
-</div>
-</div>
 <script>
-let allUsers={},currentPage=1,pageSize=20;
-
-function showToast(msg,type){
-  const c=document.getElementById('toastContainer')||(function(){
-    const d=document.createElement('div');
-    d.id='toastContainer';
-    d.className='toast-container';
-    document.body.appendChild(d);
-    return d;
-  })();
-  const t=document.createElement('div');
-  t.className='toast'+(type==='error'?' error':'')+(type==='info'?' info':'');
-  t.innerHTML='<span>'+msg+'</span><button onclick="this.parentElement.remove()" style="margin-right:auto;background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:16px">✕</button>';
-  c.appendChild(t);
-  setTimeout(()=>{if(t.parentElement)t.remove()},5000);
-}
-
-function copyText(t){
-  if(!t)return;
-  navigator.clipboard.writeText(t).then(()=>showToast('✅ کپی شد!','success'))
-  .catch(()=>showToast('❌ خطا در کپی','error'));
-}
-
-async function login(){
-  const p=document.getElementById('loginPass').value.trim();
-  if(!p){showToast('❌ رمز را وارد کنید','error');return;}
-  try{
-    const res=await fetch('/api/admin/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({password:p})
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const password = document.getElementById('password').value;
+  const errorEl = document.getElementById('error');
+  errorEl.style.display = 'none';
+  
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
     });
-    const data=await res.json();
-    if(data.success){
-      localStorage.setItem('adminToken',p);
-      document.getElementById('loginSection').style.display='none';
-      document.getElementById('adminPanel').style.display='block';
-      loadAdminData();
-      showToast('✅ ورود موفق','success');
-    }else{
-      document.getElementById('loginError').style.display='block';
-      showToast('❌ '+data.error,'error');
+    const data = await res.json();
+    
+    if (data.success && data.token) {
+      localStorage.setItem('TaaKaa-XI-token', data.token);
+      window.location.href = '/panel';
+    } else {
+      errorEl.textContent = data.error || 'رمز عبور اشتباه است';
+      errorEl.style.display = 'block';
     }
-  }catch(e){
-    showToast('❌ خطا در ارتباط با سرور','error');
-  }
-}
-
-function logout(){
-  localStorage.removeItem('adminToken');
-  location.reload();
-}
-
-async function generateConfig(){
-  const u=document.getElementById('userId').value.trim();
-  if(!u){showToast('❌ آیدی کاربر الزامی است','error');return;}
-  try{
-    const r=await fetch('/api/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        userId:u,
-        country:document.getElementById('countrySelect').value,
-        expiryDays:parseInt(document.getElementById('expiryDays').value),
-        trafficGB:parseInt(document.getElementById('trafficGB').value)
-      })
-    });
-    const d=await r.json();
-    if(d.success){
-      showToast('✅ کانفیگ ساخته شد','success');
-      const info=d.config;
-      let html='<div style="text-align:right;font-size:13px;line-height:1.8">';
-      html+='<p>🆔 <strong>'+info.userId+'</strong></p>';
-      html+='<p>📅 اعتبار: <strong>'+info.expiryDate+'</strong></p>';
-      html+='<p>📊 حجم: <strong>'+info.trafficUsedGB+' / '+info.trafficLimitGB+' GB</strong></p>';
-      html+='<p>📊 باقی‌مانده: <strong style="color:var(--secondary)">'+info.trafficRemainingGB+' GB</strong></p>';
-      html+='<p>🔗 لینک‌ها:</p>';
-      info.links.forEach(l=>{
-        html+='<div style="background:rgba(255,255,255,0.03);padding:8px;border-radius:6px;margin:4px 0;word-break:break-all;font-size:12px">';
-        html+='<span style="color:var(--secondary)">'+l.type.toUpperCase()+'</span>: ';
-        html+='<span style="color:#aaa">'+l.link.substring(0,60)+'...</span>';
-        html+=' <button onclick="copyText(\\''+l.link.replace(/'/g,"\\'")+'\\')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;padding:2px 8px;color:#fff;cursor:pointer;font-size:11px">📋</button>';
-        html+='</div>';
-      });
-      html+='</div>';
-      document.getElementById('userInfo').innerHTML=html;
-      loadAdminData();
-    }else{
-      showToast('❌ '+d.error,'error');
-    }
-  }catch(e){showToast('❌ خطا در ارتباط','error');}
-}
-
-function generateSubLink(){
-  const u=document.getElementById('subUserId').value.trim();
-  if(!u){showToast('❌ آیدی کاربر را وارد کنید','error');return;}
-  const link=window.location.origin+'/sub/'+u;
-  document.getElementById('subLink').textContent=link;
-  document.getElementById('subResult').style.display='block';
-  showToast('✅ لینک ساخته شد','success');
-}
-
-async function loadAdminData(){
-  try{
-    const token=localStorage.getItem('adminToken')||'';
-    const r=await fetch('/api/admin/users',{
-      headers:{'Authorization':'Bearer '+token}
-    });
-    const d=await r.json();
-    if(d.success){
-      allUsers=d.users||{};
-      renderUserList(allUsers);
-      renderStats(allUsers);
-    }
-  }catch(e){}
-}
-
-function filterUsers(){
-  const s=document.getElementById('userSearch').value.toLowerCase();
-  if(!s){renderUserList(allUsers);return;}
-  const f={};
-  for(const id in allUsers){
-    if(id.toLowerCase().includes(s))f[id]=allUsers[id];
-  }
-  renderUserList(f);
-}
-
-function renderUserList(users){
-  const div=document.getElementById('userList');
-  const e=Object.entries(users);
-  if(e.length===0){
-    div.innerHTML='<div style="color:rgba(255,255,255,0.4);text-align:center;padding:20px 0">هیچ کاربری یافت نشد</div>';
-    return;
-  }
-  const s=(currentPage-1)*pageSize,page=e.slice(s,s+pageSize);
-  let html='';
-  for(const[id,user]of page){
-    const a=user.isActive&&new Date(user.expiryDate)>new Date()&&user.trafficUsed<user.trafficLimit;
-    const status=a?'فعال':(new Date(user.expiryDate)<=new Date()?'منقضی':'تمام');
-    html+='<div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:8px;margin-bottom:4px;align-items:center;flex-wrap:wrap;gap:6px">';
-    html+='<span>🆔 '+id+'</span>';
-    html+='<span style="font-size:12px;color:rgba(255,255,255,0.6)">📅 '+new Date(user.expiryDate).toLocaleDateString('fa-IR')+'</span>';
-    html+='<span style="font-size:12px;color:rgba(255,255,255,0.6)">📊 '+(Math.round(user.trafficUsed/1024/1024/1024*100)/100)+'/'+(Math.round(user.trafficLimit/1024/1024/1024*100)/100)+' GB</span>';
-    html+='<span style="padding:2px 10px;border-radius:12px;font-size:11px;'+(a?'background:rgba(0,255,136,0.15);color:#00ff88':'background:rgba(255,68,68,0.15);color:#ff4444')+'">'+status+'</span>';
-    html+='<button onclick="deleteUser(\\''+id+'\\')" style="background:rgba(255,68,68,0.2);border:none;border-radius:4px;padding:2px 10px;color:#ff4444;cursor:pointer">🗑️</button>';
-    html+='</div>';
-  }
-  const tp=Math.ceil(e.length/pageSize);
-  if(tp>1){
-    html+='<div style="display:flex;justify-content:center;gap:6px;margin-top:10px;flex-wrap:wrap">';
-    for(let i=1;i<=tp;i++){
-      html+='<button onclick="currentPage='+i+';filterUsers()" style="padding:4px 12px;background:'+(i===currentPage?'var(--primary)':'rgba(255,255,255,0.05)')+';border:1px solid var(--border);border-radius:6px;color:#fff;cursor:pointer">'+i+'</button>';
-    }
-    html+='</div>';
-  }
-  div.innerHTML=html;
-}
-
-function renderStats(users){
-  const t=Object.keys(users).length;
-  let a=0,tr=0;
-  for(const id in users){
-    const u=users[id];
-    if(u.isActive&&new Date(u.expiryDate)>new Date()&&u.trafficUsed<u.trafficLimit)a++;
-    tr+=(u.trafficLimit-u.trafficUsed);
-  }
-  document.getElementById('statTotal').textContent=t;
-  document.getElementById('statActive').textContent=a;
-  document.getElementById('statTraffic').textContent=(Math.round(tr/1024/1024/1024*100)/100)+' GB';
-}
-
-async function deleteUser(id){
-  if(!confirm('حذف کاربر '+id+'؟'))return;
-  try{
-    const token=localStorage.getItem('adminToken')||'';
-    const r=await fetch('/api/admin/delete',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify({userId:id})
-    });
-    const d=await r.json();
-    if(d.success){
-      showToast('✅ حذف شد','success');
-      loadAdminData();
-    }else{
-      showToast('❌ '+d.error,'error');
-    }
-  }catch(e){showToast('❌ خطا','error');}
-}
-
-async function addUser(){
-  const u=document.getElementById('newUserId').value.trim();
-  const ed=parseInt(document.getElementById('newExpiryDays').value);
-  const tg=parseInt(document.getElementById('newTrafficGB').value);
-  if(!u){showToast('❌ آیدی را وارد کنید','error');return;}
-  try{
-    const token=localStorage.getItem('adminToken')||'';
-    const r=await fetch('/api/admin/add',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify({userId:u,expiryDays:ed,trafficGB:tg})
-    });
-    const d=await r.json();
-    if(d.success){
-      showToast('✅ کاربر اضافه شد','success');
-      loadAdminData();
-      document.getElementById('newUserId').value='';
-    }else{
-      showToast('❌ '+d.error,'error');
-    }
-  }catch(e){showToast('❌ خطا','error');}
-}
-
-// چک کردن خودکار لاگین
-document.addEventListener('DOMContentLoaded',function(){
-  const token=localStorage.getItem('adminToken');
-  if(token){
-    document.getElementById('loginSection').style.display='none';
-    document.getElementById('adminPanel').style.display='block';
-    loadAdminData();
+  } catch (err) {
+    errorEl.textContent = 'خطا در ارتباط با سرور';
+    errorEl.style.display = 'block';
   }
 });
-
-// به‌روزرسانی خودکار هر ۳۰ ثانیه
-setInterval(()=>{
-  if(document.getElementById('adminPanel').style.display!=='none')loadAdminData();
-},30000);
 </script>
-</body></html>`;
+</body>
+</html>`;
 // ============================================================
-// TAAKAA-XI v6.5 – بخش ۴: Worker اصلی
+// TaaKaa-XI v1.0 - بخش ۷: Dashboard Body + Users + Logs UI
+// ============================================================
+
+const DASHBOARD_BODY = `
+<div class="sidebar">
+  <div class="logo">
+    <h2>⚡ TaaKaa-XI</h2>
+    <p>${BUILDER_TAG}</p>
+  </div>
+  <div class="nav-item active" onclick="showSection('dashboard')"><span>📊</span> داشبورد</div>
+  <div class="nav-item" onclick="showSection('users')"><span>👥</span> کاربران</div>
+  <div class="nav-item" onclick="showSection('addUser')"><span>➕</span> افزودن کاربر</div>
+  <div class="nav-item" onclick="showSection('logs')"><span>📜</span> لاگ‌ها</div>
+  <div class="nav-item" onclick="showSection('backup')"><span>💾</span> پشتیبان‌گیری</div>
+  <div class="nav-item" onclick="showSection('settings')"><span>⚙️</span> تنظیمات</div>
+</div>
+
+<div class="main">
+  <div class="header">
+    <h1 id="pageTitle">📊 داشبورد</h1>
+    <div class="user-info">
+      <span>👤 ادمین</span>
+      <button class="btn-logout" onclick="logout()">خروج</button>
+    </div>
+  </div>
+
+  <div id="dashboard" class="content-section active">
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="icon">👥</div>
+        <div class="label">کل کاربران</div>
+        <div class="value" id="totalUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">✅</div>
+        <div class="label">کاربران فعال</div>
+        <div class="value" id="activeUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">⏰</div>
+        <div class="label">منقضی شده</div>
+        <div class="value" id="expiredUsers">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🌍</div>
+        <div class="label">کشورها</div>
+        <div class="value" id="totalCountries">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">📈</div>
+        <div class="label">کل ترافیک (GB)</div>
+        <div class="value" id="totalTraffic">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">💾</div>
+        <div class="label">وضعیت KV</div>
+        <div class="value" id="kvStatus">✅</div>
+      </div>
+    </div>
+    <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
+      <h2 style="color:#ff6b1a;margin-bottom:15px;">📌 اطلاعات سیستم</h2>
+      <p>نسخه: <span style="color:#ff6b1a">${APP_VERSION}</span></p>
+      <p>سرویس‌دهنده: <span style="color:#ff6b1a">${BUILDER_TAG}</span></p>
+      <p>زمان: <span style="color:#ff6b1a" id="currentTime"></span></p>
+    </div>
+  </div>
+
+  <div id="users" class="content-section">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="color:#ff6b1a;">لیست کاربران</h2>
+      <input type="text" id="searchUser" placeholder="🔍 جستجو..." onkeyup="filterUsers()" 
+        style="padding:10px 15px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#fff;font-family:inherit;width:250px;">
+    </div>
+    <div style="overflow-x:auto;background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:15px;">
+      <table id="usersTable" style="width:100%;border-collapse:collapse;">
+        <thead><tr>
+          <th>ID</th>
+          <th>کشور</th>
+          <th>انقضا</th>
+          <th>ترافیک</th>
+          <th>وضعیت</th>
+          <th>عملیات</th>
+        </tr></thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="addUser" class="content-section">
+    <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;max-width:600px;">
+      <h2 style="color:#ff6b1a;margin-bottom:20px;">➕ افزودن کاربر جدید</h2>
+      <form id="addUserForm" onsubmit="addUser(event)">
+        <div class="form-group">
+          <label>🆔 آیدی کاربر</label>
+          <input type="text" id="newUserId" placeholder="شناسه یکتا" required>
+        </div>
+        <div class="form-group">
+          <label>🌍 کشور</label>
+          <select id="newCountry">
+            <option value="DE">🇩🇪 آلمان</option>
+            <option value="NL">🇳🇱 هلند</option>
+            <option value="US">🇺🇸 آمریکا</option>
+            <option value="GB">🇬🇧 انگلستان</option>
+            <option value="FR">🇫🇷 فرانسه</option>
+            <option value="CA">🇨🇦 کانادا</option>
+            <option value="JP">🇯🇵 ژاپن</option>
+            <option value="SG">🇸🇬 سنگاپور</option>
+            <option value="TR">🇹🇷 ترکیه</option>
+            <option value="AE">🇦🇪 امارات</option>
+            <option value="IT">🇮🇹 ایتالیا</option>
+            <option value="ES">🇪🇸 اسپانیا</option>
+            <option value="SE">🇸🇪 سوئد</option>
+            <option value="NO">🇳🇴 نروژ</option>
+            <option value="FI">🇫🇮 فنلاند</option>
+            <option value="CH">🇨🇭 سوئیس</option>
+            <option value="AT">🇦🇹 اتریش</option>
+            <option value="BE">🇧🇪 بلژیک</option>
+            <option value="DK">🇩🇰 دانمارک</option>
+            <option value="IE">🇮🇪 ایرلند</option>
+            <option value="PL">🇵🇱 لهستان</option>
+            <option value="CZ">🇨🇿 چک</option>
+            <option value="RO">🇷🇴 رومانی</option>
+            <option value="HU">🇭🇺 مجارستان</option>
+            <option value="GR">🇬🇷 یونان</option>
+            <option value="PT">🇵🇹 پرتغال</option>
+            <option value="BR">🇧🇷 برزیل</option>
+            <option value="AR">🇦🇷 آرژانتین</option>
+            <option value="MX">🇲🇽 مکزیک</option>
+            <option value="AU">🇦🇺 استرالیا</option>
+            <option value="IN">🇮🇳 هند</option>
+            <option value="HK">🇭🇰 هنگ‌کنگ</option>
+            <option value="KR">🇰🇷 کره جنوبی</option>
+            <option value="TW">🇹🇼 تایوان</option>
+            <option value="TH">🇹🇭 تایلند</option>
+            <option value="MY">🇲🇾 مالزی</option>
+            <option value="ID">🇮🇩 اندونزی</option>
+            <option value="PH">🇵🇭 فیلیپین</option>
+            <option value="VN">🇻🇳 ویتنام</option>
+            <option value="RU">🇷🇺 روسیه</option>
+            <option value="UA">🇺🇦 اوکراین</option>
+            <option value="IR">🇮🇷 ایران</option>
+            <option value="SA">🇸🇦 عربستان</option>
+            <option value="EG">🇪🇬 مصر</option>
+            <option value="ZA">🇿🇦 آفریقای جنوبی</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>📅 مدت (روز)</label>
+          <input type="number" id="newDays" value="30" min="1" max="3650">
+        </div>
+        <div class="form-group">
+          <label>📊 ترافیک (GB)</label>
+          <input type="number" id="newTraffic" value="10" min="1" max="100000">
+        </div>
+        <button type="submit" class="btn">➕ افزودن کاربر</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="logs" class="content-section">
+    <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
+      <h2 style="color:#ff6b1a;margin-bottom:20px;">📜 لاگ‌ها</h2>
+      <div id="logsList" style="max-height:400px;overflow-y:auto;font-size:14px;color:#aaa;"></div>
+    </div>
+  </div>
+
+  <div id="backup" class="content-section">
+    <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
+      <h2 style="color:#ff6b1a;margin-bottom:20px;">💾 پشتیبان‌گیری</h2>
+      <button class="btn" onclick="createBackup()" style="width:auto;padding:12px 30px;">📥 ایجاد پشتیبان</button>
+      <div id="backupStatus" style="margin-top:15px;color:#aaa;"></div>
+    </div>
+  </div>
+
+  <div id="settings" class="content-section">
+    <div style="background:#1a1a1a;border:1px solid #ff6b1a;border-radius:15px;padding:25px;">
+      <h2 style="color:#ff6b1a;margin-bottom:20px;">⚙️ تنظیمات</h2>
+      <div class="form-group">
+        <label>🔑 رمز عبور ادمین</label>
+        <input type="password" id="changePassword" placeholder="رمز جدید">
+        <button class="btn" onclick="changePassword()" style="width:auto;padding:10px 20px;margin-top:10px;">تغییر رمز</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Vazirmatn', 'Tahoma', sans-serif;
+  background: #0a0a0a;
+  color: #fff;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  direction: rtl;
+}
+.sidebar {
+  width: 220px;
+  background: #111;
+  padding: 20px 15px;
+  border-left: 2px solid #ff6b1a;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+.sidebar .logo {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #222;
+  margin-bottom: 20px;
+}
+.sidebar .logo h2 {
+  color: #ff6b1a;
+  font-size: 22px;
+  margin: 0;
+}
+.sidebar .logo p {
+  color: #555;
+  font-size: 10px;
+  margin-top: 4px;
+}
+.nav-item {
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #aaa;
+}
+.nav-item:hover { background: #1a1a1a; color: #ff8c42; }
+.nav-item.active { background: #ff6b1a; color: #fff; }
+.nav-item span { font-size: 18px; }
+
+.main {
+  margin-right: 220px;
+  flex: 1;
+  padding: 20px 30px;
+  height: 100vh;
+  overflow-y: auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #222;
+  margin-bottom: 25px;
+}
+.header h1 { color: #ff6b1a; font-size: 24px; margin: 0; }
+.user-info { display: flex; align-items: center; gap: 15px; }
+.btn-logout {
+  background: #ff6b1a;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-logout:hover { background: #ff8c42; }
+
+.content-section { display: none; }
+.content-section.active { display: block; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.stat-card {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  transition: 0.3s;
+}
+.stat-card:hover { border-color: #ff6b1a; }
+.stat-card .icon { font-size: 32px; }
+.stat-card .label { color: #888; font-size: 14px; margin-top: 8px; }
+.stat-card .value { color: #ff6b1a; font-size: 28px; font-weight: bold; margin-top: 6px; }
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  color: #aaa;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0a0a0a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: #ff6b1a;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 12px 15px;
+  text-align: right;
+  border-bottom: 1px solid #222;
+}
+th { color: #ff6b1a; font-weight: bold; }
+tr:hover { background: #111; }
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+.status-badge.active { background: #00ff8844; color: #00ff88; border: 1px solid #00ff88; }
+.status-badge.expired { background: #ff444444; color: #ff4444; border: 1px solid #ff4444; }
+.status-badge.finished { background: #ffaa0044; color: #ffaa00; border: 1px solid #ffaa00; }
+
+.btn-sm {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+.btn-sm.danger { background: #ff4444; color: #fff; }
+.btn-sm.danger:hover { background: #ff6666; }
+.btn-sm.success { background: #00cc88; color: #fff; }
+.btn-sm.success:hover { background: #00ee99; }
+
+#logsList div {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 13px;
+}
+#logsList .info { color: #00ccff; }
+#logsList .warn { color: #ffaa00; }
+#logsList .error { color: #ff4444; }
+#logsList .success { color: #00ff88; }
+
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar .logo h2 { font-size: 0; }
+  .sidebar .logo p { display: none; }
+  .sidebar .nav-item span { font-size: 24px; }
+  .sidebar .nav-item { justify-content: center; padding: 12px 0; }
+  .sidebar .nav-item .nav-text { display: none; }
+  .main { margin-right: 60px; padding: 15px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+
+<script>
+const API_BASE = '';
+
+async function apiFetch(endpoint, options = {}) {
+  const token = localStorage.getItem('TaaKaa-XI-token');
+  const res = await fetch(API_BASE + endpoint, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + (token || ''),
+      ...(options.headers || {}),
+    },
+  });
+  return await res.json();
+}
+
+function showSection(section) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.content-section').forEach(el => el.classList.remove('active'));
+  document.getElementById(section).classList.add('active');
+  
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const txt = el.textContent.trim();
+    if (txt.includes('📊') && section === 'dashboard') el.classList.add('active');
+    else if (txt.includes('👥') && section === 'users') el.classList.add('active');
+    else if (txt.includes('➕') && section === 'addUser') el.classList.add('active');
+    else if (txt.includes('📜') && section === 'logs') el.classList.add('active');
+    else if (txt.includes('💾') && section === 'backup') el.classList.add('active');
+    else if (txt.includes('⚙️') && section === 'settings') el.classList.add('active');
+  });
+  
+  if (section === 'users') loadUsers();
+  if (section === 'logs') loadLogs();
+  if (section === 'dashboard') loadStats();
+}
+
+async function loadStats() {
+  try {
+    const data = await apiFetch('/api/stats');
+    if (data.success) {
+      document.getElementById('totalUsers').textContent = data.stats.total || 0;
+      document.getElementById('activeUsers').textContent = data.stats.active || 0;
+      document.getElementById('expiredUsers').textContent = data.stats.expired || 0;
+      document.getElementById('totalTraffic').textContent = data.stats.totalTrafficGB || 0;
+      document.getElementById('kvStatus').textContent = '✅';
+    }
+  } catch (e) {}
+}
+
+async function loadUsers() {
+  try {
+    const data = await apiFetch('/api/users');
+    if (data.success) {
+      const tbody = document.getElementById('usersBody');
+      const users = data.users || {};
+      const entries = Object.entries(users);
+      
+      if (entries.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:30px;">هیچ کاربری ثبت نشده است</td></tr>';
+        return;
+      }
+      
+      const now = new Date();
+      tbody.innerHTML = entries.map(([id, user]) => {
+        const expiry = new Date(user.expiryDate);
+        const isActive = expiry > now && (user.trafficUsed || 0) < (user.trafficLimit || 0);
+        const statusClass = isActive ? 'active' : 'expired';
+        const statusText = isActive ? 'فعال' : 'منقضی';
+        const usedGB = parseGB(user.trafficUsed || 0);
+        const limitGB = parseGB(user.trafficLimit || 10737418240);
+        const flag = getFlag(user.country || 'DE');
+        return `<tr>
+          <td><strong>${id}</strong></td>
+          <td>${flag} ${user.country || 'DE'}</td>
+          <td>${expiry.toLocaleDateString('fa-IR')}</td>
+          <td>${usedGB} / ${limitGB} GB</td>
+          <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+          <td>
+            <button class="btn-sm danger" onclick="deleteUser('${id}')">🗑️</button>
+            <button class="btn-sm success" onclick="renewUser('${id}')">🔄</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+  } catch (e) {}
+}
+
+function filterUsers() {
+  const q = document.getElementById('searchUser').value.toLowerCase();
+  const rows = document.querySelectorAll('#usersBody tr');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+
+async function addUser(e) {
+  e.preventDefault();
+  const userId = document.getElementById('newUserId').value.trim();
+  const country = document.getElementById('newCountry').value;
+  const days = parseInt(document.getElementById('newDays').value);
+  const trafficGB = parseInt(document.getElementById('newTraffic').value);
+  
+  if (!userId) return alert('لطفاً آیدی کاربر را وارد کنید');
+  
+  try {
+    const res = await apiFetch('/api/users/create', {
+      method: 'POST',
+      body: JSON.stringify({ userId, country, days, trafficGB }),
+    });
+    if (res.success) {
+      alert('✅ کاربر با موفقیت اضافه شد');
+      document.getElementById('newUserId').value = '';
+      loadUsers();
+      loadStats();
+    } else {
+      alert('❌ ' + (res.error || 'خطا در افزودن کاربر'));
+    }
+  } catch (e) {
+    alert('❌ خطا در ارتباط با سرور');
+  }
+}
+
+async function deleteUser(userId) {
+  if (!confirm(`آیا از حذف کاربر ${userId} مطمئن هستید؟`)) return;
+  try {
+    const res = await apiFetch('/api/users/delete', {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    });
+    if (res.success) {
+      loadUsers();
+      loadStats();
+    } else {
+      alert('❌ ' + (res.error || 'خطا در حذف کاربر'));
+    }
+  } catch (e) {
+    alert('❌ خطا در ارتباط با سرور');
+  }
+}
+
+async function renewUser(userId) {
+  const days = prompt('تعداد روز تمدید:', '30');
+  if (!days) return;
+  try {
+    const res = await apiFetch('/api/users/renew', {
+      method: 'POST',
+      body: JSON.stringify({ userId, days: parseInt(days) }),
+    });
+    if (res.success) {
+      alert('✅ کاربر تمدید شد');
+      loadUsers();
+      loadStats();
+    } else {
+      alert('❌ ' + (res.error || 'خطا در تمدید'));
+    }
+  } catch (e) {
+    alert('❌ خطا در ارتباط با سرور');
+  }
+}
+
+async function loadLogs() {
+  try {
+    const data = await apiFetch('/api/logs');
+    if (data.success && data.logs) {
+      const container = document.getElementById('logsList');
+      container.innerHTML = data.logs.reverse().slice(0, 100).map(log => 
+        `<div class="${log.level}">${new Date(log.time).toLocaleString('fa-IR')} - ${log.message}</div>`
+      ).join('');
+    }
+  } catch (e) {}
+}
+
+async function createBackup() {
+  try {
+    const res = await apiFetch('/api/backup', { method: 'POST' });
+    if (res.success) {
+      document.getElementById('backupStatus').textContent = '✅ پشتیبان با موفقیت ایجاد شد';
+    } else {
+      document.getElementById('backupStatus').textContent = '❌ ' + (res.error || 'خطا در ایجاد پشتیبان');
+    }
+  } catch (e) {
+    document.getElementById('backupStatus').textContent = '❌ خطا در ارتباط با سرور';
+  }
+}
+
+async function changePassword() {
+  const newPass = document.getElementById('changePassword').value.trim();
+  if (!newPass || newPass.length < 4) {
+    alert('رمز عبور باید حداقل ۴ کاراکتر باشد');
+    return;
+  }
+  try {
+    const res = await apiFetch('/api/settings/password', {
+      method: 'POST',
+      body: JSON.stringify({ password: newPass }),
+    });
+    if (res.success) {
+      alert('✅ رمز عبور با موفقیت تغییر کرد');
+      document.getElementById('changePassword').value = '';
+    } else {
+      alert('❌ ' + (res.error || 'خطا در تغییر رمز'));
+    }
+  } catch (e) {
+    alert('❌ خطا در ارتباط با سرور');
+  }
+}
+
+function logout() {
+  localStorage.removeItem('TaaKaa-XI-token');
+  window.location.href = '/login';
+}
+
+function getFlag(code) {
+  const flags = {
+    DE: '🇩🇪', NL: '🇳🇱', US: '🇺🇸', GB: '🇬🇧', FR: '🇫🇷',
+    CA: '🇨🇦', JP: '🇯🇵', SG: '🇸🇬', TR: '🇹🇷', AE: '🇦🇪',
+    IT: '🇮🇹', ES: '🇪🇸', SE: '🇸🇪', NO: '🇳🇴', FI: '🇫🇮',
+    CH: '🇨🇭', AT: '🇦🇹', BE: '🇧🇪', DK: '🇩🇰', IE: '🇮🇪',
+    PL: '🇵🇱', CZ: '🇨🇿', RO: '🇷🇴', HU: '🇭🇺', GR: '🇬🇷',
+    PT: '🇵🇹', BR: '🇧🇷', AR: '🇦🇷', MX: '🇲🇽', AU: '🇦🇺',
+    IN: '🇮🇳', HK: '🇭🇰', KR: '🇰🇷', TW: '🇹🇼', TH: '🇹🇭',
+    MY: '🇲🇾', ID: '🇮🇩', PH: '🇵🇭', VN: '🇻🇳', RU: '🇷🇺',
+    UA: '🇺🇦', IR: '🇮🇷', SA: '🇸🇦', EG: '🇪🇬', ZA: '🇿🇦',
+  };
+  return flags[code] || '🌐';
+}
+
+// ====== LOAD ======
+document.addEventListener('DOMContentLoaded', () => {
+  loadStats();
+  loadUsers();
+  setInterval(() => {
+    const el = document.getElementById('currentTime');
+    if (el) el.textContent = new Date().toLocaleString('fa-IR');
+  }, 1000);
+});
+</script>`;
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۸: Router + API Endpoints
+// ============================================================
+
+const _tokens = new Map();
+const SESSION_TTL = 86400;
+
+const createToken = (user = 'admin') => {
+  const token = _h(Date.now() + ':' + Math.random() + ':' + user);
+  _tokens.set(token, { user, created: Date.now() });
+  setTimeout(() => _tokens.delete(token), SESSION_TTL * 1000);
+  return token;
+};
+
+const verifyToken = (token) => {
+  if (!token) return false;
+  const data = _tokens.get(token);
+  if (!data) return false;
+  if (Date.now() - data.created > SESSION_TTL * 1000) {
+    _tokens.delete(token);
+    return false;
+  }
+  return true;
+};
+
+const getAuthToken = (request) => {
+  const auth = request.headers.get('Authorization');
+  if (auth && auth.startsWith('Bearer ')) return auth.slice(7);
+  return null;
+};
+
+const requireAuth = (request) => {
+  if (!verifyToken(getAuthToken(request))) {
+    return error('Unauthorized', 401);
+  }
+  return null;
+};
+
+class APIHandler {
+  constructor(request, env, ctx) {
+    this.request = request;
+    this.env = env;
+    this.ctx = ctx;
+    this.kv = env.KV;
+    this.url = new URL(request.url);
+    this.users = new UserManager(this.kv, ctx);
+    this.configs = new ConfigGenerator(env);
+  }
+
+  async handle() {
+    const path = this.url.pathname;
+    const method = this.request.method;
+
+    if (method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    if (path === '/api/login' && method === 'POST') return this.login();
+    
+    if (path === '/api/stats' && method === 'GET') return this.requireAuth(() => this.stats());
+    if (path === '/api/users' && method === 'GET') return this.requireAuth(() => this.listUsers());
+    if (path === '/api/users/create' && method === 'POST') return this.requireAuth(() => this.createUser());
+    if (path === '/api/users/renew' && method === 'POST') return this.requireAuth(() => this.renewUser());
+    if (path === '/api/users/delete' && method === 'POST') return this.requireAuth(() => this.deleteUser());
+    if (path === '/api/logs' && method === 'GET') return this.requireAuth(() => this.getLogs());
+    if (path === '/api/backup' && method === 'POST') return this.requireAuth(() => this.backup());
+    if (path === '/api/settings/password' && method === 'POST') return this.requireAuth(() => this.changePassword());
+
+    if (path.startsWith('/sub/')) return this.subscription();
+
+    if (path === '/' || path === '/login') return html(LOGIN_HTML);
+    if (path === '/panel' || path === '/admin') return html(LOGIN_HTML + DASHBOARD_BODY);
+
+    if (method === 'GET' && this.request.headers.get('Upgrade') === 'websocket') {
+      return this.handleWebSocket();
+    }
+
+    return error('Not found', 404);
+  }
+
+  requireAuth(handler) {
+    const err = requireAuth(this.request);
+    return err || handler();
+  }
+
+  async login() {
+    try {
+      const { password } = await this.request.json();
+      const adminPass = this.env.ADMIN_PASS || 'admin';
+      if (password !== adminPass) {
+        return error('رمز عبور اشتباه است', 401);
+      }
+      const token = createToken('admin');
+      await this.users.log('ادمین وارد شد', 'success');
+      return ok({ token });
+    } catch (e) {
+      return error('Invalid request');
+    }
+  }
+
+  async stats() {
+    const stats = await this.users.getStats();
+    return ok({ stats });
+  }
+
+  async listUsers() {
+    const users = await this.users.getUsers();
+    return ok({ users, count: Object.keys(users).length });
+  }
+
+  async createUser() {
+    try {
+      const { userId, country, days, trafficGB } = await this.request.json();
+      if (!userId) return error('آیدی کاربر الزامی است');
+      if (!isValidCountry(country)) return error('کشور نامعتبر است');
+      if (!isValidDays(days)) return error('مدت زمان نامعتبر است');
+      if (!isValidGB(trafficGB)) return error('حجم نامعتبر است');
+      
+      const userData = {
+        userId,
+        country,
+        expiryDate: getDate(days),
+        trafficLimit: trafficGB * 1024 ** 3,
+        uuid: _h('TaaKaa-XI:' + userId + ':' + Date.now()),
+      };
+      
+      const user = await this.users.createUser(userId, userData);
+      await this.users.log(`کاربر ${userId} ساخته شد`, 'success');
+      return ok({ user });
+    } catch (e) {
+      return error(e.message || 'خطا در ایجاد کاربر');
+    }
+  }
+
+  async renewUser() {
+    try {
+      const { userId, days } = await this.request.json();
+      if (!userId) return error('آیدی کاربر الزامی است');
+      if (!isValidDays(days)) return error('مدت زمان نامعتبر است');
+      
+      const user = await this.users.renewUser(userId, days);
+      await this.users.log(`کاربر ${userId} تمدید شد`, 'info');
+      return ok({ user });
+    } catch (e) {
+      return error(e.message || 'خطا در تمدید کاربر');
+    }
+  }
+
+  async deleteUser() {
+    try {
+      const { userId } = await this.request.json();
+      if (!userId) return error('آیدی کاربر الزامی است');
+      
+      await this.users.deleteUser(userId);
+      await this.users.log(`کاربر ${userId} حذف شد`, 'warn');
+      return ok({});
+    } catch (e) {
+      return error(e.message || 'خطا در حذف کاربر');
+    }
+  }
+
+  async getLogs() {
+    const logs = await this.users.getLogs();
+    return ok({ logs });
+  }
+
+  async backup() {
+    try {
+      const users = await this.users.getUsers();
+      await this.users.autoBackup(users);
+      await this.users.log('پشتیبان‌گیری انجام شد', 'success');
+      return ok({ count: Object.keys(users).length });
+    } catch (e) {
+      return error('خطا در پشتیبان‌گیری');
+    }
+  }
+
+  async changePassword() {
+    try {
+      const { password } = await this.request.json();
+      if (!password || password.length < 4) {
+        return error('رمز عبور باید حداقل ۴ کاراکتر باشد');
+      }
+      // در Workers نمی‌توان env را تغییر داد، اما برای نمونه ذخیره می‌کنیم
+      await this.kv.put('TaaKaa-XI:admin_pass', password);
+      await this.users.log('رمز عبور تغییر کرد', 'info');
+      return ok({});
+    } catch (e) {
+      return error('خطا در تغییر رمز عبور');
+    }
+  }
+
+  async subscription() {
+    const userId = this.url.pathname.split('/sub/')[1];
+    if (!userId) return error('User ID required');
+    
+    const user = await this.users.getUser(userId);
+    if (!user) return error('User not found', 404);
+    
+    const validity = await this.users.checkUserValidity(userId);
+    if (!validity.valid) return error(validity.reason, 403);
+    
+    const config = this.configs.generateFullConfig(userId, user);
+    let subContent = config.links.map(l => l.link).join('\n');
+    
+    const format = this.url.searchParams.get('format');
+    if (format === 'clash') {
+      // Clash YAML
+      return text(generateClashYaml(user, config), 200, 'text/yaml');
+    }
+    
+    if (format === 'singbox') {
+      // Sing-box JSON
+      return json(generateSingboxOutbound(user, config));
+    }
+    
+    // Base64 V2Ray subscription
+    return text(_enc(subContent), 200, 'text/plain');
+  }
+
+  async handleWebSocket() {
+    const path = this.url.pathname;
+    if (path.includes('/vless/')) {
+      const handler = new VLESSHandler(this.env);
+      return await handler.handleVlessWS(this.request);
+    }
+    if (path.includes('/trojan/')) {
+      const handler = new TrojanHandler(this.env);
+      return await handler.handleTrojanWS(this.request);
+    }
+    return error('Invalid websocket endpoint');
+  }
+}
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۹: Main Handler (export default)
 // ============================================================
 
 export default {
@@ -734,171 +1790,240 @@ export default {
       const url = new URL(request.url);
       const path = url.pathname;
 
-      if (!env.KV) {
-        return new Response(JSON.stringify({ error: 'KV تنظیم نشده' }), {
-          status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
+      if (path === '/favicon.ico') {
+        return new Response(getFaviconSVG(), {
+          headers: { 'Content-Type': 'image/svg+xml', ...CORS_HEADERS }
         });
       }
 
-      const ENV_VARS = {
-        UUID: env.UUID || '90cd4a77-141a-43c9-991b-08263cfe9c10',
-        TR_PASS: env.TR_PASS || 'Tentacion',
-        PROXYIP: env.PROXYIP || 'cdn.cloudflare.net',
-        ADMIN_PASS: env.ADMIN_PASS || 'Tentacion',
-        DEFAULT_EXPIRY_DAYS: parseInt(env.DEFAULT_EXPIRY_DAYS) || 30,
-        DEFAULT_TRAFFIC_LIMIT: parseInt(env.DEFAULT_TRAFFIC_LIMIT) || 10,
-        ENABLE_VLESS: env.ENABLE_VLESS !== 'false',
-        ENABLE_TROJAN: env.ENABLE_TROJAN !== 'false',
-        ENABLE_VMESS: env.ENABLE_VMESS !== 'false',
-        ENABLE_FRAGMENT: env.ENABLE_FRAGMENT !== 'false',
-        ENABLE_ECH: env.ENABLE_ECH !== 'false',
-        ENABLE_WARP: env.ENABLE_WARP !== 'false'
-      };
-
-      const userManager = new UserManager(env.KV, env.DB, ctx);
-      const configGenerator = new ConfigGenerator(ENV_VARS);
-
-      if (request.method === 'OPTIONS') {
-        return new Response(null, { status: 204, headers: CORS_HEADERS });
+      if (path === '/robots.txt') {
+        return text('User-agent: *\nDisallow: /', 200, 'text/plain');
       }
 
-      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-
-      // ===== API: Login =====
-      if (path === '/api/admin/login' && request.method === 'POST') {
-        try {
-          const body = await request.json();
-          if (body.password === ENV_VARS.ADMIN_PASS) {
-            return createCorsResponse({ success: true, token: ENV_VARS.ADMIN_PASS });
-          }
-          return createCorsResponse({ success: false, error: 'رمز اشتباه' }, 401);
-        } catch (e) {
-          return createCorsResponse({ success: false, error: e.message }, 500);
-        }
-      }
-
-      // ===== API: Generate =====
-      if (path === '/api/generate' && request.method === 'POST') {
-        if (!await checkRateLimit(env, ip, 'generate')) {
-          return createCorsResponse({ success: false, error: 'محدودیت درخواست' }, 429);
-        }
-        try {
-          const body = await request.json();
-          const { userId, country, expiryDays, trafficGB, operator } = body;
-          if (!userId) return createCorsResponse({ success: false, error: 'آیدی کاربر الزامی است' }, 400);
-
-          let user = await userManager.getUser(userId);
-          if (!user) {
-            const r = await userManager.createUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
-            if (!r.success) return createCorsResponse(r, 400);
-            user = r.user;
-          } else {
-            const r = await userManager.renewUser(userId, expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT, false);
-            if (!r.success) return createCorsResponse(r, 400);
-            user = r.user;
-          }
-
-          let finalCountry = country || 'DE';
-          if (operator && OPERATOR_CONFIG[operator]) {
-            finalCountry = OPERATOR_CONFIG[operator].country || finalCountry;
-          }
-          user.country = finalCountry;
-
-          const users = await userManager.getUsers();
-          users[userId] = user;
-          await userManager.saveUsers(users);
-
-          const config = configGenerator.generateFullConfig(userId, user, operator || '');
-          return createCorsResponse({ success: true, config });
-        } catch (e) {
-          return createCorsResponse({ success: false, error: e.message }, 500);
-        }
-      }
-
-      // ===== API: Admin Users =====
-      if (path === '/api/admin/users' && request.method === 'GET') {
-        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
-          return createCorsResponse({ error: 'Unauthorized' }, 401);
-        }
-        try {
-          const users = await userManager.getUsers();
-          return createCorsResponse({ success: true, users });
-        } catch (e) {
-          return createCorsResponse({ success: false, error: e.message }, 500);
-        }
-      }
-
-      // ===== API: Admin Add =====
-      if (path === '/api/admin/add' && request.method === 'POST') {
-        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
-          return createCorsResponse({ error: 'Unauthorized' }, 401);
-        }
-        try {
-          const body = await request.json();
-          const r = await userManager.createUser(body.userId, body.expiryDays || ENV_VARS.DEFAULT_EXPIRY_DAYS, body.trafficGB || ENV_VARS.DEFAULT_TRAFFIC_LIMIT);
-          return createCorsResponse(r);
-        } catch (e) {
-          return createCorsResponse({ success: false, error: e.message }, 500);
-        }
-      }
-
-      // ===== API: Admin Delete =====
-      if (path === '/api/admin/delete' && request.method === 'POST') {
-        if (!checkAdminAuth(request, ENV_VARS.ADMIN_PASS)) {
-          return createCorsResponse({ error: 'Unauthorized' }, 401);
-        }
-        try {
-          const body = await request.json();
-          const r = await userManager.deleteUser(body.userId);
-          return createCorsResponse(r);
-        } catch (e) {
-          return createCorsResponse({ success: false, error: e.message }, 500);
-        }
-      }
-
-      // ===== Subscription =====
-      if (path.startsWith('/sub/')) {
-        const segments = path.split('/');
-        const userId = segments[2];
-        if (!userId) return new Response('User ID required', { status: 400, headers: CORS_HEADERS });
-
-        const user = await userManager.getUser(userId);
-        if (!user) return new Response('User not found', { status: 404, headers: CORS_HEADERS });
-
-        const validity = await userManager.checkUserValidity(userId);
-        if (!validity.valid) return new Response(validity.reason, { status: 403, headers: CORS_HEADERS });
-
-        const config = configGenerator.generateFullConfig(userId, user);
-        const content = config.links.map(l => l.link).join('\n');
-        return new Response(base64Encode(content), {
-          headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-cache', ...CORS_HEADERS }
+      if (path === '/health' || path === '/ping') {
+        return json({
+          status: 'ok',
+          app: APP_NAME,
+          version: APP_VERSION,
+          builder: BUILDER_TAG,
+          time: new Date().toISOString(),
         });
       }
 
-      // ===== Panel =====
-      if (path === '/' || path === '/TaaKaa' || path === '/taakaa') {
-        return new Response(HTML_PANEL, {
-          headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS }
-        });
-      }
-
-      // ===== Health =====
-      if (path === '/health') {
-        return new Response('OK', { status: 200, headers: CORS_HEADERS });
-      }
-
-      return new Response('Not Found', { status: 404, headers: CORS_HEADERS });
-    } catch (error) {
-      console.error('Worker Error:', error);
-      return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS }
-      });
+      const api = new APIHandler(request, env, ctx);
+      return await api.handle();
+      
+    } catch (e) {
+      console.error('TaaKaa-XI Main Error:', e);
+      return json({
+        success: false,
+        error: 'Internal server error',
+        builder: BUILDER_TAG,
+      }, 500);
     }
-  }
+  },
+
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(handleCron(env, ctx));
+  },
 };
 
+async function handleCron(env, ctx) {
+  try {
+    const users = new UserManager(env.KV, ctx);
+    const removed = await users.cleanupExpired();
+    console.log(`TaaKaa-XI Cron: ${removed} expired users cleaned`);
+    await users.log('اجرای خودکار Cron', 'info');
+  } catch (e) {
+    console.error('TaaKaa-XI Cron Error:', e);
+  }
+}
 
+function getFaviconSVG() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <defs>
+      <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ff6b1a"/>
+        <stop offset="100%" stop-color="#ff8c42"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="20" fill="#0a0a0a"/>
+    <text x="50" y="65" font-size="50" text-anchor="middle" fill="url(#g)" 
+      font-family="Arial Black, sans-serif" font-weight="900">⚡</text>
+  </svg>`;
+}
 
+addEventListener('fetch', (event) => {
+  event.respondWith(handleFetch(event.request));
+});
 
+async function handleFetch(request) {
+  const env = typeof ENV !== 'undefined' ? ENV : globalThis;
+  const ctx = { waitUntil: () => {}, passThroughOnException: () => {} };
+  
+  try {
+    const api = new APIHandler(request, env, ctx);
+    return await api.handle();
+  } catch (e) {
+    return json({ success: false, error: e.message, builder: BUILDER_TAG }, 500);
+  }
+}
 
+console.log(`⚡ ${APP_NAME} v${APP_VERSION} started`);
+console.log(`🏷️ ${BUILDER_TAG}`);
+// ============================================================
+// TaaKaa-XI v1.0 - بخش ۱۰: Templates + Helper Functions
+// ============================================================
+
+const CONFIG_TEMPLATES = {
+  maxSecurity: {
+    description: 'بالاترین امنیت، سرعت متوسط',
+    fragment: '1-3',
+    enableEch: true,
+    enableWarp: true,
+    sni: 'mozilla.org',
+    flow: 'xtls-rprx-vision',
+  },
+  maxSpeed: {
+    description: 'بالاترین سرعت، امنیت عادی',
+    fragment: '',
+    enableEch: false,
+    enableWarp: false,
+    sni: 'cloudflare.com',
+    flow: '',
+  },
+  balanced: {
+    description: 'تعادل بین سرعت و امنیت',
+    fragment: '2-5',
+    enableEch: true,
+    enableWarp: false,
+    sni: 'www.cloudflare.com',
+    flow: 'xtls-rprx-vision',
+  },
+  iranBypass: {
+    description: 'مخصوص ایران - Fragment سنگین',
+    fragment: '5-10,tlshello',
+    enableEch: true,
+    enableWarp: true,
+    sni: 'aparat.com',
+    flow: 'xtls-rprx-vision',
+  },
+};
+
+function generateClashYaml(user, config) {
+  const proxyList = config.links.map(l => {
+    if (l.type === 'vless') {
+      return `  - name: "${l.country} - VLESS"
+    type: vless
+    server: ${l.address}
+    port: 443
+    uuid: ${l.uuid}
+    flow: xtls-rprx-vision
+    tls: true
+    servername: ${l.address}
+    skip-cert-verify: true
+    network: tcp
+    fragment: ${l.fragment || '2-5'}`;
+    }
+    return '';
+  }).filter(Boolean).join('\n');
+
+  return `mixed-port: 7890
+allow-lan: true
+mode: rule
+log-level: info
+
+proxies:
+${proxyList}
+
+proxy-groups:
+  - name: "TaaKaa-XI"
+    type: select
+    proxies:
+      - "DE - VLESS"
+      - "US - VLESS"
+      - "SG - VLESS"
+
+rules:
+  - MATCH,TaaKaa-XI`;
+}
+
+function generateSingboxOutbound(user, config) {
+  const outbounds = config.links.map(l => {
+    if (l.type === 'vless') {
+      return {
+        type: 'vless',
+        tag: `${l.country} - VLESS`,
+        server: l.address,
+        server_port: 443,
+        uuid: l.uuid,
+        flow: 'xtls-rprx-vision',
+        tls: { enabled: true, server_name: l.address, utls: { enabled: true, fingerprint: 'chrome' } },
+        transport: { type: 'tcp' },
+      };
+    }
+    return null;
+  }).filter(Boolean);
+
+  return {
+    outbounds: [
+      ...outbounds,
+      { type: 'direct', tag: 'direct' },
+      { type: 'block', tag: 'block' },
+    ],
+    route: {
+      rules: [{ outbound: 'direct', network: 'udp', port: 53 }],
+      final: outbounds.length > 0 ? outbounds[0].tag : 'direct',
+    },
+  };
+}
+
+// ====== راهنمای اپ‌های کلاینت ======
+// 
+// 🔷 v2rayNG (اندروید - رایگان - بهترین)
+// ──────────────────────────────────────
+// 1. دانلود از Google Play یا GitHub
+// 2. لینک vless:// رو کپی کن
+// 3. منو ≡ → + → Import config from clipboard
+// 4. اتصال رو بزن ☁️
+// 
+// تنظیمات Fragment:
+//    Settings → Custom Fragment → "2-5"
+// 
+// 🔷 v2rayN (ویندوز)
+// ──────────────────────────────────────
+// 1. دانلود از GitHub
+// 2. Servers → Add [VMess/VLESS] server
+// 3. لینک رو Paste کن یا دستی وارد کن
+// 4. Enable Tun mode → Connect
+// 
+// 🔷 Clash for Windows (ویندوز - حرفه‌ای)
+// ──────────────────────────────────────
+// 1. /sub/USERID?format=clash رو باز کن
+// 2. کد YAML رو کپی کن
+// 3. Profiles → Import → Paste
+// 4. Proxy → TaaKaa-XI رو انتخاب کن
+// 
+// 🔷 Clash Verge (ویندوز - جدید)
+// ──────────────────────────────────────
+// 1. Profiles → New → Type: URL
+// 2. URL: https://yourdomain.com/sub/USERID?format=clash
+// 3. Update → Enable
+// 
+// 🔷 Sing-box (iOS/Mac/Linux)
+// ──────────────────────────────────────
+// 1. دانلود از sing-box.ir
+// 2. لینک vless رو کپی
+// 3. + → Import from clipboard
+// 
+// 🔷 Shadowrocket (iOS - پولی)
+// ──────────────────────────────────────
+// 1. Add → Type: VLESS
+// 2. لینک رو Paste کن
+// 3. Connect
+// 
+// 🔷 V2Box (iOS - رایگان)
+// ──────────────────────────────────────
+// 1. Subscription → Add
+// 2. URL: https://yourdomain.com/sub/USERID
+// 3. Update → Connect
