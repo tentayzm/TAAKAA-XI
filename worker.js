@@ -1548,15 +1548,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>`;
 // ============================================================
-// TaaKaa-XI v1.0 - بخش ۸: Router + API Endpoints
+// TaaKaa-XI v1.0 - بخش ۸: Router + API Endpoints (FIXED)
 // ============================================================
 
 const _tokens = new Map();
-const SESSION_TTL = 86400;
+const SESSION_TTL = 86400; // 24h
 
 const createToken = (user = 'admin') => {
   const token = _h(Date.now() + ':' + Math.random() + ':' + user);
   _tokens.set(token, { user, created: Date.now() });
+  // Cleanup after TTL
   setTimeout(() => _tokens.delete(token), SESSION_TTL * 1000);
   return token;
 };
@@ -1578,13 +1579,16 @@ const getAuthToken = (request) => {
   return null;
 };
 
-const requireAuth = (request) => {
-  if (!verifyToken(getAuthToken(request))) {
+// ====== MIDDLEWARE: AUTH CHECK ======
+const checkAuth = (request) => {
+  const token = getAuthToken(request);
+  if (!verifyToken(token)) {
     return error('Unauthorized', 401);
   }
   return null;
 };
 
+// ====== API HANDLER ======
 class APIHandler {
   constructor(request, env, ctx) {
     this.request = request;
@@ -1596,30 +1600,73 @@ class APIHandler {
     this.configs = new ConfigGenerator(env);
   }
 
+  // ====== ROUTE ======
   async handle() {
     const path = this.url.pathname;
     const method = this.request.method;
 
+    // CORS preflight
     if (method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
-    if (path === '/api/login' && method === 'POST') return this.login();
-    
-    if (path === '/api/stats' && method === 'GET') return this.requireAuth(() => this.stats());
-    if (path === '/api/users' && method === 'GET') return this.requireAuth(() => this.listUsers());
-    if (path === '/api/users/create' && method === 'POST') return this.requireAuth(() => this.createUser());
-    if (path === '/api/users/renew' && method === 'POST') return this.requireAuth(() => this.renewUser());
-    if (path === '/api/users/delete' && method === 'POST') return this.requireAuth(() => this.deleteUser());
-    if (path === '/api/logs' && method === 'GET') return this.requireAuth(() => this.getLogs());
-    if (path === '/api/backup' && method === 'POST') return this.requireAuth(() => this.backup());
-    if (path === '/api/settings/password' && method === 'POST') return this.requireAuth(() => this.changePassword());
+    // ====== PUBLIC ======
+    if (path === '/api/login' && method === 'POST') {
+      return this.login();
+    }
 
-    if (path.startsWith('/sub/')) return this.subscription();
+    // ====== AUTH REQUIRED ======
+    const authError = checkAuth(this.request);
+    if (authError) return authError;
 
-    if (path === '/' || path === '/login') return html(LOGIN_HTML);
-    if (path === '/panel' || path === '/admin') return html(LOGIN_HTML + DASHBOARD_BODY);
+    // Stats
+    if (path === '/api/stats' && method === 'GET') {
+      return this.stats();
+    }
 
+    // Users
+    if (path === '/api/users' && method === 'GET') {
+      return this.listUsers();
+    }
+    if (path === '/api/users/create' && method === 'POST') {
+      return this.createUser();
+    }
+    if (path === '/api/users/renew' && method === 'POST') {
+      return this.renewUser();
+    }
+    if (path === '/api/users/delete' && method === 'POST') {
+      return this.deleteUser();
+    }
+
+    // Logs
+    if (path === '/api/logs' && method === 'GET') {
+      return this.getLogs();
+    }
+
+    // Backup
+    if (path === '/api/backup' && method === 'POST') {
+      return this.backup();
+    }
+
+    // Settings
+    if (path === '/api/settings/password' && method === 'POST') {
+      return this.changePassword();
+    }
+
+    // ====== SUBSCRIPTION ======
+    if (path.startsWith('/sub/')) {
+      return this.subscription();
+    }
+
+    // ====== PAGES ======
+    if (path === '/' || path === '/login') {
+      return html(LOGIN_HTML);
+    }
+    if (path === '/panel' || path === '/admin') {
+      return html(LOGIN_HTML + DASHBOARD_BODY);
+    }
+
+    // ====== WEBSOCKET PROXY ======
     if (method === 'GET' && this.request.headers.get('Upgrade') === 'websocket') {
       return this.handleWebSocket();
     }
@@ -1627,11 +1674,7 @@ class APIHandler {
     return error('Not found', 404);
   }
 
-  requireAuth(handler) {
-    const err = requireAuth(this.request);
-    return err || handler();
-  }
-
+  // ====== LOGIN ======
   async login() {
     try {
       const { password } = await this.request.json();
@@ -1647,24 +1690,29 @@ class APIHandler {
     }
   }
 
+  // ====== STATS ======
   async stats() {
     const stats = await this.users.getStats();
     return ok({ stats });
   }
 
+  // ====== LIST USERS ======
   async listUsers() {
     const users = await this.users.getUsers();
     return ok({ users, count: Object.keys(users).length });
   }
 
+  // ====== CREATE USER ======
   async createUser() {
     try {
-      const { userId, country, days, trafficGB } = await this.request.json();
+      const body = await this.request.json();
+      const { userId, country, days, trafficGB } = body;
+
       if (!userId) return error('آیدی کاربر الزامی است');
       if (!isValidCountry(country)) return error('کشور نامعتبر است');
       if (!isValidDays(days)) return error('مدت زمان نامعتبر است');
       if (!isValidGB(trafficGB)) return error('حجم نامعتبر است');
-      
+
       const userData = {
         userId,
         country,
@@ -1672,7 +1720,7 @@ class APIHandler {
         trafficLimit: trafficGB * 1024 ** 3,
         uuid: _h('TaaKaa-XI:' + userId + ':' + Date.now()),
       };
-      
+
       const user = await this.users.createUser(userId, userData);
       await this.users.log(`کاربر ${userId} ساخته شد`, 'success');
       return ok({ user });
@@ -1681,12 +1729,15 @@ class APIHandler {
     }
   }
 
+  // ====== RENEW USER ======
   async renewUser() {
     try {
-      const { userId, days } = await this.request.json();
+      const body = await this.request.json();
+      const { userId, days } = body;
+
       if (!userId) return error('آیدی کاربر الزامی است');
       if (!isValidDays(days)) return error('مدت زمان نامعتبر است');
-      
+
       const user = await this.users.renewUser(userId, days);
       await this.users.log(`کاربر ${userId} تمدید شد`, 'info');
       return ok({ user });
@@ -1695,11 +1746,14 @@ class APIHandler {
     }
   }
 
+  // ====== DELETE USER ======
   async deleteUser() {
     try {
-      const { userId } = await this.request.json();
+      const body = await this.request.json();
+      const { userId } = body;
+
       if (!userId) return error('آیدی کاربر الزامی است');
-      
+
       await this.users.deleteUser(userId);
       await this.users.log(`کاربر ${userId} حذف شد`, 'warn');
       return ok({});
@@ -1708,11 +1762,13 @@ class APIHandler {
     }
   }
 
+  // ====== GET LOGS ======
   async getLogs() {
     const logs = await this.users.getLogs();
     return ok({ logs });
   }
 
+  // ====== BACKUP ======
   async backup() {
     try {
       const users = await this.users.getUsers();
@@ -1724,13 +1780,16 @@ class APIHandler {
     }
   }
 
+  // ====== CHANGE PASSWORD ======
   async changePassword() {
     try {
-      const { password } = await this.request.json();
+      const body = await this.request.json();
+      const { password } = body;
+
       if (!password || password.length < 4) {
         return error('رمز عبور باید حداقل ۴ کاراکتر باشد');
       }
-      // در Workers نمی‌توان env را تغییر داد، اما برای نمونه ذخیره می‌کنیم
+
       await this.kv.put('TaaKaa-XI:admin_pass', password);
       await this.users.log('رمز عبور تغییر کرد', 'info');
       return ok({});
@@ -1739,44 +1798,46 @@ class APIHandler {
     }
   }
 
+  // ====== SUBSCRIPTION ======
   async subscription() {
     const userId = this.url.pathname.split('/sub/')[1];
     if (!userId) return error('User ID required');
-    
+
     const user = await this.users.getUser(userId);
     if (!user) return error('User not found', 404);
-    
+
     const validity = await this.users.checkUserValidity(userId);
     if (!validity.valid) return error(validity.reason, 403);
-    
+
     const config = this.configs.generateFullConfig(userId, user);
     let subContent = config.links.map(l => l.link).join('\n');
-    
+
     const format = this.url.searchParams.get('format');
     if (format === 'clash') {
-      // Clash YAML
       return text(generateClashYaml(user, config), 200, 'text/yaml');
     }
-    
+
     if (format === 'singbox') {
-      // Sing-box JSON
       return json(generateSingboxOutbound(user, config));
     }
-    
-    // Base64 V2Ray subscription
+
     return text(_enc(subContent), 200, 'text/plain');
   }
 
+  // ====== WEBSOCKET HANDLER ======
   async handleWebSocket() {
     const path = this.url.pathname;
+
     if (path.includes('/vless/')) {
       const handler = new VLESSHandler(this.env);
       return await handler.handleVlessWS(this.request);
     }
+
     if (path.includes('/trojan/')) {
       const handler = new TrojanHandler(this.env);
       return await handler.handleTrojanWS(this.request);
     }
+
     return error('Invalid websocket endpoint');
   }
 }
