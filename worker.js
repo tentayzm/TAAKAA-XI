@@ -3535,7 +3535,6 @@ if (a5 === g4(mS.fx, mS.fy))
             }
         }
     }
-}
 try {
     config_JSON = await readConfigJson(g, D, B, q);
 } catch (cH) {
