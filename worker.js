@@ -3905,3 +3905,118 @@ if (ev || eB || ep) {
     const eL = (p[g4(0x1639, 'egod')][g4(mS.yE, '6UCx')](g4(0x1841, '#sM9')) || eH[g4(0xe1f, mS.ua)](g4(mS.yF, 'Pt3!'))) && config_JSON[g4(mS.yG, mS.sA)] !== 'ss' ? g4(mS.yH, '6UCx') + g4(0x17f6, mS.yI) : config_JSON[g4(0x717, 'dn8p')];
     let eM = '';
     if (eK === g4(mS.yJ, mS.yK)) {
+            const eX = config_JSON[g4(0xdbe, 'w(Wr')] == g4(0xb07, '#sM9') ? g4(0x1278, mS.dR) + encodeURIComponent(g4(mS.yL, '$BSl')) : config_JSON[g4(0x85f, mS.x7)] == g4(mS.yM, '[]Y1') ? g4(0x196e, mS.xa) + encodeURIComponent(g4(mS.yN, '1qbp')) : '';
+    let eY = [],
+        eZ = '',
+        f0 = [];
+    const f1 = p[g4(0x136d, 'NMJQ')][g4(mS.d1, mS.yO)](g4(0x9f6, mS.u6)) || '',
+        f2 = f1[g4(0x19d5, mS.yP)]('.');
+    if (!f2 && config_JSON[g4(0x1311, mS.yQ)][g4(0x614, mS.rz)]) {
+        const f9 = config_JSON[g4(mS.yR, 'NxG1')][g4(0x2d7, mS.oW)][g4(0x1226, mS.yd)] ? (await generateRandomIp(f, config_JSON[g4(mS.yS, '7NO9')][g4(0x1dfc, 'ZgMu')][g4(mS.yT, '*lLT')], config_JSON[g4(0x1be4, mS.yU)][g4(mS.yV, 'd%lH')][g4(0x1a82, mS.yW)]))[0x0] : await g['KV'][g4(mS.yX, '9rQu')](g4(0x146e, mS.yY)) ? await sortIntoArray(await g['KV'][g4(mS.yZ, mS.z0)](g4(0x19d6, mS.yg))) : (await generateRandomIp(f, config_JSON[g4(mS.z1, 'dbGg')][g4(0xa0b, mS.ra)][g4(mS.z2, 'zs!c')], config_JSON[g4(0x1365, mS.z3)][g4(mS.z4, mS.z5)][g4(mS.z6, mS.q3)]))[0x0],
+            fa = [],
+            fb = [],
+            fc = [];
+        for (const fh of f9) {
+            if (fh[g4(0x5d4, 'egod')]()[g4(mS.z7, mS.z8)](g4(mS.z9, '8Ys%'))) fa[g4(0xae2, mS.za)](fh);
+            else {
+                const fi = fh[g4(0x11a0, mS.zb)]('#'),
+                    fj = fi > -0x1 ? fh[g4(mS.zc, 'Pt3!')](0x0, fi) : fh,
+                    fk = fi > -0x1 ? fh[g4(mS.zd, 'jODS')](fi) : '',
+                    fl = fh[g4(0x1b33, mS.ze)](/sub\s*=\s*([^\s&#]+)/i);
+                if (fl && fl[0x1][g4(mS.zf, mS.fu)]()[g4(0x267, mS.aL)]('.')) {
+                    const fm = fh[g4(mS.rn, '%oj0')]()[g4(mS.zg, mS.zh)](g4(mS.zi, mS.zj));
+                    if (fm) fa[g4(mS.zk, mS.w3)](g4(mS.zl, '2#Qk') + fl[0x1][g4(0xdb7, 'dn8p')]() + g4(0xd45, 'mRB^') + (fh[g4(mS.yA, '[p9(')]('#') ? '#' + fh[g4(mS.zm, mS.zn)]('#')[0x1] : ''));
+                    else fa[g4(mS.zo, '[p9(')](g4(mS.zp, 'C2T0') + fl[0x1][g4(mS.zq, 'PSkb')]() + (fh[g4(mS.zr, 'CeJW')]('#') ? '#' + fh[g4(mS.zs, mS.s)]('#')[0x1] : ''));
+                } else {
+                    if (fj[g4(mS.rn, '%oj0')]()[g4(0x512, mS.W)](g4(0xfb8, mS.zt))) fa[g4(0x8d8, mS.zu)](fh);
+                    else {
+                        if (fj[g4(mS.zv, 'dbGg')]()[g4(0x483, 'mRB^')](g4(mS.zw, 'vel('))) {
+                            if (fh[g4(0x538, mS.cC)]('#')) {
+                                const fn = fh[g4(mS.zx, 'NMJQ')]('#');
+                                fc[g4(mS.zy, 'T3Fv')](fn[0x0] + '#' + encodeURIComponent(decodeURIComponent(fn[0x1])));
+                            } else fc[g4(0x8d8, mS.q5)](fh);
+                        } else {
+                            if (fj[g4(0x13c8, '1qbp')]('*')) fb[g4(0x34d, mS.fu)](replaceStarWithRandom(fj) + fk);
+                            else fb[g4(mS.zz, 'd%lH')](fh);
+                        }
+                    }
+                }
+            }
+        }
+        const fe = await requestBestApi(fa, g4(0x16f0, 'T3Fv')),
+            ff = [...new Set(fc[g4(0x32c, mS.xV)](fe[0x1]))];
+        eZ = ff[g4(0xfd3, mS.zA)] > 0x0 ? ff[g4(mS.zB, mS.zC)]('\x0a') + '\x0a' : '';
+        const fg = fe[0x0];
+        f0 = fe[0x3] || [], eY = [...new Set(fb[g4(0x1592, 'M5Ii')](fg))];
+    } else {
+        let fo = (f2 ? f1 : '') || config_JSON[g4(mS.zD, 'Mmsl')][g4(0x1117, 'jODS')];
+        const [fp, fq] = await getBestSubGeneratorData(fo);
+        eY = eY[g4(mS.zE, '60r9')](fp), eZ += fq;
+    }
+    if (networkSettings && networkSettings[g4(mS.zF, mS.zG)])
+        try {
+            const fr = await buildRegisteredWarpNode(g);
+            if (fr) eZ = fr + '\x0a' + eZ;
+        } catch (fs) {}
+    const f3 = config_JSON[g4(0x1b69, 'egod')] ? g4(mS.zH, 'yxI7') + encodeURIComponent((config_JSON[g4(0x7ce, 'Pt3!')][g4(mS.zI, mS.bG)] ? config_JSON[g4(mS.zJ, mS.yU)][g4(mS.zK, mS.zL)] + '+' : '') + config_JSON[g4(0xce4, mS.zN)]) : '',
+        f4 = eH[g4(mS.zr, 'CeJW')](g4(0x1d0e, mS.zO)) || eH[g4(mS.zP, 'rsIZ')](g4(0x7c2, mS.zQ)),
+        { type: f5, pathFieldName: f6, domainFieldName: f7 } = getTransportProtocolConfig(config_JSON),
+        f8 = g4(0x1dd8, mS.zR);
+    eY = [D + g4(0x10e0, 'wCGK') + f8, ...eY],
+        eM = eZ + eY[g4(0xcd2, '6UCx')](ft => {
+            const g6 = g4,
+                fu = ft[g6(0xae7, mO.c)](NODE_ADDR_REGEX);
+            let fv, fw = g6(0x1b41, mO.f),
+                fx;
+            if (fu) fv = fu[0x1], fw = fu[0x2] ? fu[0x2] : g6(mO.g, mO.h), fx = fu[0x3] || fv;
+            else return console[g6(mO.i, mO.j)](g6(0x1c18, mO.k) + ft), null;
+            let fy = config_JSON[g6(0x1d8, 'IcEg')];
+            const fz = fx[g6(mO.l, 'vel(')](/\$(socks5|http|https|turn|sstp):\/\/([^#\s]+)/i);
+            if (fz)
+                try {
+                    const fA = fz[0x1][g6(0x867, mO.m)](),
+                        fB = fz[0x2],
+                        fC = { 'type': fA, ...getSocks5Account(fB, getProxyDefaultPort(fA)) };
+                    fy = g6(0x1c1d, 'NMJQ') + (base64SecretEncode(JSON[g6(mO.n, mO.o)](fC), B) + (config_JSON[g6(0x180c, 'oeP*')] ? g6(0x406, 'dn8p') : '')), fx = fx[g6(mO.p, '6UCx')](fz[0x0], '')[g6(0x11b7, mO.q)]() || fv;
+                } catch (fD) { console[g6(mO.r, mO.s)](g6(0x2a8, 'NMJQ') + fz[0x0] + '\x20(' + (fD && fD[g6(mO.t, mO.u)] ? fD[g6(0xdd4, mO.v)] : fD) + ')'); }
+            else {
+                if (config_JSON[g6(mO.w, mO.x)] && /^(socks5|http|https|turn|sstp):\/\//i[g6(mO.y, '2#Qk')](String(config_JSON[g6(0x1ddb, 'vel(')])[g6(0x441, mO.z)]()))
+                    try {
+                        const fE = /^(socks5|http|https|turn|sstp):\/\/(.+)$/i[g6(mO.A, mO.B)](String(config_JSON[g6(0x1bb6, mO.C)])[g6(0xdb7, mO.D)]()),
+                            fF = fE[0x1][g6(0xc88, '1qbp')](),
+                            fG = { 'type': fF, ...getSocks5Account(fE[0x2][g6(0x9bf, 'NMJQ')]('/')[0x0], getProxyDefaultPort(fF)) };
+                        fy = g6(0x119d, mO.E) + (base64SecretEncode(JSON[g6(0x401, 'NMJQ')](fG), B) + (config_JSON[g6(mO.F, mO.G)] ? g6(mO.H, 'GzjL') : ''));
+                    } catch (fH) { console[g6(0x1cc5, mO.I)](g6(mO.J, 'w3Tt') + (fH && fH[g6(mO.K, 'XITC')] ? fH[g6(0x1ca6, mO.L)] : fH)); }
+                else {
+                    if (f0[g6(0xaca, 'ZgMu')] > 0x0) {
+                        const fI = f0[g6(0x1d54, mO.M)](fJ => fJ[g6(0xe1f, 'rsIZ')](fv));
+                        if (fI) fy = (config_JSON[g6(mO.N, mO.O)] + g6(mO.P, mO.Q) + fI)[g6(mO.R, 'GzjL')](/\/\//g, '/') + (config_JSON[g6(0x1f9, 'egod')] ? g6(mO.S, 'Pt3!') : '');
+                    }
+                }
+            }
+            if (et) fy += (fy[g6(0x1e76, mO.D)]('?') ? '&' : '?') + 'u=' + et;
+            if (f4) fy = fy[g6(mO.T, mO.U)](/,/g, g6(mO.V, mO.W));
+            if (eL === 'ss' && !ep) {
+                if (!config_JSON['SS'][g6(0x947, mO.O)]) {
+                    const fJ = [0x1bb, 0x805, 0x823, 0x827, 0x830, 0x20fb],
+                        fK = [0x50, 0x804, 0x822, 0x826, 0x82f, 0x1f90];
+                    fw = String(fK[fJ[g6(0x1959, mO.X)](Number(fw))] ?? fw);
+                }
+                fy = (fy[g6(0x2e4, 'V#kN')]('?') ? fy[g6(mO.Y, '#sM9')]('?', g6(0x16f2, '6UCx') + config_JSON['SS'][g6(0x11bc, mO.E)] + '&') : fy + g6(0x1a0e, 'M5Ii') + config_JSON['SS'][g6(0xe9f, '*lLT')])[g6(mO.Z, '8Ys%')](/([=,])/g, g6(mO.a0, mO.a1));
+                if (!eJ) fy = fy + g6(0x1131, mO.a2);
+                return eL + g6(0x273, 'C2T0') + btoa(config_JSON['SS'][g6(mO.a3, '#sM9')] + g6(mO.a4, 'T3Fv')) + '@' + fv + ':' + fw + g6(mO.a5, mO.O) + (encodeURIComponent(g6(mO.a6, mO.a7) + (config_JSON[g6(0x1ced, 'wCGK')] ? randomPath(fy) : fy) + (config_JSON['SS'][g6(mO.a8, mO.O)] ? g6(0x1dbf, mO.U) : '')) + f3 + eX) + '#' + encodeURIComponent(fx);
+            } else {
+                const fL = getTransportPathParamValue(config_JSON, fy, ep);
+                return eL + g6(mO.a9, mO.c) + fv + ':' + fw + g6(0x1e5f, '5M6D') + (f5 + f3) + '&' + f7 + g6(mO.aa, mO.q) + config_JSON[g6(mO.ab, 'mRB^')] + g6(mO.ac, '60r9') + f6 + '=' + (encodeURIComponent(fL) + eX) + g6(mO.ad, mO.o) + (config_JSON[g6(mO.ae, mO.af)] ? g6(0xeaa, 'dn8p') : '') + '#' + encodeURIComponent(fx);
+            }
+        })[g4(0x1b78, 'n7E3')](ft => ft !== null)[g4(mS.zS, mS.f)]('\x0a');
+} else {
+    const ft = (/taakaaproxy/i[g4(mS.zT, '7NO9')](config_JSON[g4(0x262, 'CeJW')][g4(0x11fc, 'zs!c')] || '') || !config_JSON[g4(0x620, mS.tX)][g4(0xaaa, mS.cs)] ? g4(0x459, 'ZgMu') : config_JSON[g4(0xcd3, mS.ay)][g4(mS.zU, 'n7E3')]) + g4(mS.zV, 'vel(') + eK + g4(mS.zW, mS.yO) + encodeURIComponent(p[g4(mS.zX, mS.zY)] + '//' + p[g4(mS.zZ, '9rQu')] + g4(mS.A0, mS.A1) + ez + g4(0x1308, mS.vE) + identifyCarrier(f) + (p[g4(0xd98, mS.A2)][g4(mS.A3, 'M5Ii')](g4(mS.A4, mS.f0)) && p[g4(mS.A5, 'mRB^')][g4(0x515, '89Hn')](g4(mS.A6, mS.n0)) != '' ? g4(mS.A7, mS.A8) + p[g4(mS.A9, 'IcEg')][g4(0x1320, 'NxG1')](g4(0x1bee, '60r9')) : '')) + g4(mS.Aa, mS.Ab) + encodeURIComponent(config_JSON[g4(0x1eb0, 'egod')][g4(0xe82, '60r9')]) + g4(0xa0f, 'n7E3') + config_JSON[g4(0xbf7, mS.Ac)][g4(0x1a79, mS.zG)] + g4(mS.Ad, mS.Ae) + config_JSON[g4(0x1e14, 'jODS')];
+    try {
+        const fu = await fetch(ft, { 'headers': { 'User-Agent': g4(mS.Af, 'V#kN') + eK + g4(mS.Ag, mS.qR) } });
+        if (fu['ok']) {
+            eM = await fu[g4(mS.Ah, '8Ys%')]();
+            if (p[g4(0xb6b, mS.as)][g4(0x1385, mS.Ai)](g4(mS.Aj, '5M6D')) || eH[g4(0xd7d, 'b)3q')](g4(0x148a, 'w3Tt'))) eM = SurgesubConfigFileHotpatch(eM, p[g4(mS.Ak, mS.Al)] + '//' + p[g4(mS.Am, 'ZgMu')] + g4(mS.An, mS.Ao) + eo + g4(0x1127, 'vel('), config_JSON);
+        } else return new Response(g4(0x1bcc, mS.bO) + fu[g4(0x1c4b, 'Mmsl')], { 'status': fu[g4(mS.Ap, mS.sn)] });
+    } catch (fv) { return new Response(g4(mS.Aq, '$p[^') + fv[g4(0x1068, 'mRB^')], { 'status': 0x193 }); }
+    }
