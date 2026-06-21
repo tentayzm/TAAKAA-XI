@@ -9589,4 +9589,946 @@ function internetChecksum(c, f, g) {
     while (h >> 0x10) h = (h & 0xffff) + (h >> 0x10);
     return ~h & 0xffff;
                                 }
+async function sstpConnect(c, f, g, h) {
+    const rS = { c: 'oeP*', f: 0xd8f, g: '0Ua@', h: 0xd44, i: 0x1717, j: 'd%lH', k: 0x876, l: 0xcc5, m: 'NMJQ', n: 'dbGg', o: 'NxG1', p: 0xcbf, q: 'PSkb', r: 0x1a23, s: 0xa11, t: 0x8b2, u: 'vel(', v: 0x173, w: '[p9(', x: 0xf53, y: '1qbp', z: 0x1a1a, A: 0xea8, B: 'ZgMu', C: 0x14cb, D: 'XITC', E: 0x50a, F: 0x1415, G: 0x1c86, H: 0x3af, I: 'dbGg', J: 'V#kN', K: '60r9', L: 0x13a6, M: 'dn8p', N: 0x86c, O: 0x2cc, P: 0x189b, Q: 0x4fa, R: 0xfb6, S: 0x1f28, T: 'n7E3', U: 0x1e32, V: 'IcEg', W: '*lLT', X: 0xfae, Y: 0x1051, Z: 0xaf4, a0: 'egod', a1: 'b)3q', a2: '7NO9', a3: 0x577, a4: '6UCx', a5: 0x1293, a6: 'Mmsl', a7: 0x1745, a8: '89Hn', a9: 0x10da, aa: 'dbGg', ab: 0x1df3, ac: 0x1c8, ad: 'd%lH', ae: 0x3f4, af: 'yxI7', ag: 0xbb0, ah: 0x1496, ai: 'CeJW', aj: 0x4ef, ak: '7NO9', al: '6UCx', am: 0x158f, an: 'mRB^', ao: 0x32b, ap: 'egod', aq: 0x9bc, ar: 'w3Tt', as: '8Ys%', at: 'dZbH', au: 0x828, av: 0x7e6, aw: 0x1202, ax: 'd%lH', ay: 'Pt3!', az: 0x1371, aA: 'PYt$', aB: 0xb5b, aC: 'PYt$', aD: 'oeP*', aE: 0x1862, aF: 0xb9c, aG: '$p[^', aH: 0x780, aI: 0xfff, aJ: 0xa78, aK: 0x14ef, aL: '[]Y1', aM: 0x1ad4, aN: 'IcEg', aO: 0x1ab1, aP: '[p9(', aQ: 0x1b73, aR: 'b)3q', aS: 0x1c8, aT: '5M6D', aU: 0x15e4 },
+        rQ = { c: 0x1550 },
+        rO = { c: 0xa21, f: 'Mmsl', g: 0x869, h: '$p[^', i: 0x1f3, j: 'PSkb', k: 0x1b0f, l: 'Pt3!', m: '$p[^', n: 0x1d27, o: '5M6D', p: 0xb8f, q: 0x1457, r: 'dZbH' },
+        rN = { c: 0xc7c, f: 0x13b6, g: '60r9', h: 'M5Ii', i: 0xbe4, j: 'dbGg', k: 0x1297, l: 'Pt3!', m: 'wCGK', n: 0x1c7, o: 'w(Wr', p: '%oj0', q: 'M5Ii', r: 0x78f, s: '[p9(', t: 0xbec, u: 'IcEg', v: 0x1c3f, w: 0x12c0, x: '89Hn', y: '6UCx', z: 0x183c, A: 'PSkb' },
+        rH = { c: 0x521 },
+        rG = { c: 0x1786, f: 'Gn7Q', g: 0xf9d, h: 'd%lH', i: 'XITC', j: 'dZbH', k: 'Mmsl', l: 0xae0, m: 'PSkb', n: 'CeJW', o: 0x5c8, p: 'rsIZ', q: 0x329, r: 'mRB^', s: '9rQu', t: 0x908 },
+        rF = { c: 0x17e8, f: '8Ys%' },
+        rE = { c: 0x1a0c, f: 'C2T0', g: 0x190b, h: 'mRB^', i: 0x5a6, j: '89Hn', k: 0x1d84, l: 'n7E3', m: 0x4fa, n: 'dbGg', o: 0x7c4, p: 0x1200, q: 'oeP*', r: 0x62c, s: 0x1e26, t: 'dZbH', u: 0x1338, v: '0Ua@', w: 0x1920, x: '60r9', y: '6UCx', z: '#sM9', A: 0x1786, B: 'Gn7Q', C: 0x1d27, D: '5M6D', E: 0x1c56 },
+        rD = { c: 0x181a, f: 'egod', g: 0x1a7c, h: 0xfa7, i: 0x1b94, j: '*lLT' },
+        rC = { c: 0x107a, f: 'yxI7', g: '89Hn', h: 0x9d7, i: 'mRB^', j: 0x5d6, k: 'C2T0', l: 'NMJQ' },
+        rB = { c: 'wCGK', f: 0x12d6, g: 0x46b, h: 'XITC' },
+        rA = { c: 0x1434, f: 0x1ca5, g: '1qbp', h: 'PYt$', i: 'V#kN' },
+        rz = { c: 0xb9c },
+        ry = { c: 0x179d, f: 'XITC', g: 0xf7a, h: 'wCGK' },
+        rx = { c: 'jODS', f: 'dbGg', g: 0xdaf, h: 0x53b, i: 0x1ab0, j: 0xe75, k: '2#Qk' },
+        rw = { c: 0x15f9, f: 'zs!c', g: 0x1a7c, h: 0xfe8 },
+        rv = { c: 0x15c5 },
+        ru = { c: 0x198b, f: '%oj0', g: 0x7af, h: 0x1206, i: 'zs!c', j: '89Hn', k: 0x1a09, l: 'dn8p', m: '9rQu' },
+        ka = fX;
+    c = { ...c, 'username': c[ka(0x1ce5, rS.c)] ?? null, 'password': c[ka(rS.f, rS.g)] ?? null };
+    let i = SSTP_EMPTY_BYTES,
+        j = 0x1,
+        k = null,
+        l = null,
+        m = null,
+        n = ![],
+        o, p;
+    const q = new Promise((B, C) => { o = B;
+        p = C; }),
+        r = (B, C) => {
+            if (n) return;
+            n = !![], B(C);
+        },
+        s = () => {
+            const kb = ka;
+            try { l?.[kb(ru.c, ru.f)]?.()[kb(ru.g, '8Ys%')]?.(() => {}); } catch (B) {}
+            try { l?.[kb(ru.h, ru.i)]?.(); } catch (C) {}
+            try { m?.[kb(0x18b7, '0Ua@')]?.()[kb(0x184d, ru.j)]?.(() => {}); } catch (D) {}
+            try { m?.[kb(ru.k, ru.l)]?.(); } catch (E) {}
+            try { k?.[kb(0x1149, ru.m)]?.(); } catch (F) {}
+            r(o);
+        },
+        t = async() => {
+            const kc = ka, { value: B, done: C } = await l[kc(rv.c, 'zs!c')]();
+            if (C || !B) throw new Error(kc(0x505, 'PSkb'));
+            return dataToUint8Array(B);
+        },
+        u = async B => {
+            const kd = ka;
+            while (i[kd(rw.c, rw.f)] < B) { const D = await t();
+                i = i[kd(rw.g, 'rsIZ')] ? concatByteData(i, D) : D; }
+            const C = i[kd(rw.h, 'w(Wr')](0x0, B);
+            return i = i[kd(0x1e52, 'b)3q')](B), C;
+        },
+        v = async() => {
+            const ke = ka;
+            for (;;) {
+                const B = i[ke(0x1c8a, rx.c)](0xa);
+                if (B >= 0x0) {
+                    const D = textDecoder[ke(0x413, rx.f)](i[ke(rx.g, '89Hn')](0x0, B));
+                    return i = i[ke(rx.h, 'n7E3')](B + 0x1), D[ke(rx.i, 'GzjL')](/\r$/, '');
+                }
+                const C = await t();
+                i = i[ke(rx.j, rx.k)] ? concatByteData(i, C) : C;
+            }
+        },
+        w = async(B = CONNECT_TIMEOUT_MS) => {
+            const kf = ka,
+                C = await withTimeout(u(0x4), B, kf(ry.c, ry.f)),
+                D = readSstpUint16(C, 0x2) & 0xfff;
+            if (D < 0x4) throw new Error(kf(0x1de8, 'yxI7'));
+            return { 'isControl': (C[0x1] & 0x1) !== 0x0, 'body': D > 0x4 ? await withTimeout(u(D - 0x4), B, kf(ry.g, ry.h)) : SSTP_EMPTY_BYTES };
+        },
+        x = B => {
+            const kg = ka,
+                C = 0x6 + B[kg(0x1bf5, '1qbp')],
+                D = new Uint8Array(C);
+            return D[kg(0x50a, 'n7E3')]([0x10, 0x0, C >> 0x8 & 0xf | 0x80, C & 0xff, 0xff, 0x3]), D[kg(rz.c, '$p[^')](B, 0x6), D;
+        },
+        y = (B, C, D, E = []) => {
+            const kh = ka,
+                F = E[kh(0x19dc, rB.c)]((I, J) => I + 0x2 + J[kh(0x1c31, 'M5Ii')][kh(0x1bf5, '1qbp')], 0x0),
+                G = new Uint8Array(0x6 + F),
+                H = new DataView(G[kh(rB.f, '6UCx')]);
+            return H[kh(0x1a1a, 'Gn7Q')](0x0, B), G[0x2] = C, G[0x3] = D, H[kh(rB.g, rB.h)](0x4, 0x4 + F), E[kh(0xc57, 'C2T0')]((I, J) => {
+                const ki = kh;
+                return G[I] = J[ki(rA.c, '1qbp')], G[I + 0x1] = 0x2 + J[ki(rA.f, '$p[^')][ki(0x3ec, '6UCx')], G[ki(0x92d, rA.g)](J[ki(0x859, '2#Qk')], I + 0x2), I + 0x2 + J[ki(0x14b2, rA.h)][ki(0x19d2, rA.i)];
+            }, 0x6), G;
+        },
+        z = B => {
+            const kj = ka,
+                C = B[kj(rC.c, rC.f)] >= 0x2 && B[0x0] === 0xff && B[0x1] === 0x3 ? 0x2 : 0x0;
+            if (B[kj(0x1599, rC.g)] - C < 0x4) return null;
+            const D = readSstpUint16(B, C);
+            if (D === 0x21) return { 'protocol': D, 'ipPacket': B[kj(rC.h, rC.i)](C + 0x2) };
+            if (B[kj(rC.j, rC.k)] - C < 0x6) return null;
+            return { 'protocol': D, 'code': B[C + 0x2], 'id': B[C + 0x3], 'payload': B[kj(0x935, '5M6D')](C + 0x6), 'rawPacket': B[kj(0x71e, rC.l)](C) };
+        },
+        A = B => {
+            const kk = ka,
+                C = [];
+            for (let D = 0x0; D + 0x2 <= B[kk(rD.c, rD.f)];) {
+                const E = B[D],
+                    F = B[D + 0x1];
+                if (F < 0x2 || D + F > B[kk(rD.g, 'rsIZ')]) break;
+                C[kk(rD.h, 'w(Wr')]({ 'type': E, 'data': B[kk(rD.i, rD.j)](D + 0x2, D + F) }), D += F;
+            }
+            return C;
+        };
+    try {
+        const B = stripIPv6Brackets(c[ka(rS.h, '60r9')]),
+            C = c[ka(rS.i, rS.j)];
+        k = h({ 'hostname': B, 'port': C }, { 'secureTransport': 'on', 'allowHalfOpen': ![] }), await withTimeout(k[ka(0x1b67, 'b)3q')], CONNECT_TIMEOUT_MS, ka(rS.k, 'PYt$')), l = k[ka(0x19b3, '0Ua@')][ka(0x134d, 'wCGK')](), m = k[ka(rS.l, rS.m)][ka(0x51c, rS.n)]();
+        const D = B[ka(0x1c07, rS.o)](':') ? '[' + B + ']' : B,
+            E = textEncoder[ka(rS.p, rS.q)](ka(rS.r, '9rQu') + (ka(rS.s, 'yxI7') + (Number(C) === 0x1bb ? D : D + ':' + C) + '\x0d\x0a') + ka(rS.t, rS.u) + (ka(rS.v, '9rQu') + crypto[ka(0x1553, rS.w)]() + ka(0xc80, 'yxI7'))),
+            F = new Uint8Array(0x2);
+        new DataView(F[ka(rS.x, rS.m)])[ka(0xa50, 'w3Tt')](0x0, 0x1);
+        const G = new Uint8Array(0x2);
+        new DataView(G[ka(0x14d2, rS.y)])[ka(rS.z, 'Gn7Q')](0x0, 0x5dc);
+        const H = new Uint8Array(0xc + F[ka(rS.A, rS.B)]),
+            I = new DataView(H[ka(0x12d6, '6UCx')]);
+        H[0x0] = 0x10, H[0x1] = 0x1, I[ka(rS.C, 'Pt3!')](0x2, H[ka(0x1f3, 'PSkb')] | 0x8000), I[ka(0x1033, '*lLT')](0x4, 0x1), I[ka(rS.m, rS.m)](0x6, 0x1), H[0x9] = 0x1, I[ka(0x46b, rS.D)](0xa, 0x4 + F[ka(0xd6d, '8Ys%')]), H[ka(rS.E, 'n7E3')](F, 0xc), await withTimeout(m[ka(0x1ded, 'jODS')](concatByteData(E, H, x(y(0xc021, 0x1, j++, [{ 'type': 0x1, 'data': G }])))), CONNECT_TIMEOUT_MS, ka(rS.F, 'vel('));
+        const J = await withTimeout(v(), CONNECT_TIMEOUT_MS, ka(rS.G, '*lLT'));
+        for (;;) { const a9 = await withTimeout(v(), CONNECT_TIMEOUT_MS, ka(0x1a11, 'rsIZ'));
+            if (a9 === '') break; }
+        if (!/HTTP\/\d(?:\.\d)?\s+2\d\d/i[ka(rS.H, rS.I)](J)) throw new Error(ka(0x585, rS.J) + (J || ka(0x109, rS.K)));
+        let K = ![],
+            L = ![],
+            M = ![],
+            N = ![],
+            O = ![],
+            P = ![],
+            Q = ![],
+            R = null;
+        const S = async() => {
+            const kl = ka;
+            if (!K || !L || !M || N) return;
+            if (c[kl(rE.c, rE.f)] === null || c[kl(rE.g, rE.h)] === null) throw new Error(kl(0xc99, '5M6D'));
+            const aa = textEncoder[kl(rE.i, rE.j)](c[kl(0x12a, 'n7E3')]),
+                ab = textEncoder[kl(rE.k, 'PYt$')](c[kl(0x307, rE.l)]);
+            if (aa[kl(rE.m, rE.n)] > 0xff || ab[kl(rE.o, '9rQu')] > 0xff) throw new Error(kl(rE.p, rE.q));
+            const ac = 0x6 + aa[kl(rE.r, 'mRB^')] + ab[kl(0x9b2, 'T3Fv')],
+                ad = new Uint8Array(0x2 + ac),
+                ae = new DataView(ad[kl(0x1788, 'IcEg')]);
+            ae[kl(rE.s, rE.t)](0x0, 0xc023), ad[0x2] = 0x1, ad[0x3] = j++, ae[kl(rE.u, rE.v)](0x4, ac), ad[0x6] = aa[kl(rE.w, rE.x)], ad[kl(0x77c, rE.y)](aa, 0x7), ad[0x7 + aa[kl(0x1d5e, rE.z)]] = ab[kl(rE.A, rE.B)], ad[kl(0x15ed, 'mRB^')](ab, 0x8 + aa[kl(rE.C, rE.D)]), await withTimeout(m[kl(0x757, '7NO9')](x(ad)), CONNECT_TIMEOUT_MS, kl(rE.E, rE.f)), N = !![];
+        },
+        T = async() => {
+            const km = ka;
+            if (!K || !L || P || M && !O) return;
+            await withTimeout(m[km(0x1f22, 'vel(')](x(y(0x8021, 0x1, j++, [{ 'type': 0x3, 'data': new Uint8Array(0x4)}]))), CONNECT_TIMEOUT_MS, km(rF.c, rF.f)), P = !![];
+        };
+        for (let aa = 0x0; aa < 0x32 && !Q; aa++) {
+            const ab = await w(CONNECT_TIMEOUT_MS);
+            if (ab[ka(rS.L, rS.M)]) continue;
+            const ac = z(ab[ka(0x3ef, 'wCGK')]);
+            if (!ac) continue;
+            if (ac[ka(rS.N, '$p[^')] === 0xc021) {
+                if (ac[ka(0x105b, 'w3Tt')] === 0x1) {
+                    const ad = A(ac[ka(rS.O, 'C2T0')])[ka(0xcf0, '[p9(')](af => af[ka(0x171d, '0Ua@')] === 0x3);
+                    if (ad?.[ka(rS.P, '7NO9')]?.[ka(rS.Q, 'dbGg')] >= 0x2) {
+                        const af = readSstpUint16(ad[ka(rS.R, 'Mmsl')]);
+                        if (af !== 0xc023) throw new Error(ka(rS.S, rS.I) + af[ka(0x1cc2, rS.T)](0x10));
+                        M = !![];
+                    }
+                    const ae = new Uint8Array(ac[ka(rS.U, rS.V)]);
+                    ae[0x2] = 0x2, await withTimeout(m[ka(0xd8a, rS.W)](x(ae)), CONNECT_TIMEOUT_MS, ka(0x1e8c, 'V#kN')), L = !![], await S(), await T();
+                } else ac[ka(rS.X, 'dbGg')] === 0x2 && (K = !![], await S(), await T());
+                continue;
+            }
+            if (ac[ka(rS.Y, '*lLT')] === 0xc023) {
+                if (ac[ka(rS.Z, rS.a0)] === 0x2) O = !![], await T();
+                else {
+                    if (ac[ka(0xf16, rS.a1)] === 0x3) throw new Error(ka(0x1dbb, rS.a2));
+                }
+                continue;
+            }
+            if (ac[ka(rS.a3, rS.a4)] === 0x8021) {
+                if (ac[ka(rS.a5, '$p[^')] === 0x1) {
+                    const ag = new Uint8Array(ac[ka(0x74a, rS.W)]);
+                    ag[0x2] = 0x2, await withTimeout(m[ka(0x1964, 'NMJQ')](x(ag)), CONNECT_TIMEOUT_MS, ka(0x1327, rS.a6)), await T();
+                } else {
+                    if (ac[ka(rS.a7, '7NO9')] === 0x3) {
+                        const ah = A(ac[ka(0x184, rS.a8)])[ka(0xd66, '89Hn')](ai => ai[ka(0x1bec, 'CeJW')] === 0x3);
+                        ah?.[ka(rS.a9, rS.aa)]?.[ka(0xebf, 'NxG1')] === 0x4 && (R = [...ah[ka(0x1da6, 'wCGK')]][ka(rS.ab, rS.a6)]('.'), await withTimeout(m[ka(rS.ac, rS.ad)](x(y(0x8021, 0x1, j++, [{ 'type': 0x3, 'data': ah[ka(rS.ae, rS.af)] }]))), CONNECT_TIMEOUT_MS, ka(rS.ag, 'C2T0')), P = !![]);
+                    } else {
+                        if (ac[ka(rS.ah, rS.ai)] === 0x2) {
+                            const ai = A(ac[ka(0x423, '8Ys%')])[ka(rS.aj, rS.ak)](aj => aj[ka(0x1434, '1qbp')] === 0x3);
+                            if (ai?.[ka(0x193e, rS.j)]?.[ka(0x3ec, rS.al)] === 0x4) R = [...ai[ka(rS.am, rS.an)]][ka(rS.ao, rS.ap)]('.');
+                            Q = !![];
+                        }
+                    }
+                }
+            }
+        }
+        if (!R) throw new Error(ka(rS.aq, rS.ar));
+        const U = stripIPv6Brackets(f);
+        let V = isIPv4(U) ? U : null;
+        if (!V) {
+            const aj = await DoHquery(U, 'A'),
+                ak = aj[ka(0x31d, rS.as)](al => al[ka(0x1ed1, 'oeP*')] === 0x1 && isIPv4(al[ka(0x199b, '$BSl')]))?.[ka(0x2a4, rS.at)];
+            V = typeof ak === ka(rS.au, rS.aa) ? ak : null;
+        }
+        if (!V) throw new Error(ka(0x2e0, rS.aa) + f + ka(rS.av, '6UCx'));
+        const W = 0x2710 + randomSstpUint16() % 0xc350,
+            X = new Uint8Array(String(R || '')[ka(rS.aw, rS.ax)]('.')[ka(0x18c7, rS.ay)](Number)),
+            Y = new Uint8Array(String(V || '')[ka(rS.az, rS.aA)]('.')[ka(rS.aB, rS.aC)](Number));
+        let Z = readSstpUint32(crypto[ka(0x10d4, rS.aD)](new Uint8Array(0x4))),
+            a0 = 0x0;
+        const a1 = new Uint8Array(0x14);
+        a1[ka(rS.aE, 'yxI7')]([0x45, 0x0, 0x0, 0x0, 0x0, 0x0, 0x40, 0x0, 0x40, 0x6]), a1[ka(rS.aF, rS.aG)](X, 0xc), a1[ka(rS.aH, rS.W)](Y, 0x10);
+        const a2 = new Uint8Array(0x598);
+        a2[ka(0xe52, rS.ar)](X), a2[ka(rS.aI, rS.D)](Y, 0x4), a2[0x9] = 0x6;
+        const a3 = (al, am = SSTP_EMPTY_BYTES) => {
+            const kn = ka,
+                an = dataToUint8Array(am),
+                ao = an[kn(rG.c, rG.f)],
+                ap = 0x14 + ao,
+                aq = 0x14 + ap,
+                ar = 0x8 + aq,
+                as = new Uint8Array(ar),
+                at = new DataView(as[kn(0x1d4e, 'Pt3!')]);
+            as[kn(rG.g, 'egod')]([0x10, 0x0, ar >> 0x8 & 0xf | 0x80, ar & 0xff, 0xff, 0x3, 0x0, 0x21]), as[kn(0x960, rG.h)](a1, 0x8), at[kn(0x46b, rG.i)](0xa, aq), at[kn(0x1e26, rG.j)](0xc, randomSstpUint16()), at[kn(0x1ed4, 'oeP*')](0x12, internetChecksum(as, 0x8, 0x14)), at[kn(0x908, rG.k)](0x1c, W), at[kn(rG.l, rG.m)](0x1e, g), at[kn(0x1dfa, rG.n)](0x20, Z), at[kn(rG.o, rG.p)](0x24, a0), as[0x28] = 0x50, as[0x29] = al, at[kn(rG.q, rG.r)](0x2a, 0xffff);
+            if (ao) as[kn(0x15ed, rG.r)](an, 0x30);
+            return a2[0xa] = ap >> 0x8, a2[0xb] = ap & 0xff, a2[kn(0x125d, rG.s)](as[kn(0xbf9, 'M5Ii')](0x1c, 0x1c + ap), 0xc), at[kn(rG.t, 'Mmsl')](0x2c, internetChecksum(a2, 0x0, 0xc + ap)), as;
+        },
+        a4 = al => {
+            const ko = ka;
+            if (al[ko(0x4fa, 'dbGg')] < 0x28 || al[0x9] !== 0x6) return null;
+            const am = (al[0x0] & 0xf) * 0x4;
+            if (al[ko(rH.c, '[]Y1')] < am + 0x14) return null;
+            if (readSstpUint16(al, am) !== g) return null;
+            if (readSstpUint16(al, am + 0x2) !== W) return null;
+            return { 'flags': al[am + 0xd], 'sequence': readSstpUint32(al, am + 0x4), 'payloadOffset': am + (al[am + 0xc] >> 0x4 & 0xf) * 0x4 };
+        };
+        await withTimeout(m[ka(rS.aJ, 'GzjL')](a3(0x2)), CONNECT_TIMEOUT_MS, ka(rS.aK, rS.aL)), Z = Z + 0x1 >>> 0x0;
+        let a5 = ![];
+        for (let al = 0x0; al < 0x1e; al++) {
+            const am = await w(CONNECT_TIMEOUT_MS);
+            if (am[ka(rS.aM, rS.aN)]) continue;
+            const an = z(am[ka(rS.aO, rS.aP)]);
+            if (!an || an[ka(0x1070, rS.an)] !== 0x21) continue;
+            const ao = a4(an[ka(rS.aQ, 'w3Tt')]);
+            if (!ao || (ao[ka(0x1878, '8Ys%')] & 0x12) !== 0x12) continue;
+            a0 = ao[ka(0x1ea8, rS.aR)] + 0x1 >>> 0x0, await withTimeout(m[ka(rS.aS, rS.j)](a3(0x10)), CONNECT_TIMEOUT_MS, ka(0xfb3, rS.aT)), a5 = !![];
+            break;
+        }
+        if (!a5) throw new Error(ka(rS.aU, rS.n));
+        let a6 = null;
+        const a7 = new ReadableStream({
+            'start'(ap) { a6 = ap; },
+            'cancel'() { s(); }
+        });
+        ((async() => {
+            const rL = { c: 0xedd, f: '7NO9', g: 0x1347 },
+                kq = ka;
+            try {
+                let ap = [],
+                    aq = 0x0;
+                const ar = () => {
+                    const kp = b;
+                    if (!aq) return;
+                    if (!a6) throw new Error(kp(rL.c, rL.f));
+                    a6[kp(0x4eb, 'XITC')](ap[kp(0xd5f, '7NO9')] === 0x1 ? ap[0x0] : concatByteData(...ap)), ap = [], aq = 0x0, m[kp(0x16de, '60r9')](a3(0x10))[kp(rL.g, '1qbp')](() => {});
+                };
+                for (;;) {
+                    const as = await w(0xea60);
+                    if (as[kq(rN.c, 'dZbH')]) continue;
+                    const at = z(as[kq(rN.f, 'zs!c')]);
+                    if (!at || at[kq(0x5e6, rN.g)] !== 0x21) continue;
+                    const au = a4(at[kq(0x114e, rN.h)]);
+                    if (!au) continue;
+                    if (au[kq(rN.i, rN.j)] < at[kq(0x1d2a, '2#Qk')][kq(rN.k, 'd%lH')]) {
+                        const av = at[kq(0xfbe, rN.l)][kq(0x23b, rN.m)](au[kq(rN.n, rN.o)]);
+                        av[kq(0x1d27, '5M6D')] && (a0 = au[kq(0xc3e, rN.p)] + av[kq(0x1aca, rN.q)] >>> 0x0, ap[kq(rN.r, 'Mmsl')](new Uint8Array(av)), aq += av[kq(0xe0c, rN.s)]);
+                    }
+                    if (au[kq(0x1cfb, rN.m)] & 0x1) {
+                        ar(), a0 = a0 + 0x1 >>> 0x0, m[kq(rN.t, rN.u)](a3(0x11))[kq(rN.v, '2#Qk')](() => {});
+                        const aw = a6;
+                        if (aw) try { aw[kq(rN.w, rN.x)](); } catch (ax) {}
+                        s();
+                        return;
+                    }
+                    if (i[kq(0x3ec, rN.y)] < 0x4 || aq >= 0x8000) ar();
+                }
+            } catch (ay) {
+                const az = a6;
+                if (az) try { az[kq(0x1a1c, rN.g)](ay); } catch (aA) {}
+                r(p, ay);
+                try { k?.[kq(rN.z, rN.A)]?.(); } catch (aB) {}
+            }
+        })());
+        const a8 = new WritableStream({
+            async 'write'(ap) {
+                const kr = ka,
+                    aq = dataToUint8Array(ap);
+                if (!aq[kr(rO.c, rO.f)]) return;
+                if (aq[kr(rO.g, '$p[^')] <= SSTP_TCP_MSS) { await m[kr(0x1412, rO.h)](a3(0x18, aq)), Z = Z + aq[kr(rO.i, rO.j)] >>> 0x0; return; }
+                const ar = [];
+                for (let as = 0x0; as < aq[kr(0x4e2, 'w(Wr')]; as += SSTP_TCP_MSS) {
+                    const at = aq[kr(rO.k, rO.l)](as, Math[kr(0x1e3e, rO.m)](as + SSTP_TCP_MSS, aq[kr(rO.n, rO.o)]));
+                    ar[kr(0x2da, '60r9')](a3(0x18, at)), Z = Z + at[kr(rO.p, 'b)3q')] >>> 0x0;
+                }
+                await m[kr(rO.q, rO.r)](concatByteData(...ar));
+            },
+            'close'() {
+                const ks = ka;
+                return m[ks(rQ.c, '[]Y1')](a3(0x11))[ks(0xf7c, '6UCx')](() => {});
+            },
+            'abort'(ap) { s(); if (ap) r(p, ap); }
+        });
+        return { 'readable': a7, 'writable': a8, 'closed': q, 'close': s };
+    } catch (ap) { s();
+        throw ap; }
+}
+
+function base64SecretEncode(c, f) {
+    const rT = { c: 0x1bdc, f: 'zs!c', g: 0xc3f, h: 'Gn7Q', i: 0xcbb },
+        kt = fX,
+        g = new TextEncoder(),
+        h = g[kt(0xdd0, '[]Y1')](c),
+        j = g[kt(0x529, 'vel(')](f),
+        k = new Uint8Array(h[kt(0xc3f, 'Gn7Q')]);
+    for (let m = 0x0; m < h[kt(0x919, 'C2T0')]; m++) { k[m] = h[m] ^ j[m % j[kt(rT.c, rT.f)]]; }
+    let l = '';
+    for (let n = 0x0; n < k[kt(rT.g, rT.h)]; n++) { l += String[kt(rT.i, '60r9')](k[n]); }
+    return btoa(l);
+}
+
+function base64SecretDecode(c, f) {
+    const rU = { c: 0xb28, f: 0xaae, g: 0x1e66, h: '*lLT', i: 0xe9c, j: '0Ua@', k: 0x113c, l: 'w(Wr', m: 0x17d6, n: 0x13ca, o: 'Pt3!' },
+        ku = fX,
+        g = atob(c),
+        h = new Uint8Array(g[ku(rU.c, 'PSkb')]);
+    for (let n = 0x0; n < g[ku(rU.f, '#sM9')]; n++) { h[n] = g[ku(rU.g, rU.h)](n); }
+    const j = new TextEncoder(),
+        k = j[ku(rU.i, rU.j)](f),
+        l = new Uint8Array(h[ku(0x772, '$p[^')]);
+    for (let o = 0x0; o < h[ku(rU.k, rU.l)]; o++) { l[o] = h[o] ^ k[o % k[ku(rU.m, '[p9(')]]; }
+    const m = new TextDecoder();
+    return m[ku(rU.n, rU.o)](l);
+}
+
+function getTransportProtocolConfig(c = {}) {
+    const rV = { c: 0x929, f: 0x1221, g: 'mRB^', h: '8Ys%', i: 0x1281, j: 'T3Fv', k: 0x478, l: 'rsIZ', m: 0x1339, n: 'PSkb', o: 0xa74, p: 'w(Wr' },
+        kv = fX,
+        f = c[kv(rV.c, '[p9(')] === kv(0x1848, '6UCx');
+    return { 'type': f ? c[kv(0x1e4e, '8Ys%')] === kv(0x1305, 'vel(') ? kv(0x6f1, '0Ua@') : kv(rV.f, rV.g) : c[kv(0x5af, rV.h)] === kv(rV.i, rV.j) ? kv(rV.k, rV.l) : 'ws', 'pathFieldName': f ? kv(rV.m, '0Ua@') : kv(0xe8d, rV.n), 'domainFieldName': f ? kv(rV.o, 'IcEg') : kv(0x182b, rV.p) };
+}
+
+function getTransportPathParamValue(c = {}, f = '/', g = ![]) {
+    const rW = { c: 0x42d, f: '[p9(', g: 0x1428, h: '8Ys%' },
+        kw = fX,
+        h = g ? '/' : c[kw(rW.c, rW.f)] ? randomPath(f) : f;
+    if (c[kw(0x1579, 'w3Tt')] !== kw(rW.g, '2#Qk')) return h;
+    return h[kw(0x174b, rW.h)]('?')[0x0] || '/';
+}
+
+function log(...c) {
+    const kx = fX;
+    if (debugLogPrint) console[kx(0xc2d, 'w3Tt')](...c);
+                }
+function ClashsubConfigFileHotpatch(c, f = {}, g = null) {
+    const s4 = { c: 0x461, f: 0x30a, g: 'V#kN', h: 0x70b, i: '89Hn', j: 0xb58, k: 'w(Wr', l: 'ZgMu', m: 'dZbH', n: 'jODS', o: 'n7E3', p: 'dZbH', q: 0x18a8, r: '8Ys%', s: 0xd76, t: '1qbp', u: 0x550, v: 0x15b, w: 'w(Wr', x: 0x13f9, y: 'M5Ii', z: 0x1091, A: '9rQu', B: 'w3Tt', C: 'd%lH', D: 0xa43, E: 0x1fa, F: 0x118, G: 0x12f6, H: 'NxG1', I: 'oeP*', J: 'Mmsl', K: 0x35f, L: 0x16f6, M: 0x17c1, N: 0x41e, O: '1qbp', P: 0x531, Q: 'PSkb', R: 0x1ab6, S: '%oj0', T: 0x1610, U: 0xc9f, V: '89Hn', W: 0x989, X: 0x1b68, Y: 0x14dc, Z: 0x18d3, a0: 'V#kN', a1: 'mRB^', a2: 'b)3q', a3: 0xd6b, a4: 'dn8p', a5: 0xe16, a6: 'wCGK', a7: 0xcc3, a8: 0x1b5a, a9: 0x127a, aa: 0x1847, ab: 0x1b13, ac: 'rsIZ', ad: 'Gn7Q', ae: '7NO9', af: 0x1770, ag: 0x1f02, ah: 'rsIZ', ai: 0x8b3, aj: 0x92e, ak: '*lLT', al: 0x11e, am: '[]Y1', an: 0x19d5, ao: '6UCx', ap: 0xbee, aq: 'C2T0', ar: 0x1466, as: 'GzjL', at: 0x1a7d, au: 0x3a9, av: 'ZgMu', aw: 0x483, ax: 0x18d4, ay: 0x1bbf, az: '7NO9', aA: 0x11a8, aB: 'dbGg', aC: 'yxI7', aD: 'CeJW', aE: 0x1067, aF: 'T3Fv', aG: 'd%lH', aH: 0x16ff, aI: 0x857, aJ: '60r9', aK: '5M6D', aL: 0x11da, aM: 0x59f, aN: 0x1a6b, aO: 0xcfd, aP: 'zs!c', aQ: 0xa1f, aR: 0x17d6, aS: 'NMJQ', aT: 0x1b80, aU: 0xfd3, aV: 0x7b5, aW: 0x1894, aX: 0x1a18, aY: '$p[^', aZ: 0x1854, b0: 0x11c7, b1: 0x3ca, b2: 'ZgMu', b3: 'PYt$', b4: 0xceb, b5: 0xb27, b6: '6UCx' },
+        s3 = { c: 0xb28, f: 0xb06, g: 'Mmsl', h: '5M6D', i: '$p[^', j: 0x87a, k: 'wCGK', l: 0x140, m: 0x136b },
+        s2 = { c: 0x17d6, f: 0xa16, g: 'V#kN', h: 0x1f20, i: '60r9', j: 0xddb, k: '89Hn', l: '6UCx', m: 0x1ac4, n: '9rQu', o: 'Pt3!', p: 0xac9, q: 'Mmsl', r: 0x181f, s: 'dn8p', t: 0x10d5, u: '[]Y1', v: 0x1335, w: 0x16e1, x: '2#Qk', y: 'wCGK', z: 'IcEg', A: 'b)3q' },
+        s1 = { c: 0x439, f: 'w(Wr', g: 'C2T0', h: 0x24f, i: 'n7E3' },
+        s0 = { c: 0x1a46, f: '%oj0', g: 0xaac, h: 'jODS', i: 0xeb6, j: '$p[^', k: 0x10e6, l: 0x504, m: 'CeJW', n: 0x14da, o: 'jODS', p: 'NxG1', q: 'PYt$' },
+        rZ = { c: 0x27d, f: 'C2T0', g: 0xee6, h: 'V#kN', i: 0x187d, j: 'rsIZ', k: 0x8b5, l: 'n7E3', m: 0x542, n: 0x3fd, o: 'T3Fv' },
+        rY = { c: 0x98d, f: 'b)3q', g: 0x1bdd, h: 0x14b4, i: 'NMJQ', j: 'd%lH', k: 0x472, l: '#sM9', m: 0x729, n: 'zs!c' },
+        ky = fX,
+        h = f?.[ky(s4.c, 'dn8p')] || null,
+        j = Boolean(f?.[ky(s4.f, 'w(Wr')]),
+        k = Array[ky(0x3f5, s4.g)](f?.[ky(s4.h, s4.i)]) ? [...f[ky(s4.j, s4.k)]] : [],
+        l = f?.[ky(0x1043, s4.l)]?.[ky(0xbc8, '*lLT')] || null,
+        m = f?.[ky(0x699, s4.m)]?.[ky(0x9af, s4.n)],
+        n = Boolean(h && j),
+        o = typeof f?.[ky(0x282, s4.o)] === ky(0x1da1, s4.p) && f[ky(s4.q, 'T3Fv')][ky(0x64f, s4.r)]() ? f[ky(s4.s, s4.t)][ky(s4.u, '[p9(')]() : null,
+        p = f?.[ky(s4.v, s4.w)] === ky(0x1784, 'vel(') && Boolean(o),
+        q = o ? JSON[ky(s4.x, s4.y)](o) : null,
+        r = g || {};
+    let s = c[ky(s4.z, s4.A)](/mode:\s*Rule\b/g, ky(0x1d6b, s4.B));
+    if (r[ky(0xe8c, s4.C)] === ![]) s = s[ky(s4.D, 'egod')](/^ipv6:\s*true\b/im, ky(s4.E, '89Hn'))[ky(s4.F, 'NxG1')](/^ipv6:\s*false\b/im, ky(s4.G, s4.H));
+    if (!/^ipv6:/im[ky(0xac9, 'Mmsl')](s)) s = ky(0x2e2, s4.I) + (r[ky(0x909, s4.J)] !== ![]) + '\x0a' + s;
+    if (r[ky(s4.K, 'PYt$')] && !/^log-level:/im[ky(0x14a5, 'C2T0')](s)) s = ky(0x1a51, 'PYt$') + r[ky(0x1e36, 'd%lH')] + '\x0a' + s;
+    if (r[ky(0x1f1a, 'dbGg')]) s = s[ky(s4.L, 'Gn7Q')](/^bind-address:\s*"?(127\.0\.0\.1)"?/im, ky(s4.M, '[p9('));
+    if (r[ky(0x1a44, '89Hn')]) {
+        const F = ky(s4.N, s4.n);
+        if (!s[ky(0x13c8, s4.O)](F)) {
+            const G = s[ky(s4.P, s4.Q)](/^(  )?rule-set:\s*\n/m);
+            G ? (s = s[ky(s4.R, s4.S)](/^(  )?rule-set:\s*\n/m, '$&' + F + ky(s4.T, s4.J)), s = s[ky(s4.U, s4.V)](/^(?:  )?rules:\s*$/m, ky(s4.W, 'M5Ii'))) : s = s[ky(s4.X, 'd%lH')](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + ky(s4.Y, 'Gn7Q') + ky(s4.Z, s4.a0));
+        }
+    }
+    if (r[ky(0x178e, s4.a1)]) {
+        const H = ky(0x95f, s4.a2);
+        !s[ky(0x1c01, 'GzjL')](H) && (s = s[ky(s4.a3, s4.a4)](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + H + '\x0a' + ky(s4.a5, s4.Q) + ky(0x1f01, s4.a6) + ky(0x11ee, '[]Y1') + ky(s4.a7, 'ZgMu') + ky(0x632, 'n7E3') + ky(0x1430, 'vel(')));
+    }
+    if (r[ky(0x1869, 'w3Tt')]) {
+        const I = ky(0xf4c, '8Ys%');
+        if (!s[ky(s4.a8, 'XITC')](I)) s = s[ky(0x5f3, 'b)3q')](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + I + '\x0a' + ky(s4.a9, '[p9(') + ky(s4.aa, '%oj0'));
+    }
+    if (r[ky(s4.ab, s4.ac)]) {
+        const J = ky(0x12af, s4.ad);
+        if (!s[ky(0xb7c, s4.ae)](J)) s = s[ky(s4.af, 'PSkb')](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + J + '\x0a' + ky(s4.ag, s4.ah) + ky(0x1a98, s4.ac));
+    }
+    if (r[ky(s4.ai, 'w(Wr')]) {
+        const K = ky(0xac1, s4.n);
+        if (!s[ky(s4.aj, s4.ak)](K)) s = s[ky(0x1462, 'vel(')](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + K + '\x0a' + ky(s4.al, 'PYt$'));
+    }
+    if (r[ky(0x117a, '5M6D')]) {
+        const L = ky(0x1b21, s4.am);
+        if (!s[ky(s4.an, s4.ao)](L)) s = s[ky(s4.ap, s4.aq)](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + L + '\x0a' + ky(0x6ec, s4.am) + ky(s4.ar, s4.as));
+    }
+    if (r[ky(s4.at, 'Pt3!')]) {
+        const M = ky(s4.au, s4.av);
+        if (!s[ky(s4.aw, s4.a1)](M)) s = s[ky(0x1091, '9rQu')](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + M + '\x0a' + ky(0x1882, 'C2T0') + ky(s4.ax, 'w3Tt'));
+    }
+    if (r[ky(s4.ay, s4.az)]) {
+        const N = ky(0x4f6, 'XITC');
+        if (!s[ky(s4.aA, s4.o)](N)) s = s[ky(0x1c8d, s4.aB)](/^(\s*)rules:\s*$/m, '$&' + '\x0a' + N + '\x0a' + ky(0xd0b, 'V#kN') + ky(0x1729, 'IcEg') + ky(0x677, s4.aC) + ky(0x11b4, s4.aD) + ky(s4.aE, s4.aF));
+    }
+    const t = ky(0x1246, 'w3Tt'),
+        u = O => O[ky(0x1a72, 'rsIZ')](/grpc-opts:\s*\{([\s\S]*?)\}/i, (P, Q) => {
+            const kz = ky;
+            if (/grpc-user-agent\s*:/i[kz(rY.c, rY.f)](Q)) return P;
+            let R = Q[kz(rY.g, rY.f)]();
+            if (R[kz(rY.h, rY.i)](',')) R = R[kz(0x3bc, 'wCGK')](0x0, -0x1)[kz(0x48c, rY.j)]();
+            const S = R ? R + kz(rY.k, rY.l) + q : kz(rY.m, rY.n) + q;
+            return kz(0x1c05, 'PYt$') + S + '}';
+        }),
+        v = O => /(?:^|[,{])\s*network:\s*(?:"grpc"|'grpc'|grpc)(?=\s*(?:[,}\n#]|$))/mi[ky(0x14f3, 'T3Fv')](O),
+        w = O => O[ky(0x1aab, '#sM9')](/type:\s*(\w+)/)?.[0x1] || 'vl' + ky(0x1a33, 'vel('),
+        x = (O, P) => {
+            const kA = ky,
+                Q = w(O) === kA(rZ.c, rZ.f) ? kA(rZ.g, rZ.h) : kA(rZ.i, rZ.j),
+                R = new RegExp(Q + kA(rZ.k, '7NO9') + (P ? kA(0x1c0d, rZ.l) : kA(rZ.m, 'd%lH')));
+            return O[kA(rZ.n, 'T3Fv')](R)?.[0x1]?.[kA(0x48b, rZ.o)]() || null;
+        },
+        y = (O, P) => {
+            const kB = ky;
+            if (/^\s{2}nameserver-policy:\s*(?:\n|$)/m[kB(s0.c, s0.f)](O)) return O[kB(s0.g, s0.h)](/^(\s{2}nameserver-policy:\s*\n)/m, '$1' + P + '\x0a');
+            const Q = O[kB(s0.i, s0.j)]('\x0a');
+            let R = -0x1,
+                S = ![];
+            for (let U = 0x0; U < Q[kB(s0.k, 'NMJQ')]; U++) {
+                const V = Q[U];
+                if (/^dns:\s*$/[kB(0x1549, 'PSkb')](V)) { S = !![];
+                    continue; }
+                if (S && /^[a-zA-Z]/[kB(s0.l, s0.m)](V)) { R = U; break; }
+            }
+            const T = kB(s0.n, s0.o) + P;
+            if (R !== -0x1) Q[kB(0xb93, s0.p)](R, 0x0, T);
+            else Q[kB(0x110d, '89Hn')](T);
+            return Q[kB(0xb4a, s0.q)]('\x0a');
+        },
+        z = O => {
+            const kC = ky;
+            if (!v(O) || /grpc-user-agent\s*:/i[kC(s1.c, 'mRB^')](O)) return O;
+            if (/grpc-opts:\s*\{/i[kC(0x1dc4, s1.f)](O)) return u(O);
+            return O[kC(0xbee, s1.g)](/\}(\s*)$/, kC(s1.h, 'vel(') + q + kC(0x308, s1.i));
+        },
+        A = (O, P) => {
+            const kD = ky,
+                Q = '\x20'[kD(0x11a, 'wCGK')](P);
+            let R = -0x1;
+            for (let W = 0x0; W < O[kD(s2.c, '[p9(')]; W++) {
+                const X = O[W];
+                if (!X[kD(s2.f, s2.g)]()) continue;
+                const Y = X[kD(s2.h, s2.i)](/\S/);
+                if (Y !== P) continue;
+                if (/^\s*grpc-opts:\s*(?:#.*)?$/[kD(s2.j, s2.k)](X) || /^\s*grpc-opts:\s*\{.*\}\s*(?:#.*)?$/[kD(0x161, s2.l)](X)) { R = W; break; }
+            }
+            if (R === -0x1) {
+                let Z = -0x1;
+                for (let a0 = O[kD(0x10e1, 'w3Tt')] - 0x1; a0 >= 0x0; a0--) {
+                    if (O[a0][kD(s2.m, '9rQu')]()) { Z = a0; break; }
+                }
+                if (Z >= 0x0) O[kD(0x360, 'NMJQ')](Z + 0x1, 0x0, Q + kD(0x85b, s2.n), Q + kD(0x157c, s2.o) + q);
+                return O;
+            }
+            const S = O[R];
+            if (/^\s*grpc-opts:\s*\{.*\}\s*(?:#.*)?$/[kD(0x161, '6UCx')](S)) {
+                if (!/grpc-user-agent\s*:/i[kD(s2.p, s2.q)](S)) O[R] = u(S);
+                return O;
+            }
+            let T = O[kD(0x18ff, '*lLT')],
+                U = P + 0x2,
+                V = ![];
+            for (let a1 = R + 0x1; a1 < O[kD(s2.r, s2.s)]; a1++) {
+                const a2 = O[a1],
+                    a3 = a2[kD(s2.t, s2.u)]();
+                if (!a3) continue;
+                const a4 = a2[kD(s2.v, 'rsIZ')](/\S/);
+                if (a4 <= P) { T = a1; break; }
+                if (a4 > P && U === P + 0x2) U = a4;
+                if (/^grpc-user-agent\s*:/[kD(s2.w, s2.x)](a3)) { V = !![];
+                    break; }
+            }
+            if (!V) O[kD(0x5a2, s2.y)](T, 0x0, '\x20'[kD(0x3fc, s2.z)](U) + kD(0x752, s2.A) + q);
+            return O;
+        },
+        B = (O, P) => {
+            const kE = ky;
+            let Q = -0x1;
+            for (let T = O[kE(s3.c, 'PSkb')] - 0x1; T >= 0x0; T--) {
+                if (O[T][kE(s3.f, s3.g)]()) { Q = T; break; }
+            }
+            if (Q < 0x0) return O;
+            const R = '\x20'[kE(0xe35, s3.h)](P),
+                S = [R + kE(0x1881, s3.i), R + kE(s3.j, s3.k)];
+            if (l) S[kE(0x1c53, '[p9(')](R + kE(s3.l, 'NxG1') + l);
+            return O[kE(s3.m, 'Pt3!')](Q + 0x1, 0x0, ...S), O;
+        };
+    if (!/^dns:\s*(?:\n|$)/m[ky(0xcd7, '$p[^')](s)) s = t + s;
+    if (l && !k[ky(0x1816, s4.aG)](l)) k[ky(0x1ec6, 'M5Ii')](l);
+    if (j && k[ky(0x1796, 'oeP*')] > 0x0) {
+        const O = k[ky(s4.aH, '[p9(')](P => ky(0x1435, '1qbp') + P + ky(0x3a8, 'Mmsl') + (m ? m : ''))[ky(s4.aI, s4.aJ)]('\x0a');
+        s = y(s, O);
+    }
+    if (!n && !p) return s;
+    const C = s[ky(0xbcd, s4.aK)]('\x0a'),
+        D = [];
+    let E = 0x0;
+    while (E < C[ky(s4.aL, '[]Y1')]) {
+        const P = C[E],
+            Q = P[ky(s4.aM, s4.as)]();
+        if (Q[ky(0x1157, s4.J)](ky(0x753, 'mRB^'))) {
+            let R = P,
+                S = (P[ky(s4.aN, s4.a1)](/\{/g) || [])[ky(0x18ff, '*lLT')] - (P[ky(s4.aO, s4.aP)](/\}/g) || [])[ky(s4.aQ, 'Pt3!')];
+            while (S > 0x0 && E + 0x1 < C[ky(s4.aR, '[p9(')]) {
+                E++, R += '\x0a' + C[E], S += (C[E][ky(0x10ef, s4.a2)](/\{/g) || [])[ky(0x10e6, s4.aS)] - (C[E][ky(s4.aT, 'yxI7')](/\}/g) || [])[ky(s4.aU, 'Mmsl')];
+            }
+            if (p) R = z(R);
+            n && x(R, !![]) === h[ky(0xa16, 'V#kN')]() && (R = R[ky(s4.aV, s4.a1)](/\}(\s*)$/, ky(s4.aW, s4.Q) + (l ? ky(s4.aX, '60r9') + l : '') + ky(0x1cc1, s4.r))), D[ky(0x34d, 'NxG1')](R), E++;
+        } else {
+            if (Q[ky(0x10a9, 'GzjL')](ky(0xb08, s4.aY))) {
+                let T = [P],
+                    U = P[ky(s4.aZ, s4.J)](/\S/),
+                    V = U + 0x2;
+                E++;
+                while (E < C[ky(0xb28, s4.Q)]) {
+                    const X = C[E],
+                        Y = X[ky(0x7a4, '%oj0')]();
+                    if (!Y) { T[ky(s4.b0, 'IcEg')](X), E++; break; }
+                    const Z = X[ky(0x7a1, 'GzjL')](/\S/);
+                    if (Z <= U && Y[ky(0x134a, s4.b2)]('-\x20')) break;
+                    if (Z < U && Y) break;
+                    T[ky(0x1730, s4.b3)](X), E++;
+                }
+                let W = T[ky(s4.b4, 'PSkb')]('\x0a');
+                p && v(W) && (T = A(T, V), W = T[ky(0x857, s4.aJ)]('\x0a'));
+                if (n && x(W, ![]) === h[ky(0x20a, s4.H)]()) T = B(T, V);
+                D[ky(0x1ec6, 'M5Ii')](...T);
+            } else D[ky(0x1436, '*lLT')](P), E++;
+        }
+    }
+    return D[ky(s4.b5, s4.b6)]('\x0a');
+}
+
+async function SingboxsubConfigFileHotpatch(c, f = {}, g = null) {
+    const sd = { c: 0x7a2, f: '0Ua@', g: 'oeP*', h: 0x11a3, i: '$p[^', j: 0xf8c, k: 'w3Tt', l: 'dn8p', m: 0x10cb, n: 0x13de, o: 0x4d6, p: 0xd61, q: 'zs!c', r: 0xb7f, s: '89Hn', t: 'NxG1', u: 0x47f, v: 'PYt$', w: 'T3Fv', x: 0x1a5e, y: '5M6D', z: 'M5Ii', A: 0x13fb, B: '6UCx', C: 'V#kN', D: 0x8d5, E: '5M6D', F: 0x8f5, G: 0xcb2, H: 0x1f15, I: 0xdda, J: 0x113c, K: 'w(Wr', L: 'Mmsl', M: 'n7E3', N: 'CeJW', O: 'n7E3', P: 0x19e1, Q: 0x1c9b, R: 0x1080, S: 0x14b7, T: '8Ys%', U: 0x1e2e, V: 0x19cd, W: 'C2T0', X: 0x1cd1, Y: 0x1b4d, Z: 'PSkb', a0: '7NO9', a1: 'XITC', a2: 0x3d0, a3: 'NMJQ', a4: 0x1138, a5: 'T3Fv', a6: 0xca8, a7: 'C2T0', a8: 'NMJQ', a9: 0x7d6, aa: '1qbp', ab: 0x994, ac: '5M6D', ad: '%oj0', ae: 'GzjL', af: 'wCGK', ag: 0x634, ah: 0xd65, ai: 'IcEg', aj: 0x188f, ak: 0x17c2, al: 0xa98, am: 0x1d75, an: 'XITC', ao: 'dZbH', ap: 'GzjL', aq: 0x1a78, ar: '[p9(', as: 0x1d4a, at: '8Ys%', au: 'PYt$', av: 0xfc9, aw: 0xc36, ax: 'oeP*', ay: 0x171f, az: 0x256, aA: 0x1d28, aB: 0xe5f, aC: '1qbp', aD: 0x1a5c, aE: 0x9a0, aF: 'zs!c', aG: 0xd5a, aH: 0x15be, aI: 0xce7, aJ: 0x4a7, aK: '2#Qk', aL: 0x73f, aM: '[]Y1', aN: 0x1319, aO: 'vel(', aP: 0x637, aQ: 0x1b63, aR: 0x834, aS: '$BSl', aT: 0x10a4, aU: 'T3Fv', aV: 'dZbH', aW: 0xd5b, aX: 0x154d, aY: 'mRB^', aZ: 0x1a6c, b0: 0x171d, b1: 0x1ed6, b2: 'b)3q', b3: 'NxG1', b4: 0x7b2, b5: 0x92d, b6: 0x405, b7: '8Ys%', b8: 'jODS', b9: 'dbGg', ba: 0x1ab2, bb: '0Ua@', bc: 'yxI7', bd: 0x1b8a, be: 'Pt3!', bf: 0x1588, bg: 'zs!c', bh: 'dZbH', bi: 0x1aa1, bj: 0x10a6, bk: '60r9', bl: 0x1b44, bm: 0x189d, bn: 'Mmsl', bo: 0x3c5, bp: 'w3Tt', bq: 0x452, br: 0xf6f, bs: '1qbp', bt: 0x76b, bu: 0x1069, bv: 0x110d, bw: 0xc5c, bx: 0x178d, by: 0x14a0, bz: 0x1d3e, bA: 0x1174, bB: 0xb86, bC: 0x538, bD: '[p9(', bE: 0x1bf1, bF: 0x922, bG: 'Pt3!', bH: 'V#kN', bI: 0x1dcb, bJ: 0x1a2e, bK: 'dZbH', bL: 0x1024, bM: 'NMJQ', bN: 0x105d, bO: 'oeP*', bP: 0x58d, bQ: 0x1ccf, bR: 0xd4b, bS: 'rsIZ', bT: 0x12db, bU: '%oj0', bV: '8Ys%', bW: 0x1d33, bX: 'Gn7Q', bY: 0x1be8, bZ: 'NxG1', c0: 0x15c, c1: 0x1c07, c2: 0x1d6c, c3: '9rQu', c4: 'zs!c', c5: 0x1da0, c6: 'NMJQ', c7: 0x1ceb, c8: '7NO9', c9: 0x19ad, ca: 0x319, cb: '*lLT', cc: 'dn8p', cd: 0xd93, ce: 0x231, cf: 'M5Ii', cg: 0x12ca, ch: 'vel(', ci: 0x15c4, ck: 0x1c39, cl: 0x698, cm: 0x15a3, cn: 'dn8p', co: 0x15e6, cp: 0x613, cq: 0x1736, cr: 0x601, cs: 0xd6a, ct: 0x201, cu: 0x71b, cv: 0x6b8, cw: 0x18dd, cx: 'IcEg', cy: 0x1707, cz: 'NMJQ', cA: 0x1506, cB: 'dn8p', cC: 0x2e7, cD: 0x1211, cE: 0x1beb, cF: 0xfe4, cG: 0x1833, cH: 'IcEg', cI: 0x18fc, cJ: 'zs!c', cK: 0x1242, cL: 0x1833, cM: '5M6D', cN: 0x13af, cO: 'dZbH', cP: 'w3Tt', cQ: 0x1e60, cR: 0x1c29, cS: 0x1da9, cT: 'dn8p', cU: 0xd52, cV: '#sM9', cW: 'b)3q', cX: 0x1ae3, cY: 0x1095, cZ: 0x18a0, d0: '60r9', d1: 0x1f08, d2: 'V#kN', d3: 0x7a3, d4: 0x1cf4, d5: '2#Qk', d6: 0x149c, d7: 0x11c0, d8: '$p[^', d9: 0x1951, da: 0xdda, db: 0x653, dc: 0x168a, dd: 0x107c, de: '*lLT', df: 0x15ce, dg: 0x17f2, dh: '6UCx', di: 0x17c3, dj: 0xe34, dk: 0x1090, dl: 0x1355, dm: 'jODS', dn: 'rsIZ', dp: 0x1838, dq: 0xec3, dr: 0x253, ds: 0x7c8, dt: 0xdf1, du: 0x19f0, dv: 'dbGg', dw: 0x138d, dx: 0x18a0, dy: '89Hn', dz: 0x1504, dA: 0xe6b, dB: '60r9', dC: 0x1e1, dD: 0x1b1b, dE: 0x3e4, dF: 0x8f6, dG: 0x15f5, dH: '*lLT', dI: 0x148c, dJ: 0xefe, dK: 'mRB^', dL: 0x280, dM: '89Hn', dN: 0x645, dO: 'n7E3', dP: 'C2T0', dQ: 0x129e, dR: 'NxG1', dS: 0x654, dT: 'NMJQ', dU: 0x1a5, dV: 0x15de, dW: 0x19b1, dX: 'Pt3!', dY: 'XITC', dZ: 0x1589, e0: 0x1045, e1: '#sM9', e2: 0x1d02, e3: 0xc35 },
+        sc = { c: 0xd02, f: 0x1b4f, g: 0x16d5, h: 'CeJW', i: 0x633, j: 'w3Tt', k: 0x866, l: 0x14e1, m: 0x12f1, n: '%oj0', o: 0x464, p: 'C2T0' },
+        sb = { c: '5M6D', f: 'vel(', g: 'yxI7', h: '9rQu', i: 0xf9e, j: 0x653, k: 'CeJW' },
+        sa = { c: 'n7E3', f: 0x1619, g: 0x887, h: 'dbGg', i: 0x431, j: '5M6D', k: 'rsIZ', l: 0x564, m: 0x138, n: 'Pt3!', o: 'NxG1', p: 0x1b70, q: 0x1d70, r: 'NMJQ', s: 0x1828, t: 'oeP*', u: 0x1d5b, v: 'M5Ii', w: 0x1c92, x: '7NO9', y: '$BSl', z: 0x19b0, A: 'rsIZ', B: 0xd59, C: 'C2T0', D: 0xcce, E: 0x11fe, F: '$p[^', G: 0xfd },
+        s9 = { c: '2#Qk', f: 0x12f5, g: 0x16d3, h: 'dbGg', i: '9rQu', j: '60r9' },
+        s8 = { c: 0x11d3, f: 0x1be1, g: '60r9', h: 0x1074, i: 0x16da, j: 'd%lH', k: 'dn8p', l: 0x1349, m: 0xee3, n: '9rQu' },
+        s7 = { c: 0x1551, f: 0x1be1, g: '60r9', h: 0xe20, i: 'Pt3!', j: 0x1be1, k: '60r9', l: 0x1355, m: '5M6D', n: 0x69e, o: 0x1cbe, p: 'IcEg', q: 0x906, r: 0x1e42, s: '[]Y1', t: 0x18db, u: 0xa6e, v: '6UCx', w: 0xd39, x: 'rsIZ', y: 0x1b7, z: 'PSkb', A: 0x1a01, B: 'oeP*', C: '1qbp', D: 0xfe4, E: 'd%lH' },
+        s6 = { c: 0x1c45, f: 'dZbH', g: 0x493, h: 'w(Wr', i: 'Gn7Q', j: 0xed, k: '2#Qk', l: 'dn8p', m: 0x690, n: 0x1a25, o: 0x72b, p: 0x8a9, q: 'w3Tt', r: 0x200, s: 0xb29, t: '6UCx', u: 0x1448, v: 0xf04, w: '89Hn', x: 'T3Fv', y: '[]Y1', z: 0x1880, A: 'wCGK' },
+        s5 = { c: 0x425, f: 'NxG1', g: 0x1653, h: 'yxI7', i: '0Ua@', j: 'zs!c', k: 'PSkb', l: 0x979, m: 'w3Tt', n: 0x15a4, o: 0x107, p: 'IcEg', q: 0x178c, r: 0x3ff, s: 0x1554, t: 0x1828, u: 0x1c9, v: '60r9', w: 'V#kN', x: 0x9e7, y: 0x1d69, z: 0x358, A: 'dZbH', B: 0x9fc, C: '60r9', D: 0x1815, E: 'n7E3', F: 0x1638, G: 'GzjL', H: 'b)3q', I: 0xba4, J: '#sM9' },
+        kF = fX,
+        h = f?.[kF(sd.c, sd.f)] || null,
+        i = f?.[kF(0x334, sd.g)] || kF(sd.h, sd.i),
+        j = Boolean(f?.[kF(sd.j, sd.k)]),
+        k = f?.[kF(0x99c, sd.l)]?.[kF(0xf8e, '%oj0')] || kF(sd.m, 'T3Fv'),
+        l = c[kF(sd.n, '6UCx')](/1\.1\.1\.1/g, kF(sd.o, 'XITC'))[kF(sd.p, sd.q)](/1\.0\.0\.1/g, kF(sd.r, sd.s));
+    try {
+        const m = JSON[kF(0x1675, 'C2T0')](l),
+            n = v => v === undefined || v === null ? [] : Array[kF(0xcdf, 'zs!c')](v) ? v : [v],
+            o = () => m[kF(0x1138, 'T3Fv')] = m[kF(0xd23, 'dbGg')] && typeof m[kF(0xa60, 'jODS')] === kF(0x2c1, '$p[^') ? m[kF(0xca8, 'C2T0')] : {},
+            p = v => v && typeof v === kF(0x130f, 'GzjL') && !Array[kF(0x1be8, 'NxG1')](v) && typeof v[kF(0x10bd, 'w(Wr')] === kF(0x1d24, 'ZgMu') ? v[kF(0x1672, 'dZbH')] : null,
+            q = (v, w) => {
+                const kG = kF;
+                if (!w || typeof w !== kG(s5.c, s5.f)) return null;
+                const x = o(),
+                    y = v + '-' + w,
+                    z = Array[kG(s5.g, '$p[^')](x[kG(0x5e8, s5.h)]) ? x[kG(0x1dbe, 'CeJW')] : n(x[kG(0xc92, s5.i)]);
+                if (!z[kG(0x1159, 'n7E3')](A => A?.[kG(0x1d76, 'dbGg')] === y)) {
+                    const A = v === kG(0x1bea, s5.j) ? x[kG(0x1f10, s5.k)] : x[kG(s5.l, s5.m)];
+                    z[kG(0x350, 'jODS')]({ 'tag': y, 'type': kG(0x128b, 'n7E3'), 'format': kG(s5.n, 'rsIZ'), 'url': kG(0xacb, '7NO9') + v + kG(s5.o, 'NMJQ') + y + kG(0x5a5, s5.p), ...A?.[kG(s5.q, s5.h)] ? { 'download_detour': A[kG(s5.r, 'XITC')] } : {} }), m[kG(s5.s, 'zs!c')] = m[kG(0x1237, 'zs!c')] && typeof m[kG(s5.t, 'oeP*')] === kG(s5.u, s5.v) ? m[kG(0x12ac, 'CeJW')] : {}, m[kG(0x71f, s5.w)][kG(0x1231, 'b)3q')] = m[kG(s5.x, '8Ys%')][kG(s5.y, s5.i)] && typeof m[kG(s5.z, s5.A)][kG(s5.B, s5.C)] === kG(s5.D, s5.E) ? m[kG(s5.F, 'IcEg')][kG(0x15c1, s5.G)] : {}, m[kG(0x13f0, s5.H)][kG(0x1e7, 'T3Fv')][kG(s5.I, 'yxI7')] ??= !![];
+                }
+                return x[kG(0x1bf, s5.J)] = z, y;
+            },
+            r = v => {
+                const kH = kF;
+                if (!v || typeof v !== kH(0x1abd, '*lLT') || Array[kH(s6.c, '[p9(')](v)) return v;
+                if (v[kH(0x735, s6.f)] === kH(s6.g, s6.h) && Array[kH(0x1ebd, s6.i)](v[kH(s6.j, s6.k)])) return v[kH(0xd0d, s6.l)] = v[kH(s6.m, 'ZgMu')][kH(0x201, 'M5Ii')](r), v;
+                const w = [];
+                for (const x of n(v[kH(0x1a4d, 'Gn7Q')])) {
+                    if (typeof x !== kH(0x1d1f, 'GzjL')) continue;
+                    if (x[kH(0x156d, '89Hn')]() === kH(0x1892, '[p9(')) v[kH(0xb8c, 'NMJQ')] = !![];
+                    else w[kH(0x1616, '5M6D')](q(kH(s6.n, '0Ua@'), x));
+                }
+                for (const y of n(v[kH(0x1224, 'Mmsl')])) {
+                    if (typeof y !== kH(s6.o, 'M5Ii')) continue;
+                    w[kH(s6.p, s6.q)](q(kH(0x1637, s6.q), y)), v[kH(s6.r, 'Mmsl')] = !![];
+                }
+                for (const z of n(v[kH(0xbfc, 'PSkb')]))
+                    if (typeof z === kH(0x42c, '8Ys%')) w[kH(s6.s, 'oeP*')](q(kH(0x141b, s6.t), z));
+                if (w[kH(0xcfc, 'PYt$')]) v[kH(s6.u, s6.q)] = [...new Set([...n(v[kH(s6.v, s6.w)]), ...w][kH(0x952, '[]Y1')](Boolean))];
+                return delete v[kH(0xaab, s6.x)], delete v[kH(0x1500, s6.y)], delete v[kH(s6.z, s6.A)], v;
+            },
+            s = (v, w) => {
+                const kI = kF;
+                v = r(v);
+                if (!v || typeof v !== kI(s7.c, 'b)3q') || Array[kI(s7.f, s7.g)](v)) return v;
+                if (v[kI(0x187f, 'NMJQ')] === kI(s7.h, s7.i) && Array[kI(s7.j, s7.k)](v[kI(s7.l, 'jODS')])) return v[kI(0xbaa, s7.m)] = v[kI(s7.n, '1qbp')][kI(0x16ba, 'wCGK')](y => s(y, w)), v;
+                const x = p(v);
+                if (x && w[kI(0x185a, '0Ua@')](x)) {
+                    for (const y of [kI(s7.o, s7.p), kI(s7.q, '2#Qk'), kI(s7.r, s7.s), kI(s7.t, '*lLT'), kI(s7.u, s7.v), kI(s7.w, s7.x)]) delete v[y];
+                    v[kI(s7.y, s7.z)] = kI(s7.A, 'ZgMu'), v[kI(0x1e80, 'Mmsl')] = w[kI(0x1d7, '%oj0')](x);
+                } else {
+                    if (x && !v[kI(0xdc2, s7.B)]) v[kI(0x1247, s7.C)] = kI(s7.D, s7.E);
+                }
+                return v;
+            };
+        if (Array[kF(0x1516, 'wCGK')](m[kF(0x1ef3, 'M5Ii')]))
+            for (const v of m[kF(0x696, sd.t)]) {
+                if (!v || typeof v !== kF(sd.u, sd.v) || v[kF(0x1764, sd.w)] !== kF(sd.x, sd.y)) continue;
+                for (const w of [{ 'targetKey': kF(0x187, sd.z), 'sourceKeys': [kF(sd.A, 'b)3q'), kF(0x1642, sd.B)] }, { 'targetKey': kF(0x648, '2#Qk'), 'sourceKeys': [kF(0x1b37, sd.C), kF(sd.D, sd.E)] }, { 'targetKey': kF(0x11a6, 'V#kN'), 'sourceKeys': [kF(sd.F, sd.k), kF(sd.G, 'vel(')] }]) {
+                    const x = n(v[w[kF(0x1e75, 'ZgMu')]]);
+                    for (const y of w[kF(sd.H, 'ZgMu')]) x[kF(sd.I, 'CeJW')](...n(v[y]));
+                    if (x[kF(sd.J, sd.K)]) v[w[kF(0x17ac, sd.L)]] = [...new Set(x)];
+                    for (const z of w[kF(0xf63, 'PSkb')]) delete v[z];
+                }
+                if (v[kF(0x950, sd.M)]) {
+                    const A = [];
+                    if (v[kF(0x1b66, sd.N)]) A[kF(0x147b, '[]Y1')]({ 'inbound': v[kF(0x950, sd.O)], 'action': kF(sd.P, 'PYt$'), 'strategy': v[kF(sd.Q, '[]Y1')] });
+                    if (v[kF(0x1cfe, '$BSl')]) {
+                        const B = { 'inbound': v[kF(0x124d, '8Ys%')], 'action': kF(sd.R, '*lLT') };
+                        if (v[kF(sd.S, sd.T)]) B[kF(sd.U, 'GzjL')] = v[kF(0xe08, 'PYt$')];
+                        A[kF(sd.V, sd.W)](B);
+                    }
+                    if (A[kF(0x925, '89Hn')]) {
+                        const C = o();
+                        C[kF(0x1758, 'egod')] = [...A, ...n(C[kF(sd.X, 'yxI7')])];
+                    }
+                }
+                delete v[kF(sd.Y, sd.Z)], delete v[kF(0x321, sd.a0)], delete v[kF(0x113b, sd.T)];
+            }
+        if (m?.[kF(0x388, 'n7E3')] && typeof m[kF(0x130b, sd.a1)] === kF(sd.a2, 'Pt3!') && Array[kF(0x105d, sd.a3)](m[kF(sd.a4, sd.a5)][kF(0x1cd1, 'yxI7')])) {
+            const D = E => {
+                const kJ = kF;
+                E = r(E);
+                if (E?.[kJ(0x18c9, '*lLT')] === kJ(s8.c, '5M6D') && Array[kJ(s8.f, s8.g)](E[kJ(0x1758, 'egod')])) E[kJ(0xacd, 'dbGg')] = E[kJ(0x130, '6UCx')][kJ(s8.h, '8Ys%')](D);
+                else {
+                    if (E && typeof E === kJ(0x14bd, '$BSl') && !Array[kJ(s8.i, s8.j)](E) && E[kJ(0x1b55, s8.k)] && !E[kJ(s8.l, 'rsIZ')]) E[kJ(s8.m, s8.n)] = kJ(0x1138, 'T3Fv');
+                }
+                return E;
+            };
+            m[kF(sd.a6, sd.a7)][kF(0x1174, sd.a8)] = m[kF(sd.a9, sd.aa)][kF(sd.ab, 'wCGK')][kF(0x192a, sd.ac)](D);
+        }
+        const t = m?.[kF(0x9d2, sd.ad)];
+        if (t && typeof t === kF(0x130f, sd.ae)) {
+            const E = t[kF(0x442, sd.af)] && typeof t[kF(sd.ag, 'oeP*')] === kF(sd.ah, sd.ai) ? t[kF(0x7e8, 'ZgMu')] : null,
+                F = new Map(),
+                G = { 'tcp:': kF(sd.aj, 'M5Ii'), 'udp:': kF(0x15b8, 'IcEg'), 'tls:': kF(0x1c02, '[p9('), 'quic:': kF(sd.ak, sd.C), 'https:': kF(0x9b5, '$p[^'), 'h3:': 'h3' },
+                H = { 'success': kF(0x1cca, sd.af), 'format_error': kF(sd.al, 'IcEg'), 'server_failure': kF(0x9f4, 'V#kN'), 'name_error': kF(sd.am, sd.aa), 'not_implemented': kF(0x615, sd.an), 'refused': kF(0x10be, 'V#kN') };
+            let I = ![];
+            if (Array[kF(0x1d4a, '8Ys%')](t[kF(0x14cc, sd.ao)])) {
+                const J = [];
+                for (const K of t[kF(0x18ae, sd.ap)]) {
+                    if (!K || typeof K !== kF(sd.aq, sd.ar) || Array[kF(sd.as, sd.at)](K)) { J[kF(0x1730, sd.au)](K); continue; }
+                    const L = { ...K };
+                    let M = null,
+                        N = '',
+                        O = typeof L[kF(sd.av, 'NxG1')] === kF(0xa3e, '#sM9') ? L[kF(sd.aw, sd.ax)][kF(0x9ff, sd.M)]() : '';
+                    if (O) {
+                        const P = O[kF(0x1704, '0Ua@')]();
+                        if (P === kF(sd.ay, '*lLT')) M = { 'type': kF(0x13d2, 'V#kN') };
+                        else {
+                            if (P === kF(sd.az, 'd%lH')) M = { 'type': kF(0x1ab9, 'vel(') };
+                            else {
+                                if (P[kF(sd.aA, 'w(Wr')](kF(0x70a, 'NxG1'))) M = { 'type': kF(sd.aB, sd.aC) }, N = O[kF(sd.aD, 'n7E3')](kF(0x1a21, '7NO9')[kF(sd.aE, 'V#kN')])[kF(0x1d1d, sd.aF)]();
+                                else {
+                                    if (P[kF(sd.aG, 'M5Ii')](kF(sd.aH, '60r9'))) {
+                                        const Q = O[kF(0x115b, '[p9(')](kF(sd.aI, sd.a7)[kF(0x9a0, 'V#kN')]);
+                                        M = Q && Q[kF(0x1030, '*lLT')]() !== kF(sd.aJ, 'b)3q') ? { 'type': kF(0x13d0, '89Hn'), 'interface': Q } : { 'type': kF(0xe04, sd.aK) };
+                                    } else {
+                                        try {
+                                            const R = new URL(O),
+                                                S = G[R[kF(sd.aL, sd.aM)][kF(0x349, '$BSl')]()];
+                                            if (S) {
+                                                const T = R[kF(sd.aN, sd.aO)]?.[kF(0xa8d, 'b)3q')]('[') && R[kF(sd.aP, 'T3Fv')][kF(0x66a, '[p9(')](']') ? R[kF(0x155c, sd.a5)][kF(sd.aR, sd.aS)](0x1, -0x1) : R[kF(0x1cba, 'dZbH')];
+                                                M = { 'type': S, 'server': T || R[kF(0x872, 'b)3q')] || O, ...R[kF(0x1e0b, '60r9')] ? { 'server_port': Number(R[kF(sd.aT, sd.aU)]) } : {}, ...(S === kF(0x1222, sd.aV) || S === 'h3') && R[kF(sd.aW, 'oeP*')] && R[kF(0x257, 'PSkb')] !== kF(sd.aX, sd.au) ? { 'path': R[kF(0x17aa, sd.aY)] } : {} };
+                                            }
+                                        } catch (U) {}
+                                        if (!M) M = { 'type': kF(sd.aZ, sd.af), 'server': O };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (M?.[kF(sd.b0, sd.f)] === kF(sd.b1, sd.l)) {
+                        const V = H[N] || kF(0x17c4, sd.b2);
+                        typeof L[kF(0x810, sd.b3)] === kF(0x123d, sd.ad) && L[kF(sd.b4, 'XITC')] && (F[kF(sd.b5, '1qbp')](L[kF(sd.b6, sd.Z)], V), F[kF(0x18e0, sd.b7)](L[kF(0x1cef, sd.b8)][kF(0x1d28, sd.K)](kF(0x3b1, 'jODS')) ? L[kF(0x1d76, sd.b9)][kF(sd.ba, sd.l)](0x4) : kF(0x1128, sd.bb) + L[kF(0x1752, sd.bc)], V));
+                        continue;
+                    }
+                    M && (delete L[kF(sd.bd, sd.be)], Object[kF(sd.bf, sd.bg)](L, M));
+                    if (L[kF(0xb31, sd.bh)] !== undefined && L[kF(sd.bi, sd.aM)] === undefined) L[kF(0xc4b, '2#Qk')] = L[kF(0x1bb, '2#Qk')];
+                    if (L[kF(sd.bj, sd.bk)] !== undefined && L[kF(sd.bl, '6UCx')] === undefined) L[kF(0x338, sd.aK)] = L[kF(sd.bm, 'V#kN')];
+                    delete L[kF(0xc6f, sd.bn)], delete L[kF(0x1370, sd.ar)];
+                    if (L[kF(0xc83, 'oeP*')] === kF(sd.bo, sd.aS)) delete L[kF(0xc3b, sd.bp)];
+                    if (L[kF(sd.bq, 'IcEg')] === kF(sd.br, sd.bs)) {
+                        I = !![];
+                        if (E)
+                            for (const W of [kF(sd.bt, 'ZgMu'), kF(sd.bu, '6UCx')]) {
+                                if (E[W] !== undefined && L[W] === undefined) L[W] = E[W];
+                            }
+                    }
+                    J[kF(sd.bv, '89Hn')](L);
+                }
+                t[kF(sd.bw, 'd%lH')] = J;
+            }
+            if (E && !I && E[kF(0x889, sd.ai)] !== ![]) {
+                const X = { 'type': kF(0x1915, '60r9'), 'tag': kF(sd.bx, sd.s) };
+                for (const Y of Array[kF(sd.by, '89Hn')](t[kF(sd.bz, 'CeJW')]) ? t[kF(sd.bA, 'NMJQ')] : []) {
+                    const Z = p(Y);
+                    if (Z && Z[kF(sd.bB, sd.aY)]()[kF(sd.bC, sd.bD)](kF(sd.bE, 'IcEg'))) { X[kF(sd.bF, sd.bG)] = Z; break; }
+                }
+                for (const a0 of [kF(0xb7b, sd.bH), kF(sd.bI, 'yxI7')]) {
+                    if (E[a0] !== undefined) X[a0] = E[a0];
+                }
+                if (Array[kF(sd.bJ, sd.bK)](t[kF(sd.bL, sd.y)])) t[kF(0x803, 'vel(')][kF(sd.bM, 'b)3q')](X);
+                else t[kF(0x44a, sd.bM)] = [X];
+            }
+            if (Array[kF(sd.bN, 'NMJQ')](t[kF(0x12ef, sd.bO)])) {
+                const a1 = [];
+                for (const a2 of t[kF(sd.bP, 'mRB^')]) {
+                    const a3 = p(a2),
+                        a4 = n(a2?.[kF(sd.bQ, sd.bp)]),
+                        a5 = new Set([kF(sd.bR, 'PSkb'), kF(0x3e2, sd.bS), kF(0x1349, 'rsIZ'), kF(sd.bT, sd.bU), kF(0x7d5, sd.bV), kF(0x1b49, sd.M), kF(0x100d, 'd%lH'), kF(sd.bW, sd.bX)]),
+                        a6 = a2 && typeof a2 === kF(0x2c1, sd.i) && !Array[kF(sd.bY, sd.bZ)](a2) && a2[kF(sd.c0, 'Pt3!')] !== kF(0x5fc, 'wCGK') && a3 && a4[kF(sd.c1, sd.t)](kF(sd.c2, sd.c3)) && Object[kF(0x16d2, sd.c4)](a2)[kF(sd.c5, sd.c6)](a7 => a5[kF(0x18e, 'GzjL')](a7));
+                    if (a6) {
+                        const a7 = o();
+                        if (a7[kF(sd.c7, sd.c8)] === undefined) {
+                            const a8 = { 'server': a3 };
+                            for (const a9 of [kF(sd.c9, 'PSkb'), kF(sd.ca, sd.af), kF(0x18db, sd.cb), kF(0x69a, sd.cc), kF(0x4d4, 'XITC')]) {
+                                if (a2[a9] !== undefined) a8[a9] = a2[a9];
+                            }
+                            a7[kF(sd.cd, 'b)3q')] = Object[kF(sd.ce, sd.cf)](a8)[kF(0x11da, '[]Y1')] === 0x1 ? a8[kF(0x1deb, 'GzjL')] : a8;
+                        }
+                        continue;
+                    }
+                    a1[kF(sd.cg, sd.ch)](s(a2, F));
+                }
+                t[kF(sd.ci, sd.bk)] = a1;
+            }
+            delete t[kF(sd.ck, sd.bX)], delete t[kF(sd.cl, 'dZbH')];
+        }
+        m?.[kF(0x66d, sd.bU)] && typeof m[kF(sd.cm, 'GzjL')] === kF(0x125e, sd.b9) && (delete m[kF(0x3dd, '[p9(')][kF(0x66e, sd.cn)], delete m[kF(0x15a3, 'GzjL')][kF(0x1df6, '5M6D')]);
+        if (m?.[kF(sd.co, 'PSkb')]?.[kF(sd.cp, '#sM9')] === kF(0xe73, sd.O)) delete m[kF(sd.cq, 'NxG1')][kF(sd.cr, 'Pt3!')];
+        if (Array[kF(sd.as, '8Ys%')](m[kF(sd.cs, 'b)3q')])) {
+            const aa = new Set(m[kF(0x1234, sd.aY)][kF(sd.ct, 'M5Ii')](ac => ac?.[kF(0x147a, '5M6D')])[kF(sd.cu, sd.ae)](Boolean)),
+                ab = ac => ac === kF(0x1c84, 'Mmsl') || ac && typeof ac === kF(0x14bd, '$BSl') && (Array[kF(0x127e, '9rQu')](ac) ? ac[kF(0x618, 'b)3q')](ab) : Object[kF(0x5ca, '[p9(')](ac)[kF(0x254, '1qbp')](ab));
+            if (!aa[kF(sd.cv, sd.cb)](kF(0x535, '60r9')) && ab({ 'outbounds': m[kF(0x13d1, 'NxG1')], 'route': m[kF(0x388, sd.O)] })) m[kF(sd.cw, sd.cx)][kF(sd.cy, sd.cz)]({ 'type': kF(sd.cA, sd.cB), 'tag': kF(sd.cC, 'C2T0') });
+        }
+        const u = g || {};
+        u[kF(sd.cD, 'IcEg')] === ![] && m[kF(sd.cE, 'rsIZ')] && m[kF(0xba2, '6UCx')][kF(0x1539, sd.af)](ac => {
+            const kK = kF;
+            ac && typeof ac === kK(0x128, s9.c) && ac[kK(s9.f, '$p[^')] === kK(s9.g, s9.h) && (delete ac[kK(0x13db, s9.i)], delete ac[kK(0xff0, s9.j)]);
+        });
+        if (u[kF(0xde4, 'egod')] && m[kF(sd.a6, 'C2T0')]) {
+            const ac = m[kF(sd.cF, 'd%lH')][kF(sd.cG, sd.cH)] || [],
+                ad = ac[kF(sd.cI, sd.cJ)](ae => ae[kF(0x1b9b, 'T3Fv')] === kF(0x50d, 'wCGK') && (JSON[kF(0x1f14, 'Mmsl')](ae)[kF(0xcb8, 'vel(')]('ir') || JSON[kF(0x30e, 'T3Fv')](ae)[kF(0x5eb, '0Ua@')]('IR')));
+            !ad && m[kF(sd.cK, '2#Qk')][kF(sd.cL, 'IcEg')][kF(0x1bab, sd.cM)]({ 'outbound': kF(0x9ea, '#sM9'), 'rule_set': [kF(sd.cN, sd.cO), kF(0x1a07, sd.cP)], 'type': kF(sd.cQ, 'dZbH'), 'mode': 'or', 'rules': [{ 'rule_set': [kF(sd.cR, 'n7E3')] }, { 'rule_set': [kF(sd.cS, 'V#kN')] }] });
+        }
+        if (u[kF(0x192c, sd.cT)] && m[kF(sd.cU, sd.cV)]) {
+            const ae = m[kF(0x66f, sd.cW)][kF(sd.cX, sd.aF)][kF(sd.cY, sd.B)](af => af[kF(0x5cf, 'IcEg')] === kF(0x1f19, '$p[^') && JSON[kF(0x1ede, 'dn8p')](af)[kF(0x5c6, 'PYt$')]()[kF(0x19c5, 'M5Ii')](kF(0x1dbd, 'jODS')));
+            !ae && m[kF(sd.cZ, '89Hn')][kF(sd.ci, sd.d0)][kF(0x17a9, 'dbGg')]({ 'outbound': kF(0x1f19, '$p[^'), 'rule_set': [kF(sd.d1, sd.d2)] });
+        }
+        if (u[kF(sd.d3, '#sM9')]) {
+            const af = m[kF(sd.d4, sd.c4)] && m[kF(0xb68, sd.d5)][kF(sd.d6, '$BSl')](ag => ag[kF(0x1839, 'ZgMu')] === kF(0x1d2e, '*lLT'));
+            if (!af) {
+                if (!m[kF(sd.d7, sd.d8)]) m[kF(0x1c50, sd.z)] = [];
+                m[kF(sd.d9, '7NO9')][kF(sd.da, 'CeJW')]({ 'type': kF(0x17cf, sd.K), 'tag': kF(sd.db, sd.N) });
+            }
+        }
+        if (m[kF(0x17b3, 'NxG1')]) {
+            if (!Array[kF(0x1867, 'GzjL')](m[kF(sd.dc, '7NO9')][kF(0xed, '2#Qk')])) m[kF(sd.dd, sd.cc)][kF(0x79b, sd.de)] = [];
+            if (!Array[kF(sd.df, 'Pt3!')](m[kF(0x1153, 'mRB^')][kF(sd.dg, sd.dh)])) m[kF(0x654, sd.c6)][kF(sd.di, 'PYt$')] = [];
+            const ag = (aj, ak) => {
+                const kL = kF,
+                    al = aj + '-' + ak;
+                return !m[kL(0x388, sa.c)][kL(sa.f, 'ZgMu')][kL(sa.g, sa.h)](am => am && am[kL(0xc40, 'oeP*')] === al) && (m[kL(0x1889, 'PSkb')][kL(sa.i, 'wCGK')][kL(0x1616, sa.j)]({ 'tag': al, 'type': kL(0x43b, sa.k), 'format': kL(sa.l, '[]Y1'), 'url': kL(0xef2, 'wCGK') + aj + kL(sa.m, sa.n) + al + kL(0x1a5d, 'dbGg') }), m[kL(0x1da7, sa.o)] = m[kL(sa.p, 'Gn7Q')] && typeof m[kL(sa.q, 'PSkb')] === kL(0x12b4, sa.r) ? m[kL(sa.s, sa.t)] : {}, m[kL(sa.u, sa.v)][kL(0x126a, 'XITC')] = m[kL(sa.w, 'Mmsl')][kL(0x8c8, sa.x)] && typeof m[kL(0x1380, sa.y)][kL(sa.z, sa.A)] === kL(sa.B, sa.C) ? m[kL(sa.D, '#sM9')][kL(sa.E, sa.F)] : {}, m[kL(0x1da7, 'NxG1')][kL(0x17ff, 'oeP*')][kL(sa.G, '[]Y1')] = !![]), al;
+            },
+            ah = () => {
+                const kM = kF;
+                if (!m[kM(0x4a2, sb.c)]) m[kM(0x1829, sb.f)] = [];
+                if (!m[kM(0x13d7, 'dZbH')][kM(0x419, 'rsIZ')](aj => aj && aj[kM(0x153, '60r9')] === kM(0x1832, 'yxI7'))) m[kM(0x6bb, sb.g)][kM(0x1026, sb.h)]({ 'type': kM(sb.i, '$BSl'), 'tag': kM(sb.j, sb.k) });
+            },
+            ai = aj => m[kF(0x66d, '%oj0')][kF(0xe39, 'w(Wr')][kF(0x8b0, 'C2T0')](aj);
+            u[kF(sd.dj, '[]Y1')] && !ai(aj => aj[kF(0x9c2, 'zs!c')] === kF(0xb49, '2#Qk') && JSON[kF(0xac3, 'IcEg')](aj)[kF(0x1c01, 'GzjL')](kF(0xe30, 'dbGg'))) && (ah(), m[kF(sd.dk, sd.bV)][kF(sd.dl, sd.dm)][kF(0x1078, sd.cH)]({ 'outbound': kF(0x3ce, sd.aO), 'rule_set': [ag(kF(0x1207, sd.dn), kF(sd.dp, sd.cT))] }));
+            u[kF(sd.dq, 'ZgMu')] && !ai(aj => aj[kF(0xf09, '$BSl')] === kF(0x11ff, 'GzjL') && JSON[kF(0x825, '5M6D')](aj)[kF(0xb7c, '7NO9')](kF(0x45b, 'yxI7'))) && (ah(), m[kF(sd.dr, '9rQu')][kF(sd.ds, 'jODS')]({ 'outbound': kF(sd.dt, 'd%lH'), 'rule_set': [ag(kF(sd.du, sd.dv), kF(0x1f06, 'PSkb'))] }));
+            u[kF(sd.dw, '0Ua@')] && !ai(aj => aj[kF(0x5cf, 'IcEg')] === kF(0x3ce, 'vel(') && aj[kF(0xcc1, '$p[^')] === kF(0x1f11, '9rQu') && Array[kF(0x1cf1, 'ZgMu')](aj[kF(0xffa, '6UCx')]) && aj[kF(0x1618, 'yxI7')][kF(0x5eb, '0Ua@')](0x1bb)) && (ah(), m[kF(sd.dx, sd.dy)][kF(0x1d3e, sd.N)][kF(sd.dz, sd.aY)]({ 'outbound': kF(sd.dA, sd.dB), 'network': kF(sd.dC, sd.bV), 'port': [0x1bb] }));
+            u[kF(0x1af2, 'XITC')] && !ai(aj => aj[kF(0x674, 'XITC')] === kF(0x1c8e, 'PSkb') && JSON[kF(0x93a, 'dZbH')](aj)[kF(0x538, '[p9(')](kF(0x1e56, '8Ys%'))) && m[kF(0x1889, sd.Z)][kF(0xe09, sd.M)][kF(sd.dD, sd.f)]({ 'outbound': kF(sd.dE, 'Gn7Q'), 'rule_set': [ag(kF(sd.dF, '60r9'), 'cn'), ag(kF(sd.dG, sd.dH), 'cn')], 'type': kF(sd.dI, sd.cW), 'mode': 'or', 'rules': [{ 'rule_set': [ag(kF(sd.dJ, 'CeJW'), 'cn')] }, { 'rule_set': [ag(kF(0x1df6, sd.E), 'cn')] }] });
+            u[kF(0x288, 'GzjL')] && !ai(aj => aj[kF(0x1d68, 'C2T0')] === kF(0x1ae6, '[p9(') && JSON[kF(0x1abc, 'rsIZ')](aj)[kF(0xe1f, 'rsIZ')](kF(0x1120, 'V#kN'))) && m[kF(0x1153, sd.dK)][kF(sd.dL, sd.dM)][kF(sd.dN, sd.dO)]({ 'outbound': kF(0x46d, sd.dP), 'rule_set': [ag(kF(0x1a0d, 'mRB^'), 'ru'), ag(kF(sd.dQ, sd.N), 'ru')], 'type': kF(0x40f, '6UCx'), 'mode': 'or', 'rules': [{ 'rule_set': [ag(kF(0x1bea, 'zs!c'), 'ru')] }, { 'rule_set': [ag(kF(0xd5c, sd.dR), 'ru')] }] });
+            u[kF(0x15e0, sd.aF)] && !ai(aj => aj[kF(0x824, 'Pt3!')] === kF(0xc29, 'NxG1') && JSON[kF(0x9db, '%oj0')](aj)[kF(0x1b5a, 'XITC')](kF(0x1c4f, '$p[^'))) && m[kF(sd.dS, sd.dT)][kF(sd.dU, 'b)3q')][kF(sd.dV, 'yxI7')]({ 'outbound': kF(0xd54, sd.bO), 'rule_set': [ag(kF(sd.dW, sd.dX), kF(0x1175, '7NO9'))] });
+        }
+        return h && m[kF(0x8f8, sd.dY)]?.[kF(0xcd8, '$BSl')](aj => {
+            const kN = kF;
+            (aj[kN(sc.c, 'GzjL')] && aj[kN(0x187d, 'rsIZ')] === h || aj[kN(sc.f, 'wCGK')] && aj[kN(sc.g, sc.h)] === h) && (!aj[kN(sc.i, sc.j)] && (aj[kN(sc.k, 'PYt$')] = { 'enabled': !![] }), i && (aj[kN(sc.l, 'egod')][kN(sc.m, sc.n)] = { 'enabled': !![], 'fingerprint': i }), j && (aj[kN(sc.o, 'dn8p')][kN(0x13da, sc.p)] = { 'enabled': !![], 'query_server_name': k }));
+        }), JSON[kF(sd.dZ, sd.dv)](m, null, 0x2);
+    } catch (aj) { return console[kF(sd.e0, sd.e1)](kF(sd.e2, sd.a7), aj), JSON[kF(0x1d53, sd.c8)](JSON[kF(sd.e3, sd.O)](l), null, 0x2); }
+                }
+function SurgesubConfigFileHotpatch(c, f, g) {
+    const se = { c: 'yxI7', f: '#sM9', g: 'IcEg', h: 0x3ac, i: 'n7E3', j: 'XITC', k: 0xcb8, l: '60r9', m: 0x1bf6, n: '9rQu', o: 0x1944, p: 'w3Tt', q: 'T3Fv', r: 0xaef, s: 'vel(', t: 0x487, u: 'Mmsl', v: 0x19df, w: 0x1b68, x: '6UCx', y: 0x13e8, z: 'CeJW', A: 0xe31, B: 0x1309, C: 0xc6c, D: 'wCGK', E: 0xca2, F: 'NxG1', G: 0x1698, H: '8Ys%' },
+        kO = fX,
+        h = c[kO(0xf52, se.c)]('\x0d\x0a') ? c[kO(0x1c80, 'ZgMu')]('\x0d\x0a') : c[kO(0x1567, se.f)]('\x0a'),
+        i = g[kO(0x154c, '$BSl')] ? randomPath(g[kO(0x1d8, se.g)]) : g[kO(se.h, se.i)];
+    let j = '';
+    for (let k of h) {
+        if (k[kO(0x92e, '*lLT')](kO(0xf31, '5M6D') + kO(0x3e8, se.j)) && !k[kO(se.k, 'vel(')](kO(0x15cf, se.l)) && !k[kO(se.m, se.n)](kO(0xc68, '1qbp'))) {
+            const l = k[kO(se.o, se.p)](kO(0x1677, se.q))[0x1][kO(se.r, 'mRB^')](',')[0x0],
+                m = kO(0x7c6, 'zs!c') + l + kO(0x8de, se.s) + g[kO(se.t, se.u)],
+                n = kO(0x19a8, 'd%lH') + l + kO(0x123b, se.p) + g[kO(0xf17, 'n7E3')] + kO(se.v, 'oeP*') + i[kO(se.w, 'd%lH')](/,/g, kO(0x361, se.x)) + kO(se.y, se.u) + l + '\x22';
+            j += k[kO(0x1805, se.z)](new RegExp(m, 'g'), n)[kO(0x1c32, 'NMJQ')]('[', '')[kO(0x10dc, 'Pt3!')](']', '') + '\x0a';
+        } else j += k + '\x0a';
+    }
+    return j = kO(se.A, 'b)3q') + f + kO(0xd79, '6UCx') + g[kO(se.B, 'oeP*')][kO(se.C, se.D)] * 0x3c * 0x3c + kO(se.E, 'Pt3!') + j[kO(0x1b11, se.F)](j[kO(se.G, se.H)]('\x0a')), j;
+}
+
+function formatBytes(c) {
+    const sf = { c: 0x9a0 },
+        kP = fX;
+    c = Number(c) || 0x0;
+    const f = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let g = 0x0;
+    while (c >= 0x400 && g < f[kP(sf.c, 'V#kN')] - 0x1) { c /= 0x400, g++; }
+    return c[kP(0x1908, 'PSkb')](g === 0x0 ? 0x0 : 0x2) + '\x20' + f[g];
+}
+
+function tehranYMD(c) {
+    const sg = { c: 0x1bf4, f: 0x12fa, g: '0Ua@', h: 0x6da, i: 'V#kN' },
+        kQ = fX,
+        f = new Date(c),
+        g = 3.5 * 0x3c,
+        h = new Date(f[kQ(sg.c, 'NxG1')]() + g * 0xea60),
+        i = h[kQ(0x135c, '2#Qk')](),
+        j = String(h[kQ(sg.f, sg.g)]() + 0x1)[kQ(sg.h, 'b)3q')](0x2, '0'),
+        k = String(h[kQ(0x1795, sg.i)]())[kQ(0x1853, 'Pt3!')](0x2, '0');
+    return { 'year': i, 'month': j, 'day': k };
+}
+
+async function readUsageStats(c) {
+    const sh = { c: 0xf11, f: 0x1b5, g: 'wCGK', h: 0x1a20, i: 0xa0a, j: 'ZgMu', k: 0x1296, l: 'mRB^', m: 0x14d1, n: 0x14d0, o: 0x1314, p: 'C2T0' },
+        kR = fX,
+        f = new Date(),
+        g = () => ({ 'up': 0x0, 'down': 0x0, 'total': 0x0 }),
+        h = await usageGet(c, kR(0x28b, 'CeJW') + getDateKey(f)) || g(),
+        i = await usageGet(c, kR(sh.c, 'zs!c') + getMonthKey(f)) || g(),
+        j = g(),
+        k = g();
+    try {
+        const l = kR(sh.f, sh.g) + tehranYMD(f)[kR(sh.h, '9rQu')] + '-',
+            m = await usageListMonths(c);
+        for (const n of m) {
+            k['up'] += n['up'] || 0x0, k[kR(sh.i, 'NMJQ')] += n[kR(0x14d1, sh.j)] || 0x0, k[kR(0xa99, '89Hn')] += n[kR(0x1907, '$BSl')] || 0x0;
+            n[kR(sh.k, sh.l)][kR(0x1bd4, 'Pt3!')](l) && (j['up'] += n['up'] || 0x0, j[kR(sh.m, sh.j)] += n[kR(sh.n, 'T3Fv')] || 0x0, j[kR(0x115e, 'oeP*')] += n[kR(sh.o, sh.p)] || 0x0);
+        }
+    } catch (o) {}
+    return { 'today': h, 'month': i, 'year': j, 'all': k };
+}
+
+async function getPoolHosts(c) {
+    const si = { c: 'PSkb', f: '8Ys%', g: 0x586, h: '[p9(', i: 0xb58, j: 'w(Wr', k: 0xaae, l: '#sM9', m: 'dn8p', n: '%oj0' },
+        kS = fX;
+    try {
+        const f = c['KV'] && typeof c['KV'][kS(0x99f, 'dbGg')] === kS(0x16f5, si.c) ? await getConfigRaw(c) : null,
+            g = f ? JSON[kS(0x1ef4, si.f)](f) : null;
+        if (g && Array[kS(si.g, 'b)3q')](g[kS(0xa5a, si.h)]) && g[kS(si.i, si.j)][kS(si.k, si.l)]) return [...new Set(g[kS(0x1b61, '$p[^')][kS(0x165c, si.m)](Boolean))];
+        if (g && g[kS(0xa5c, si.n)]) return [g[kS(0x83d, 'IcEg')]];
+    } catch (h) {}
+    return [];
+}
+
+async function resolvePrimaryBaseUrl(c) {
+    const sj = { c: 0x1997, f: '2#Qk', g: 0x1ab0, h: 'GzjL' },
+        kT = fX,
+        f = await getPoolHosts(c),
+        g = f[kT(0x1168, '1qbp')](i => i && !i[kT(0x7c0, 'CeJW')]('*'));
+    return g ? kT(0xfb8, '89Hn') + g[kT(sj.c, sj.f)](/^https?:\/\//, '')[kT(sj.g, sj.h)](/\/.*$/, '') : null;
+}
+
+async function checkDomainHealth(c, f, g) {
+    const sl = { c: 0x141c, f: 'Pt3!', g: 'M5Ii', h: 'Gn7Q', i: 0x194d, j: '[]Y1', k: 0x988, l: '2#Qk', m: 'C2T0' },
+        sk = { c: 0x18cd, f: 0xc5f, g: 'zs!c', h: 0x1d3d, i: 0xf8f, j: 'dn8p', k: 0x1d33, l: 0xfe5, m: 'ZgMu', n: 0x1440, o: 'PSkb', p: '[]Y1', q: 0x335, r: 'w3Tt', s: 'dbGg', t: '5M6D', u: 0xc79, v: 0x13de, w: 0x1091, x: '9rQu', y: 0x1393, z: 0x6e3, A: 'C2T0', B: 'n7E3', C: 0x1537 },
+        kU = fX,
+        h = m => String(m || '')[kU(0xd06, 'n7E3')]()[kU(0xb9b, 'n7E3')](/^https?:\/\//, '')[kU(0x5f7, 'T3Fv')]('/')[0x0],
+        i = h(g),
+        j = (f || [])[kU(sl.c, sl.f)](m => m && !m[kU(0xc84, '#sM9')]('*')),
+        k = [];
+    await Promise[kU(0x15ba, sl.g)](j[kU(0x1dc, sl.h)](async m => {
+        const kV = kU;
+        if (i && h(m) === i) { k[kV(sk.c, 'yxI7')]({ 'host': m, 'ok': !![], 'status': 0xc8, 'reason': kV(0x1491, '5M6D'), 'checkedAt': Date[kV(sk.f, sk.g)]() });
+            return; }
+        let n = ![],
+            o = 0x0,
+            p = '';
+        try {
+            const q = { 'headers': { 'User-Agent': kV(sk.h, 'rsIZ') } };
+            if (typeof AbortSignal !== kV(sk.i, sk.j) && AbortSignal[kV(sk.k, 'Gn7Q')]) q[kV(sk.l, sk.m)] = AbortSignal[kV(sk.n, 'ZgMu')](0x1f40);
+            const s = await fetch(kV(0x1c19, sk.o) + m[kV(0x3b7, sk.p)](/^https?:\/\//, '') + kV(0xa8a, 'rsIZ'), q);
+            o = s[kV(sk.q, 'w(Wr')], n = s['ok'];
+            if (n) {
+                const u = await s[kV(0x1808, sk.r)]();
+                n = !!u && u[kV(0xd77, sk.s)] > 0x8;
+                if (!n) p = kV(0x177a, sk.t);
+            } else {
+                let v = '';
+                try { v = (await s[kV(sk.u, 'Pt3!')]())[kV(sk.v, '6UCx')](/<[^>]+>/g, '\x20')[kV(sk.w, sk.x)](/\s+/g, '\x20')[kV(sk.y, 'IcEg')]()[kV(sk.z, sk.A)](0x0, 0x50); } catch (w) {}
+                p = kV(0x1018, sk.B) + o + (v ? ':\x20' + v : '');
+            }
+        } catch (x) { o = -0x1, p = (x && x[kV(sk.C, 'V#kN')] ? x[kV(0x6aa, 'b)3q')] : String(x))[kV(0x112f, '%oj0')](0x0, 0x78); }
+        k[kV(0x1707, 'NMJQ')]({ 'host': m, 'ok': n, 'status': o, 'reason': p, 'checkedAt': Date[kV(0x1b51, '*lLT')]() });
+    }));
+    const l = { 'checkedAt': Date[kU(sl.i, sl.j)](), 'domains': k };
+    try { await c['KV'][kU(0x1dd0, 'dZbH')](kU(sl.k, sl.l), JSON[kU(0x10c5, sl.m)](l)); } catch (m) {}
+    return l;
+}
+
+async function runScheduledMaintenance(c) {
+    const sm = { c: 0x5da, f: 0x1859, g: 'dbGg', h: 0x310, i: 0x73a, j: 'M5Ii' },
+        kW = fX,
+        f = await getPoolHosts(c),
+        g = await resolvePrimaryBaseUrl(c),
+        h = await checkDomainHealth(c, f, String(g || '')[kW(sm.c, 'Mmsl')](/^https?:\/\//, '')[kW(sm.f, sm.g)]('/')[0x0]);
+    try { await buildFallbackNodes(c); } catch (j) { console[kW(0x28c, 'jODS')](kW(sm.h, 'Gn7Q'), j && j[kW(sm.i, sm.j)]); }
+    const i = await publishSubMirror(c, g);
+    try { await centralHeartbeat(c); } catch (k) {}
+    try { await refreshAnnouncements(c); } catch (l) {}
+    return { 'health': h, 'mirror': i };
+    }
 
