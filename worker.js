@@ -1,27 +1,29 @@
 // =============================================
 // TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۱: Polyfills, Constants, Utils
+// پارت ۱: Polyfills, UUID, Constants, Crypto, Parser
 // =============================================
 
-const base64Encode = (str) => {
+function base64Encode(str) {
   const encoder = new TextEncoder();
   const data = encoder.encode(str);
   let binary = '';
-  data.forEach(byte => binary += String.fromCharCode(byte));
+  for (let i = 0; i < data.length; i++) {
+    binary += String.fromCharCode(data[i]);
+  }
   return btoa(binary);
-};
+}
 
-const base64Decode = (str) => {
+function base64Decode(str) {
   const binary = atob(str);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
   return new TextDecoder().decode(bytes);
-};
+}
 
 function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
@@ -65,6 +67,7 @@ const SYSTEM_CONFIG = {
   DEFAULT_EXPIRY_DAYS: 30,
   DNS_OVER_HTTPS: 'https://cloudflare-dns.com/dns-query',
   PROXY_FALLBACK_ENABLED: true,
+  PROXY_CACHE_ENABLED: true,
   HOST_POOL: []
 };
 
@@ -72,7 +75,7 @@ async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + 'taakaa-salt-v16-pro-2024');
   const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
 async function verifyPassword(password, hash) {
@@ -82,7 +85,7 @@ async function verifyPassword(password, hash) {
 
 function generateSessionToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
 function generateTOTP(secret) {
@@ -117,10 +120,8 @@ function parseBytes(input) {
   const value = parseFloat(match[1]);
   const unit = (match[2] || 'gb').replace('pt', 'pb');
   const mult = {
-    'b': 1, 'k': 1024, 'kb': 1024,
-    'm': 1048576, 'mb': 1048576,
-    'g': 1073741824, 'gb': 1073741824,
-    't': 1099511627776, 'tb': 1099511627776,
+    'b': 1, 'k': 1024, 'kb': 1024, 'm': 1048576, 'mb': 1048576,
+    'g': 1073741824, 'gb': 1073741824, 't': 1099511627776, 'tb': 1099511627776,
     'p': 1125899906842624, 'pb': 1125899906842624
   };
   return Math.floor(value * (mult[unit] || mult['gb']));
@@ -161,15 +162,15 @@ function formatDuration(days) {
 function getCookie(cookieHeader, name) {
   if (!cookieHeader) return null;
   const cookies = cookieHeader.split(';');
-  for (const cookie of cookies) {
-    const [key, value] = cookie.trim().split('=');
-    if (key === name) return decodeURIComponent(value || '');
+  for (let i = 0; i < cookies.length; i++) {
+    const parts = cookies[i].trim().split('=');
+    if (parts[0] === name) return decodeURIComponent(parts[1] || '');
   }
   return null;
 }
 // =============================================
 // TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۲: Storage, Session, Rate Limiter
+// پارت ۲: Storage, Session, Rate Limiter, User Manager
 // =============================================
 
 class StorageManager {
@@ -186,14 +187,14 @@ class StorageManager {
     try {
       let data = await this.kv.get(key, 'json');
       if (data) {
-        this.memCache[key] = { data, exp: Date.now() + 30000 };
+        this.memCache[key] = { data: data, exp: Date.now() + 30000 };
         return data;
       }
       if (this.d1) {
         const result = await this.d1.prepare('SELECT value FROM storage WHERE key = ?').bind(key).first();
         if (result && result.value) {
           data = JSON.parse(result.value);
-          this.memCache[key] = { data, exp: Date.now() + 30000 };
+          this.memCache[key] = { data: data, exp: Date.now() + 30000 };
           return data;
         }
       }
@@ -210,10 +211,13 @@ class StorageManager {
     }
     this.memCache[key] = { data: value, exp: Date.now() + 30000 };
     try {
-      await this.kv.put(key, JSON.stringify(value), { expirationTtl: ttl || SYSTEM_CONFIG.SESSION_EXPIRY });
+      await this.kv.put(key, JSON.stringify(value), {
+        expirationTtl: ttl || SYSTEM_CONFIG.SESSION_EXPIRY
+      });
       if (this.d1) {
-        await this.d1.prepare('INSERT OR REPLACE INTO storage (key, value, updated_at) VALUES (?, ?, ?)')
-          .bind(key, JSON.stringify(value), Date.now()).run();
+        await this.d1.prepare(
+          'INSERT OR REPLACE INTO storage (key, value, updated_at) VALUES (?, ?, ?)'
+        ).bind(key, JSON.stringify(value), Date.now()).run();
       }
       return true;
     } catch (e) {
@@ -226,26 +230,32 @@ class StorageManager {
     delete this.memCache[key];
     try {
       await this.kv.delete(key);
-      if (this.d1) await this.d1.prepare('DELETE FROM storage WHERE key = ?').bind(key).run();
+      if (this.d1) {
+        await this.d1.prepare('DELETE FROM storage WHERE key = ?').bind(key).run();
+      }
       return true;
-    } catch (e) { return false; }
+    } catch (e) {
+      return false;
+    }
   }
 
   async list(prefix) {
     try {
-      const result = await this.kv.list({ prefix, limit: 1000 });
-      return result.keys.map(k => k.name);
-    } catch (e) { return []; }
+      const result = await this.kv.list({ prefix: prefix, limit: 1000 });
+      return result.keys.map(function(k) { return k.name; });
+    } catch (e) {
+      return [];
+    }
   }
 
   async getAllUsers() {
     const keys = await this.list('user:');
     const users = [];
-    for (const key of keys) {
-      const user = await this.get(key);
+    for (let i = 0; i < keys.length; i++) {
+      const user = await this.get(keys[i]);
       if (user) users.push(user);
     }
-    return users.sort((a, b) => b.createdAt - a.createdAt);
+    return users.sort(function(a, b) { return b.createdAt - a.createdAt; });
   }
 
   async getSystemConfig() {
@@ -285,7 +295,13 @@ class SessionManager {
 
   async create(userData) {
     const token = generateSessionToken();
-    const session = { ...userData, token, createdAt: Date.now(), lastAccess: Date.now() };
+    const session = {
+      role: userData.role,
+      ip: userData.ip,
+      token: token,
+      createdAt: Date.now(),
+      lastAccess: Date.now()
+    };
     await this.storage.put('session:' + token, session, SYSTEM_CONFIG.SESSION_EXPIRY);
     return token;
   }
@@ -328,10 +344,6 @@ class RateLimiter {
     };
   }
 }
-// =============================================
-// TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۳: User Manager, Config Generator
-// =============================================
 
 class UserManager {
   constructor(storage) {
@@ -343,15 +355,20 @@ class UserManager {
     const now = Date.now();
     const expiryDays = parseDuration(data.expiry || '30d');
     const user = {
-      uuid, name: data.name || 'User-' + uuid.substring(0, 8),
+      uuid: uuid,
+      name: data.name || 'User-' + uuid.substring(0, 8),
       ip: data.ip || '',
       quotaTotal: parseBytes(data.quota || '5GB'),
       quotaDaily: parseBytes(data.dailyQuota || '1GB'),
-      usageTotal: 0, dailyUsage: {},
-      expiryDays, expiryDate: now + (expiryDays * 86400000),
-      status: 'active', operator: data.operator || 'mtn',
+      usageTotal: 0,
+      dailyUsage: {},
+      expiryDays: expiryDays,
+      expiryDate: now + (expiryDays * 86400000),
+      status: 'active',
+      operator: data.operator || 'mtn',
       protocol: data.protocol || 'vless',
-      createdAt: now, lastAccess: now,
+      createdAt: now,
+      lastAccess: now,
       createdBy: data.adminUser || 'admin'
     };
     await this.storage.put('user:' + uuid, user);
@@ -413,7 +430,11 @@ class UserManager {
     user.lastAccess = Date.now();
     await this.storage.put('user:' + uuid, user);
   }
-}
+      }
+// =============================================
+// TAAKAA-XI PRO v16 - Complete Worker
+// پارت ۳: Config Generator, Scanner, Proxy, Subscription
+// =============================================
 
 function generateVlessConfig(user, config, domain) {
   const uuid = user.uuid;
@@ -466,35 +487,14 @@ function generateClashYAML(user, config, domain) {
   const sni = (config.SNI_LIST && config.SNI_LIST[0]) ? config.SNI_LIST[0] : 'www.google.com';
   return 'proxies:\n' +
     '  - name: "TAAKAA-XI-' + user.name + '-VLESS"\n' +
-    '    type: vless\n' +
-    '    server: ' + domain + '\n' +
-    '    port: 443\n' +
-    '    uuid: ' + uuid + '\n' +
-    '    network: ws\n' +
-    '    ws-opts:\n' +
-    '      path: /ws\n' +
-    '      headers:\n' +
-    '        Host: ' + domain + '\n' +
-    '    tls: true\n' +
-    '    servername: ' + sni + '\n' +
-    '    client-fingerprint: chrome\n\n' +
+    '    type: vless\n    server: ' + domain + '\n    port: 443\n    uuid: ' + uuid + '\n' +
+    '    network: ws\n    ws-opts:\n      path: /ws\n      headers:\n        Host: ' + domain + '\n' +
+    '    tls: true\n    servername: ' + sni + '\n    client-fingerprint: chrome\n\n' +
     '  - name: "TAAKAA-XI-' + user.name + '-Trojan"\n' +
-    '    type: trojan\n' +
-    '    server: ' + domain + '\n' +
-    '    port: 443\n' +
-    '    password: ' + uuid + '\n' +
-    '    network: ws\n' +
-    '    ws-opts:\n' +
-    '      path: /trojan\n' +
-    '      headers:\n' +
-    '        Host: ' + domain + '\n' +
-    '    tls: true\n' +
-    '    sni: ' + sni + '\n';
+    '    type: trojan\n    server: ' + domain + '\n    port: 443\n    password: ' + uuid + '\n' +
+    '    network: ws\n    ws-opts:\n      path: /trojan\n      headers:\n        Host: ' + domain + '\n' +
+    '    tls: true\n    sni: ' + sni + '\n';
 }
-// =============================================
-// TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۴: Scanner, Proxy Handler, Subscription
-// =============================================
 
 const TEST_IPS = [
   { ip: '185.143.234.120', operator: 'mtn' },
@@ -504,9 +504,10 @@ const TEST_IPS = [
   { ip: '46.209.0.10', operator: 'rtl' }
 ];
 
-async function scanIP(ip, timeout = 3000) {
+async function scanIP(ip, timeout) {
+  const to = timeout || 3000;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
+  const timer = setTimeout(function() { controller.abort(); }, to);
   try {
     const start = Date.now();
     const response = await fetch('https://' + ip + '/', {
@@ -514,16 +515,21 @@ async function scanIP(ip, timeout = 3000) {
       headers: { 'User-Agent': 'Mozilla/5.0' }
     });
     clearTimeout(timer);
-    return { ip, alive: response.status < 500, latency: Date.now() - start };
+    return { ip: ip, alive: response.status < 500, latency: Date.now() - start };
   } catch (e) {
     clearTimeout(timer);
-    return { ip, alive: false, latency: Infinity };
+    return { ip: ip, alive: false, latency: Infinity };
   }
 }
 
 async function quickScan() {
-  const results = await Promise.all(TEST_IPS.map(item => scanIP(item.ip, 2000)));
-  return results.map((r, i) => ({ ...r, operator: TEST_IPS[i].operator })).sort((a, b) => a.latency - b.latency);
+  const results = [];
+  for (let i = 0; i < TEST_IPS.length; i++) {
+    const r = await scanIP(TEST_IPS[i].ip, 2000);
+    r.operator = TEST_IPS[i].operator;
+    results.push(r);
+  }
+  return results.sort(function(a, b) { return a.latency - b.latency; });
 }
 
 class ProxyHandler {
@@ -541,10 +547,7 @@ class ProxyHandler {
       return new Response('Quota exceeded or suspended', { status: 429 });
     }
 
-    if (path === '/ws' && upgrade.toLowerCase() === 'websocket') {
-      return await this.handleWebSocketTunnel(request, user);
-    }
-    if (path === '/trojan' && upgrade.toLowerCase() === 'websocket') {
+    if ((path === '/ws' || path === '/trojan') && upgrade.toLowerCase() === 'websocket') {
       return await this.handleWebSocketTunnel(request, user);
     }
     return await this.handleTCP(request, user);
@@ -564,14 +567,18 @@ class ProxyHandler {
     const pair = new WebSocketPair();
     const clientSocket = pair[0];
     const serverSocket = pair[1];
-    
     serverSocket.accept();
-    
-    serverSocket.addEventListener('message', async (event) => {
+    const self = this;
+
+    serverSocket.addEventListener('message', async function(event) {
       try {
-        const bytes = (event.data instanceof ArrayBuffer) ? event.data.byteLength : 
-                      (typeof event.data === 'string' ? new TextEncoder().encode(event.data).length : 0);
-        await this.userManager.trackBytes(user.uuid, bytes);
+        let bytes = 0;
+        if (event.data instanceof ArrayBuffer) {
+          bytes = event.data.byteLength;
+        } else if (typeof event.data === 'string') {
+          bytes = new TextEncoder().encode(event.data).length;
+        }
+        await self.userManager.trackBytes(user.uuid, bytes);
         serverSocket.send(event.data);
       } catch (e) {
         console.error('WS error:', e);
@@ -586,14 +593,12 @@ class ProxyHandler {
       const newHeaders = new Headers(request.headers);
       const config = await this.storage.getSystemConfig();
       if (config.WARP_ENABLED) newHeaders.set('CF-WARP', 'enabled');
-      
       const modifiedRequest = new Request(request.url, {
         method: request.method,
         headers: newHeaders,
         body: request.body,
         redirect: request.redirect
       });
-      
       const response = await fetch(modifiedRequest);
       const contentLength = parseInt(response.headers.get('Content-Length') || '0');
       if (contentLength > 0) await this.userManager.trackBytes(user.uuid, contentLength);
@@ -607,7 +612,7 @@ class ProxyHandler {
 async function handleSubscription(request, storage) {
   const url = new URL(request.url);
   const path = url.pathname;
-  
+
   if (path.startsWith('/sub/')) {
     const uuid = path.split('/sub/')[1];
     if (!validateUUID(uuid)) return new Response('Invalid UUID', { status: 400 });
@@ -626,7 +631,7 @@ async function handleSubscription(request, storage) {
       }
     });
   }
-  
+
   if (path.startsWith('/clash/')) {
     const uuid = path.split('/clash/')[1];
     const userManager = new UserManager(storage);
@@ -640,12 +645,12 @@ async function handleSubscription(request, storage) {
       headers: { 'Content-Type': 'text/yaml; charset=utf-8' }
     });
   }
-  
+
   return null;
-}
+      }
 // =============================================
 // TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۵: CSS Styles + JavaScript
+// پارت ۴: CSS, JS Helper, All Pages, Export Default
 // =============================================
 
 function getStyles() {
@@ -653,45 +658,43 @@ function getStyles() {
 }
 
 function getJS() {
-  return 'function showToast(m,t){var d=document.createElement("div");d.className="toast";d.style.borderRight="4px solid "+(t==="success"?"var(--success)":t==="error"?"var(--danger)":"var(--primary)");d.innerHTML=m;document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}function openModal(i){document.getElementById(i).classList.add("active")}function closeModal(i){document.getElementById(i).classList.remove("active")}function copyText(t){navigator.clipboard.writeText(t).then(function(){showToast("✅ کپی شد!","success")})}async function api(u,m,b){var o={method:m||"GET",headers:{}};if(b){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(b)}var r=await fetch(u,o);return await r.json()}async function toggleUser(u){var r=await api("/api/toggle-user","POST",{uuid:u});if(r.success){showToast("وضعیت تغییر کرد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}async function deleteUser(u){if(!confirm("مطمئن هستید؟"))return;var r=await api("/api/delete-user","POST",{uuid:u});if(r.success){showToast("حذف شد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}async function resetUsage(u){var r=await api("/api/reset-usage","POST",{uuid:u});if(r.success){showToast("ریست شد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}';
+  return 'function showToast(m,t){var d=document.createElement("div");d.className="toast";d.style.borderRight="4px solid "+(t==="success"?"var(--success)":t==="error"?"var(--danger)":"var(--primary)");d.innerHTML=m;document.body.appendChild(d);setTimeout(function(){d.remove()},3000)}function openModal(i){document.getElementById(i).classList.add("active")}function closeModal(i){document.getElementById(i).classList.remove("active")}function copyText(t){navigator.clipboard.writeText(t).then(function(){showToast("✅ کپی شد!","success")})}async function api(u,m,b){var o={method:m||"GET",headers:{}};if(b){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(b)}var r=await fetch(u,o);return await r.json()}async function toggleUser(uuid){var r=await api("/api/toggle-user","POST",{uuid:uuid});if(r.success){showToast("وضعیت تغییر کرد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}async function deleteUser(uuid){if(!confirm("مطمئن هستید؟"))return;var r=await api("/api/delete-user","POST",{uuid:uuid});if(r.success){showToast("حذف شد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}async function resetUsage(uuid){var r=await api("/api/reset-usage","POST",{uuid:uuid});if(r.success){showToast("ریست شد","success");setTimeout(function(){location.reload()},500)}else showToast(r.error||"خطا","error")}';
 }
 
 function wrapHTML(content, title) {
   return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + title + '</title>\n<style>' + getStyles() + '</style>\n</head>\n<body>\n<div class="container">\n' + content + '\n</div>\n<script>' + getJS() + '</script>\n</body>\n</html>';
 }
-// =============================================
-// TAAKAA-XI PRO v16 - Complete Worker
-// پارت ۶: All Pages + Export Default
-// =============================================
 
 function loginPage(error) {
-  const e = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
+  var e = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
   return wrapHTML(
     '<div class="header"><span class="brand">⚡ TAAKAA-XI PRO v16</span><span style="color:var(--text2);">ورود</span></div>' +
     '<div style="max-width:450px;margin:80px auto;"><div class="card fade-in"><h2 class="text-center mb-20">🔐 ورود ادمین</h2>' + e +
-    '<form method="POST" action="/api/login"><input type="password" name="password" placeholder="رمز عبور" required autofocus><input type="text" name="totp" placeholder="کد TOTP (اختیاری)" maxlength="6"><button type="submit" class="btn" style="width:100%;margin-top:15px;">🚀 ورود</button></form>' +
+    '<form method="POST" action="/api/login"><input type="password" name="password" placeholder="رمز عبور" required autofocus><input type="text" name="totp" placeholder="کد TOTP" maxlength="6"><button type="submit" class="btn" style="width:100%;margin-top:15px;">🚀 ورود</button></form>' +
     '<p class="text-center mt-20" style="color:var(--text2);font-size:13px;">📢 @TaaKaaOrg | v16 PRO</p></div></div>',
     'TAAKAA-XI | ورود'
   );
 }
 
 function setupPage(error) {
-  const e = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
+  var e = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
   return wrapHTML(
     '<div class="header"><span class="brand">🛠️ راه‌اندازی</span></div>' +
-    '<div style="max-width:500px;margin:40px auto;"><div class="card fade-in"><h2 class="text-center">🎉 خوش آمدید!</h2><p class="text-center" style="color:var(--text2);">تنظیم رمز عبور ادمین</p>' + e +
+    '<div style="max-width:500px;margin:40px auto;"><div class="card fade-in"><h2 class="text-center">🎉 خوش آمدید!</h2><p class="text-center" style="color:var(--text2);">تنظیم رمز عبور</p>' + e +
     '<form method="POST" action="/api/setup"><input type="password" name="password" placeholder="رمز عبور جدید" required minlength="6"><input type="password" name="confirm" placeholder="تکرار رمز" required><button type="submit" class="btn" style="width:100%;margin-top:15px;">✅ راه‌اندازی</button></form></div></div>',
     'TAAKAA-XI | Setup'
   );
 }
 
 function dashboardPage(users, config) {
-  const active = users.filter(u => u.status === 'active').length;
-  const totalUse = users.reduce((s, u) => s + (u.usageTotal || 0), 0);
-  const today = new Date().toISOString().split('T')[0];
-  const todayUse = users.reduce((s, u) => s + ((u.dailyUsage && u.dailyUsage[today]) ? u.dailyUsage[today] : 0), 0);
-  const actHTML = users.sort((a, b) => (b.lastAccess || 0) - (a.lastAccess || 0)).slice(0, 5).map(u => '<div class="flex" style="padding:8px 0;border-bottom:1px solid var(--border);"><span>' + u.name + '</span><span style="color:var(--text2);font-size:12px;">' + (u.lastAccess ? new Date(u.lastAccess).toLocaleString('fa-IR') : '—') + '</span></div>').join('') || '<p style="color:var(--text2);">بدون فعالیت</p>';
-  
+  var active = users.filter(function(u) { return u.status === 'active'; }).length;
+  var totalUse = users.reduce(function(s, u) { return s + (u.usageTotal || 0); }, 0);
+  var today = new Date().toISOString().split('T')[0];
+  var todayUse = users.reduce(function(s, u) { return s + ((u.dailyUsage && u.dailyUsage[today]) ? u.dailyUsage[today] : 0); }, 0);
+  var actHTML = users.sort(function(a, b) { return (b.lastAccess || 0) - (a.lastAccess || 0); }).slice(0, 5).map(function(u) {
+    return '<div class="flex" style="padding:8px 0;border-bottom:1px solid var(--border);"><span>' + u.name + '</span><span style="color:var(--text2);font-size:12px;">' + (u.lastAccess ? new Date(u.lastAccess).toLocaleString('fa-IR') : '—') + '</span></div>';
+  }).join('') || '<p style="color:var(--text2);">بدون فعالیت</p>';
+
   return wrapHTML(
     '<div class="header fade-in"><div class="flex" style="gap:20px;"><span class="brand">⚡ TAAKAA-XI PRO v16</span><span class="badge badge-ok">🟢 عملیاتی</span></div><span style="color:var(--text2);">🏗️ @TaaKaaOrg</span></div>' +
     '<div class="nav fade-in"><a href="/" class="active">📊 داشبورد</a><a href="/users">👥 کاربران</a><a href="/settings">⚙️ تنظیمات</a><a href="/scanner">📡 اسکنر</a><a href="/info-protocols">📖 پروتکل‌ها</a><a href="/subscription">📦 اشتراک</a><a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a></div>' +
@@ -708,12 +711,12 @@ function dashboardPage(users, config) {
 }
 
 function usersPage(users) {
-  const rows = users.map(u => {
-    const pct = u.quotaTotal > 0 ? Math.min(100, ((u.usageTotal || 0) / u.quotaTotal) * 100) : 0;
-    const days = u.expiryDate ? Math.max(0, Math.ceil((u.expiryDate - Date.now()) / 86400000)) : 0;
+  var rows = users.map(function(u) {
+    var pct = u.quotaTotal > 0 ? Math.min(100, ((u.usageTotal || 0) / u.quotaTotal) * 100) : 0;
+    var days = u.expiryDate ? Math.max(0, Math.ceil((u.expiryDate - Date.now()) / 86400000)) : 0;
     return '<tr><td><strong>' + u.name + '</strong></td><td style="font-family:monospace;font-size:11px;direction:ltr;">' + u.uuid.substring(0, 16) + '...</td><td>' + (u.ip || '—') + '</td><td>' + formatBytes(u.usageTotal || 0) + ' / ' + formatBytes(u.quotaTotal) + '<div class="progress"><div class="progress-fill" style="width:' + pct + '%"></div></div><small>' + pct.toFixed(1) + '%</small></td><td>' + formatBytes(u.quotaDaily) + '</td><td>' + formatDuration(days) + '</td><td><span class="badge ' + (u.status === 'active' ? 'badge-ok' : 'badge-err') + '">' + (u.status === 'active' ? '🟢' : '🔴') + '</span></td><td><button class="btn btn-sm" onclick="editUser(\'' + u.uuid + '\')">✏️</button> <button class="btn btn-sm btn-outline" onclick="toggleUser(\'' + u.uuid + '\')">' + (u.status === 'active' ? '⏸️' : '▶️') + '</button> <button class="btn btn-sm btn-warn" onclick="resetUsage(\'' + u.uuid + '\')">🔄</button> <button class="btn btn-sm btn-danger" onclick="deleteUser(\'' + u.uuid + '\')">🗑️</button></td></tr>';
   }).join('');
-  
+
   return wrapHTML(
     '<div class="header fade-in"><span class="brand">👥 کاربران</span><button class="btn" onclick="openModal(\'add-user-modal\')">➕ جدید</button></div>' +
     '<div class="nav fade-in"><a href="/">📊 داشبورد</a><a href="/users" class="active">👥 کاربران</a><a href="/settings">⚙️ تنظیمات</a><a href="/scanner">📡 اسکنر</a><a href="/info-protocols">📖 پروتکل‌ها</a><a href="/subscription">📦 اشتراک</a><a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a></div>' +
@@ -747,8 +750,8 @@ function scannerPage() {
   return wrapHTML(
     '<div class="header fade-in"><span class="brand">📡 اسکنر IP</span></div>' +
     '<div class="nav fade-in"><a href="/">📊 داشبورد</a><a href="/users">👥 کاربران</a><a href="/settings">⚙️ تنظیمات</a><a href="/scanner" class="active">📡 اسکنر</a><a href="/info-protocols">📖 پروتکل‌ها</a><a href="/subscription">📦 اشتراک</a><a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a></div>' +
-    '<div class="card fade-in"><h3>📡 اسکن IP</h3><button class="btn" onclick="quickScan()">⚡ اسکن سریع</button><div id="scan-results" class="mt-20"><p style="color:var(--text2);">منتظر اسکن...</p></div><div id="best-ip-section" style="display:none;margin-top:20px;"><h4>🌟 بهترین IP:</h4><div class="code-block" id="best-ip-display"></div></div></div>' +
-    '<script>async function quickScan(){document.getElementById("scan-results").innerHTML=\'<div class="pulse text-center" style="padding:20px;">⏳ در حال اسکن...</div>\';var r=await api("/api/quick-scan");if(r.success){var h="<table><thead><tr><th>IP</th><th>اپراتور</th><th>وضعیت</th><th>Latency</th></tr></thead><tbody>";r.results.forEach(function(x){h+="<tr><td style=\'font-family:monospace;direction:ltr;\'>"+x.ip+"</td><td>"+(x.operator==="mci"?"همراه اول":x.operator==="mtn"?"ایرانسل":"رایتل")+"</td><td><span class=\'badge "+(x.alive?"badge-ok":"badge-err")+"\'>"+(x.alive?"✅ زنده":"❌ مرده")+"</span></td><td>"+(x.alive?x.latency+"ms":"—")+"</td></tr>"});h+="</tbody></table>";document.getElementById("scan-results").innerHTML=h;if(r.bestIP){document.getElementById("best-ip-section").style.display="block";document.getElementById("best-ip-display").innerHTML="IP: "+r.bestIP.ip+" | Latency: "+r.bestIP.latency+"ms ⭐"}}}</script>',
+    '<div class="card fade-in"><h3>📡 اسکن IP</h3><button class="btn" onclick="quickScan()">⚡ اسکن سریع</button><div id="scan-results" class="mt-20"><p style="color:var(--text2);">منتظر اسکن...</p></div></div>' +
+    '<script>async function quickScan(){document.getElementById("scan-results").innerHTML=\'<div class="pulse text-center" style="padding:20px;">⏳ در حال اسکن...</div>\';var r=await api("/api/quick-scan");if(r.success){var h="<table><thead><tr><th>IP</th><th>Latency</th><th>وضعیت</th></tr></thead><tbody>";r.results.forEach(function(x){h+="<tr><td style=\'font-family:monospace;direction:ltr;\'>"+x.ip+"</td><td>"+(x.alive?x.latency+"ms":"—")+"</td><td><span class=\'badge "+(x.alive?"badge-ok":"badge-err")+"\'>"+(x.alive?"✅ زنده":"❌ مرده")+"</span></td></tr>"});h+="</tbody></table>";document.getElementById("scan-results").innerHTML=h}}</script>',
     'TAAKAA-XI | اسکنر'
   );
 }
@@ -757,23 +760,21 @@ function infoProtocolsPage(config) {
   return wrapHTML(
     '<div class="header fade-in"><span class="brand">📖 پروتکل‌ها</span></div>' +
     '<div class="nav fade-in"><a href="/">📊 داشبورد</a><a href="/users">👥 کاربران</a><a href="/settings">⚙️ تنظیمات</a><a href="/scanner">📡 اسکنر</a><a href="/info-protocols" class="active">📖 پروتکل‌ها</a><a href="/subscription">📦 اشتراک</a><a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🔷 VLESS</h4><p style="color:var(--text2);">پروتکل سبک با TLS. SNI: ' + ((config.SNI_LIST && config.SNI_LIST[0]) || 'google.com') + ' | FP: ' + ((config.FINGERPRINTS && config.FINGERPRINTS[0]) || 'chrome') + '</p></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🧩 Fragment</h4><p style="color:var(--text2);">تکه‌تکه کردن پکت‌ها. وضعیت: ' + (config.FRAGMENT_ENABLED ? '✅ فعال' : '❌ غیرفعال') + ' | Size: ' + (config.FRAGMENT_SIZE || '1-5') + ' | Count: ' + (config.FRAGMENT_COUNT || 3) + '</p></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🔐 ECH (Encrypted Client Hello)</h4><p style="color:var(--text2);">رمزنگاری کامل دست‌دهی TLS. وضعیت: ' + (config.ECH_ENABLED ? '✅ فعال' : '❌ غیرفعال') + '</p></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🌐 WARP</h4><p style="color:var(--text2);">مسیریابی Cloudflare. وضعیت: ' + (config.WARP_ENABLED ? '✅ فعال' : '❌ غیرفعال') + ' | Pro: ' + (config.WARP_PRO_ENABLED ? '✅' : '❌') + '</p></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🖐️ Fingerprint</h4><p style="color:var(--text2);">انواع: ' + SYSTEM_CONFIG.FINGERPRINTS.join('، ') + ' | فعلی: ' + ((config.FINGERPRINTS && config.FINGERPRINTS[0]) || 'chrome') + '</p></div>' +
-    '<div class="card fade-in"><h4 style="color:var(--primary);">🏷️ SNI</h4><p style="color:var(--text2);">لیست: ' + SYSTEM_CONFIG.SNI_LIST.join('، ') + ' | فعلی: ' + ((config.SNI_LIST && config.SNI_LIST[0]) || 'google.com') + '</p></div>' +
+    '<div class="card fade-in"><h4 style="color:var(--primary);">🔷 VLESS</h4><p style="color:var(--text2);">پروتکل سبک با TLS</p></div>' +
+    '<div class="card fade-in"><h4 style="color:var(--primary);">🧩 Fragment</h4><p style="color:var(--text2);">وضعیت: ' + (config.FRAGMENT_ENABLED ? '✅ فعال' : '❌ غیرفعال') + '</p></div>' +
+    '<div class="card fade-in"><h4 style="color:var(--primary);">🔐 ECH</h4><p style="color:var(--text2);">وضعیت: ' + (config.ECH_ENABLED ? '✅ فعال' : '❌ غیرفعال') + '</p></div>' +
+    '<div class="card fade-in"><h4 style="color:var(--primary);">🌐 WARP</h4><p style="color:var(--text2);">وضعیت: ' + (config.WARP_ENABLED ? '✅ فعال' : '❌ غیرفعال') + '</p></div>' +
     '<p class="text-center" style="color:var(--text2);margin-top:20px;">📢 @TaaKaaOrg | ⚡ v16 PRO</p>',
     'TAAKAA-XI | پروتکل‌ها'
   );
 }
 
 function subscriptionPage(users, config, domain) {
-  const opts = users.map(u => '<option value="' + u.uuid + '">' + u.name + '</option>').join('');
+  var opts = users.map(function(u) { return '<option value="' + u.uuid + '">' + u.name + '</option>'; }).join('');
   return wrapHTML(
     '<div class="header fade-in"><span class="brand">📦 اشتراک</span></div>' +
     '<div class="nav fade-in"><a href="/">📊 داشبورد</a><a href="/users">👥 کاربران</a><a href="/settings">⚙️ تنظیمات</a><a href="/scanner">📡 اسکنر</a><a href="/info-protocols">📖 پروتکل‌ها</a><a href="/subscription" class="active">📦 اشتراک</a><a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a></div>' +
-    '<div class="card fade-in"><h3>🔗 لینک اشتراک</h3><select id="sub-user-select" onchange="updateSubscription()" style="margin:10px 0;"><option value="">-- انتخاب --</option>' + opts + '</select><div id="subscription-links" style="display:none;"><h4 class="mt-20">📎 لینک:</h4><div class="flex"><input type="text" id="sub-url" readonly class="code-block" style="flex:1;"><button class="btn btn-sm" onclick="copyText(document.getElementById(\'sub-url\').value)">📋</button></div><h4 class="mt-20">📋 VLESS:</h4><textarea id="vless-config" readonly class="code-block" style="height:60px;"></textarea><h4 class="mt-20">📦 Base64:</h4><textarea id="sub-base64" readonly class="code-block" style="height:60px;"></textarea></div></div>' +
+    '<div class="card fade-in"><h3>🔗 لینک اشتراک</h3><select id="sub-user-select" onchange="updateSubscription()"><option value="">-- انتخاب --</option>' + opts + '</select><div id="subscription-links" style="display:none;"><h4 class="mt-20">📎 لینک:</h4><div class="flex"><input type="text" id="sub-url" readonly class="code-block" style="flex:1;"><button class="btn btn-sm" onclick="copyText(document.getElementById(\'sub-url\').value)">📋</button></div><h4 class="mt-20">📋 VLESS:</h4><textarea id="vless-config" readonly class="code-block" style="height:60px;"></textarea><h4 class="mt-20">📦 Base64:</h4><textarea id="sub-base64" readonly class="code-block" style="height:60px;"></textarea></div></div>' +
     '<script>var DOMAIN="' + domain + '";async function updateSubscription(){var u=document.getElementById("sub-user-select").value;if(!u){document.getElementById("subscription-links").style.display="none";return}var r=await api("/api/get-configs?uuid="+u);if(r.success){document.getElementById("subscription-links").style.display="block";document.getElementById("sub-url").value="https://"+DOMAIN+"/sub/"+u;document.getElementById("vless-config").value=r.configs.vless;document.getElementById("sub-base64").value=r.configs.subscription}}</script>',
     'TAAKAA-XI | اشتراک'
   );
@@ -781,7 +782,7 @@ function subscriptionPage(users, config, domain) {
 
 function ownersPage() {
   return wrapHTML(
-    '<div class="header fade-in text-center"><span class="brand">👑 TAAKAA-XI</span></div><div class="card fade-in text-center" style="max-width:600px;margin:40px auto;"><h2>🏗️ تیم TAAKAA</h2><p style="color:var(--text2);margin:20px 0;">⚡ v16 PRO | ۳ ماه توسعه | VLESS/Trojan/SS</p><p style="color:var(--primary);font-size:18px;font-weight:bold;">📢 @TaaKaaOrg</p><a href="/" class="btn mt-20">🏠 بازگشت</a></div>',
+    '<div class="header fade-in text-center"><span class="brand">👑 TAAKAA-XI</span></div><div class="card fade-in text-center" style="max-width:600px;margin:40px auto;"><h2>🏗️ تیم TAAKAA</h2><p style="color:var(--text2);margin:20px 0;">⚡ v16 PRO | VLESS/Trojan/SS</p><p style="color:var(--primary);font-size:18px;font-weight:bold;">📢 @TaaKaaOrg</p><a href="/" class="btn mt-20">🏠 بازگشت</a></div>',
     'TAAKAA-XI | Owners'
   );
 }
@@ -794,7 +795,7 @@ function jsonResponse(data, status) {
 }
 
 function redirectResponse(url, cookie) {
-  const headers = { Location: url };
+  var headers = { Location: url };
   if (cookie) headers['Set-Cookie'] = cookie;
   return new Response(null, { status: 302, headers });
 }
@@ -806,32 +807,32 @@ function htmlResponse(html) {
 // ==================== EXPORT DEFAULT ====================
 export default {
   async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const path = url.pathname;
-    const method = request.method;
-    const cookieHeader = request.headers.get('Cookie') || '';
-    const sessionToken = getCookie(cookieHeader, 'taakaa_session');
-    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const domain = url.hostname;
+    var url = new URL(request.url);
+    var path = url.pathname;
+    var method = request.method;
+    var cookieHeader = request.headers.get('Cookie') || '';
+    var sessionToken = getCookie(cookieHeader, 'taakaa_session');
+    var clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
+    var domain = url.hostname;
 
-    const storage = new StorageManager(env);
-    const sessionMgr = new SessionManager(storage);
-    const rateLimiter = new RateLimiter(storage);
-    const userMgr = new UserManager(storage);
-    const proxyHandler = new ProxyHandler(storage);
+    var storage = new StorageManager(env);
+    var sessionMgr = new SessionManager(storage);
+    var rateLimiter = new RateLimiter(storage);
+    var userMgr = new UserManager(storage);
+    var proxyHandler = new ProxyHandler(storage);
 
-    const rateCheck = await rateLimiter.check('login_' + clientIP, SYSTEM_CONFIG.MAX_LOGIN_ATTEMPTS, SYSTEM_CONFIG.LOCKOUT_MINUTES);
+    var rateCheck = await rateLimiter.check('login_' + clientIP, SYSTEM_CONFIG.MAX_LOGIN_ATTEMPTS, SYSTEM_CONFIG.LOCKOUT_MINUTES);
 
-    const isFirstRun = await storage.isFirstRun();
+    var isFirstRun = await storage.isFirstRun();
     if (isFirstRun && path !== '/api/setup') return htmlResponse(setupPage());
 
-    let session = null;
+    var session = null;
     if (sessionToken) session = await sessionMgr.validate(sessionToken);
 
     if (path === '/' || path === '') {
       if (!session) return htmlResponse(loginPage());
-      const config = await storage.getSystemConfig();
-      const users = await storage.getAllUsers();
+      var config = await storage.getSystemConfig();
+      var users = await storage.getAllUsers();
       return htmlResponse(dashboardPage(users, config));
     }
 
@@ -840,37 +841,37 @@ export default {
 
     if (path === '/api/login' && method === 'POST') {
       if (!rateCheck.allowed) return jsonResponse({ success: false, error: 'تلاش‌ها تمام شد' }, 429);
-      let password, totpToken;
-      const ct = request.headers.get('Content-Type') || '';
+      var password, totpToken;
+      var ct = request.headers.get('Content-Type') || '';
       if (ct.includes('application/json')) {
-        const json = await request.json();
+        var json = await request.json();
         password = json.password;
         totpToken = json.totp;
       } else {
-        const body = await request.formData();
+        var body = await request.formData();
         password = body.get('password');
         totpToken = body.get('totp');
       }
-      const adminHash = await storage.getAdminPassword();
+      var adminHash = await storage.getAdminPassword();
       if (!adminHash) return jsonResponse({ success: false, error: 'راه‌اندازی نشده' }, 500);
-      const validPassword = await verifyPassword(password, adminHash);
+      var validPassword = await verifyPassword(password, adminHash);
       if (!validPassword) return htmlResponse(loginPage('❌ رمز اشتباه'));
-      const config = await storage.getSystemConfig();
-      if (totpToken && !verifyTOTP(totpToken, config.TOTP_SECRET)) return htmlResponse(loginPage('❌ TOTP اشتباه'));
-      const newSession = await sessionMgr.create({ role: 'admin', ip: clientIP, loginAt: Date.now() });
-      const cookie = 'taakaa_session=' + newSession + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + SYSTEM_CONFIG.SESSION_EXPIRY;
+      var sysConfig = await storage.getSystemConfig();
+      if (totpToken && !verifyTOTP(totpToken, sysConfig.TOTP_SECRET)) return htmlResponse(loginPage('❌ TOTP اشتباه'));
+      var newSession = await sessionMgr.create({ role: 'admin', ip: clientIP });
+      var cookie = 'taakaa_session=' + newSession + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + SYSTEM_CONFIG.SESSION_EXPIRY;
       return redirectResponse('/', cookie);
     }
 
     if (path === '/api/setup' && method === 'POST') {
-      const body = await request.formData();
-      const password = body.get('password');
-      const confirm = body.get('confirm');
+      var body = await request.formData();
+      var password = body.get('password');
+      var confirm = body.get('confirm');
       if (password !== confirm) return htmlResponse(setupPage('❌ رمزها مطابقت ندارند'));
       if (password.length < 6) return htmlResponse(setupPage('❌ حداقل ۶ کاراکتر'));
       await storage.setup(password);
-      const newSession = await sessionMgr.create({ role: 'admin', ip: clientIP, loginAt: Date.now() });
-      const cookie = 'taakaa_session=' + newSession + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + SYSTEM_CONFIG.SESSION_EXPIRY;
+      var newSession = await sessionMgr.create({ role: 'admin', ip: clientIP });
+      var cookie = 'taakaa_session=' + newSession + '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' + SYSTEM_CONFIG.SESSION_EXPIRY;
       return redirectResponse('/', cookie);
     }
 
@@ -885,75 +886,74 @@ export default {
     }
 
     if (path === '/users') {
-      const users = await storage.getAllUsers();
+      var users = await storage.getAllUsers();
       return htmlResponse(usersPage(users));
     }
 
     if (path === '/settings') {
-      const config = await storage.getSystemConfig();
+      var config = await storage.getSystemConfig();
       return htmlResponse(settingsPage(config));
     }
 
     if (path === '/scanner') return htmlResponse(scannerPage());
 
     if (path === '/info-protocols') {
-      const config = await storage.getSystemConfig();
+      var config = await storage.getSystemConfig();
       return htmlResponse(infoProtocolsPage(config));
     }
 
     if (path === '/subscription') {
-      const config = await storage.getSystemConfig();
-      const users = await storage.getAllUsers();
+      var config = await storage.getSystemConfig();
+      var users = await storage.getAllUsers();
       return htmlResponse(subscriptionPage(users, config, domain));
     }
 
     if (path === '/api/create-user' && method === 'POST') {
-      const data = await request.json();
-      const user = await userMgr.create(data);
-      return jsonResponse({ success: true, user });
+      var data = await request.json();
+      var user = await userMgr.create(data);
+      return jsonResponse({ success: true, user: user });
     }
 
     if (path === '/api/get-user') {
-      const uuid = url.searchParams.get('uuid');
-      const user = await userMgr.get(uuid);
+      var uuid = url.searchParams.get('uuid');
+      var user = await userMgr.get(uuid);
       if (!user) return jsonResponse({ success: false, error: 'یافت نشد' }, 404);
-      return jsonResponse({ success: true, user });
+      return jsonResponse({ success: true, user: user });
     }
 
     if (path === '/api/edit-user' && method === 'POST') {
-      const data = await request.json();
-      const user = await userMgr.update(data.uuid, data);
+      var data = await request.json();
+      var user = await userMgr.update(data.uuid, data);
       if (!user) return jsonResponse({ success: false, error: 'یافت نشد' }, 404);
-      return jsonResponse({ success: true, user });
+      return jsonResponse({ success: true, user: user });
     }
 
     if (path === '/api/delete-user' && method === 'POST') {
-      const data = await request.json();
+      var data = await request.json();
       await userMgr.delete(data.uuid);
       return jsonResponse({ success: true });
     }
 
     if (path === '/api/toggle-user' && method === 'POST') {
-      const data = await request.json();
-      const user = await userMgr.toggleStatus(data.uuid);
+      var data = await request.json();
+      var user = await userMgr.toggleStatus(data.uuid);
       if (!user) return jsonResponse({ success: false, error: 'یافت نشد' }, 404);
-      return jsonResponse({ success: true, user });
+      return jsonResponse({ success: true, user: user });
     }
 
     if (path === '/api/reset-usage' && method === 'POST') {
-      const data = await request.json();
-      const user = await userMgr.resetUsage(data.uuid);
+      var data = await request.json();
+      var user = await userMgr.resetUsage(data.uuid);
       if (!user) return jsonResponse({ success: false, error: 'یافت نشد' }, 404);
-      return jsonResponse({ success: true, user });
+      return jsonResponse({ success: true, user: user });
     }
 
     if (path === '/api/update-settings' && method === 'POST') {
-      const data = await request.json();
-      const config = await storage.getSystemConfig();
+      var data = await request.json();
+      var config = await storage.getSystemConfig();
       if (data.fragment_enabled !== undefined) config.FRAGMENT_ENABLED = data.fragment_enabled === true || data.fragment_enabled === 'true' || data.fragment_enabled === 'on';
       if (data.fragment_size) config.FRAGMENT_SIZE = data.fragment_size;
       if (data.fragment_count) config.FRAGMENT_COUNT = parseInt(data.fragment_count);
-      if (data.fragment_delay) config.FRAGMENT_DELAY = data.fragment_delay;
       if (data.warp_enabled !== undefined) config.WARP_ENABLED = data.warp_enabled === true || data.warp_enabled === 'true' || data.warp_enabled === 'on';
       if (data.ech_enabled !== undefined) config.ECH_ENABLED = data.ech_enabled === true || data.ech_enabled === 'true' || data.ech_enabled === 'on';
       await storage.saveSystemConfig(config);
@@ -961,9 +961,9 @@ export default {
     }
 
     if (path === '/api/change-password' && method === 'POST') {
-      const data = await request.json();
-      const config = await storage.getSystemConfig();
-      const validCurrent = await verifyPassword(data.current, config.ADMIN_PASSWORD_HASH);
+      var data = await request.json();
+      var config = await storage.getSystemConfig();
+      var validCurrent = await verifyPassword(data.current, config.ADMIN_PASSWORD_HASH);
       if (!validCurrent) return jsonResponse({ success: false, error: 'رمز فعلی اشتباه' });
       if (data.new_password !== data.confirm) return jsonResponse({ success: false, error: 'رمزها مطابقت ندارند' });
       config.ADMIN_PASSWORD_HASH = await hashPassword(data.new_password);
@@ -972,22 +972,22 @@ export default {
     }
 
     if (path === '/api/backup-kv') {
-      const config = await storage.getSystemConfig();
-      const users = await storage.getAllUsers();
-      return jsonResponse({ exportedAt: new Date().toISOString(), version: 'v16-pro', config, users, totalUsers: users.length });
+      var config = await storage.getSystemConfig();
+      var users = await storage.getAllUsers();
+      return jsonResponse({ exportedAt: new Date().toISOString(), version: 'v16-pro', config: config, users: users, totalUsers: users.length });
     }
 
     if (path === '/api/quick-scan') {
-      const results = await quickScan();
-      const bestIP = results.find(r => r.alive);
-      return jsonResponse({ success: true, results, bestIP, total: results.length, alive: results.filter(r => r.alive).length });
+      var results = await quickScan();
+      var bestIP = results.find(function(r) { return r.alive; });
+      return jsonResponse({ success: true, results: results, bestIP: bestIP, total: results.length, alive: results.filter(function(r) { return r.alive; }).length });
     }
 
     if (path === '/api/get-configs') {
-      const uuid = url.searchParams.get('uuid');
-      const user = await userMgr.get(uuid);
+      var uuid = url.searchParams.get('uuid');
+      var user = await userMgr.get(uuid);
       if (!user) return jsonResponse({ success: false, error: 'یافت نشد' }, 404);
-      const config = await storage.getSystemConfig();
+      var config = await storage.getSystemConfig();
       return jsonResponse({
         success: true,
         configs: {
@@ -999,12 +999,12 @@ export default {
       });
     }
 
-    const subResult = await handleSubscription(request, storage);
+    var subResult = await handleSubscription(request, storage);
     if (subResult) return subResult;
 
     if (path === '/ws' || path === '/trojan') {
-      const users = await storage.getAllUsers();
-      const activeUser = users.find(u => u.status === 'active');
+      var users = await storage.getAllUsers();
+      var activeUser = users.find(function(u) { return u.status === 'active'; });
       if (!activeUser) return new Response('No active users', { status: 503 });
       return await proxyHandler.handle(request, activeUser);
     }
