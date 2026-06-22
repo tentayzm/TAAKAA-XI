@@ -430,7 +430,7 @@ class UserManager {
     user.lastAccess = Date.now();
     await this.storage.put('user:' + uuid, user);
   }
-      }
+                                  }
 // =============================================
 // TAAKAA-XI PRO v16 - Complete Worker
 // پارت ۳: Config Generator, Scanner, Proxy, Subscription
@@ -647,7 +647,7 @@ async function handleSubscription(request, storage) {
   }
 
   return null;
-      }
+}
 // =============================================
 // TAAKAA-XI PRO v16 - Complete Worker
 // پارت ۴: CSS, JS Helper, All Pages, Export Default
@@ -1012,4 +1012,3 @@ export default {
     return htmlResponse('<div class="text-center" style="padding:100px 20px;"><h1 style="font-size:72px;color:var(--primary);">404</h1><p style="color:var(--text2);">صفحه یافت نشد</p><a href="/" class="btn mt-20">🏠 بازگشت</a></div>');
   }
 };
-
