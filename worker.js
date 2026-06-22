@@ -1,29 +1,39 @@
 // =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// تمام ۸ پورت + رفع باگ‌ها + تم نارنجی-مشکی
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۱: Core System + Polyfills + Constants
 // =============================================
 
+// ==================== Core System ====================
+const TaaKaa = {
+  version: 'v16.5-pro',
+  brand: 'TaaKaa-Xi',
+  colors: { 
+    primary: '#ff6b00', 
+    secondary: '#0a0a0f',
+    gradient: 'linear-gradient(135deg, #ff6b00, #ff8c42)'
+  },
+  defaultPass: 'taakaa',
+  apiRoute: 'taakaa',
+  createdAt: Date.now()
+};
+
 // ==================== Polyfills ====================
-function base64Encode(str) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(str);
-  let binary = '';
-  for (let i = 0; i < data.length; i++) {
-    binary += String.fromCharCode(data[i]);
-  }
-  return btoa(binary);
+function b64e(s) {
+  const e = new TextEncoder();
+  const d = e.encode(s);
+  let b = '';
+  for (let i = 0; i < d.length; i++) b += String.fromCharCode(d[i]);
+  return btoa(b);
 }
 
-function base64Decode(str) {
-  const binary = atob(str);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
+function b64d(s) {
+  const b = atob(s);
+  const bytes = new Uint8Array(b.length);
+  for (let i = 0; i < b.length; i++) bytes[i] = b.charCodeAt(i);
   return new TextDecoder().decode(bytes);
 }
 
-function generateUUID() {
+function genUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -31,14 +41,14 @@ function generateUUID() {
   });
 }
 
-function validateUUID(uuid) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+function valUUID(u) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(u);
 }
 
 // ==================== Constants ====================
 const SYSTEM_CONFIG = {
   ADMIN_PASSWORD_HASH: null,
-  TOTP_SECRET: generateUUID(),
+  TOTP_SECRET: genUUID(),
   MAX_LOGIN_ATTEMPTS: 5,
   LOCKOUT_MINUTES: 5,
   SESSION_EXPIRY: 86400,
@@ -70,28 +80,33 @@ const SYSTEM_CONFIG = {
   DNS_OVER_HTTPS: 'https://cloudflare-dns.com/dns-query',
   PROXY_FALLBACK_ENABLED: true,
   PROXY_CACHE_ENABLED: true,
-  HOST_POOL: []
+  HOST_POOL: [],
+  // TaaKaa-Xi اضافات
+  CLEAN_IPS: '',
+  OFFLINE_MODE: false,
+  BRAND: 'TaaKaa-Xi',
+  THEME: 'orange-dark'
 };
 
 // ==================== Crypto Utils ====================
-async function hashPassword(password) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'taakaa-salt-v16-pro-2024');
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(hash)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+async function hashPass(p) {
+  const e = new TextEncoder();
+  const d = e.encode(p + 'taakaa-salt-v16-pro-2024');
+  const h = await crypto.subtle.digest('SHA-256', d);
+  return Array.from(new Uint8Array(h)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
-async function verifyPassword(password, hash) {
-  const inputHash = await hashPassword(password);
-  return inputHash === hash;
+async function verifyPass(p, h) {
+  const ih = await hashPass(p);
+  return ih === h;
 }
 
-function generateSessionToken() {
+function genToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return Array.from(bytes).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
 }
 
-function generateTOTP(secret) {
+function genTOTP(secret) {
   const time = Math.floor(Date.now() / 30000);
   let hash = 0;
   const combined = secret + time.toString();
@@ -103,7 +118,7 @@ function generateTOTP(secret) {
 }
 
 function verifyTOTP(token, secret) {
-  const expected = generateTOTP(secret);
+  const expected = genTOTP(secret);
   if (token === expected) return true;
   const prevTime = Math.floor((Date.now() - 30000) / 30000);
   let prevHash = 0;
@@ -116,7 +131,7 @@ function verifyTOTP(token, secret) {
   return token === prevToken;
 }
 
-// ==================== Smart Parser ====================
+// ==================== Parser ====================
 function parseBytes(input) {
   const str = String(input).toLowerCase().trim();
   const match = str.match(/^(\d+(?:\.\d+)?)\s*(pb|pt|tb|t|gb|g|mb|m|kb|k|b)?$/);
@@ -175,19 +190,20 @@ function getCookie(cookieHeader, name) {
   return null;
 }
 // =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// بخش ۲: Storage, Session, Rate Limiter, User Manager
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۲: Storage Manager + Offline Cache
 // =============================================
 
 // ==================== Storage Manager ====================
 class StorageManager {
   constructor(env) {
+    // تغییر اسم KV و D1 به TAAKAA
     this.kv = env.TAAKAA_KV;
     this.d1 = env.TAAKAA_DB || null;
     this.memCache = {};
     this.offlineCache = {};
     
-    // بارگذاری کش آفلاین از localStorage (برای مرورگر)
+    // بارگذاری کش آفلاین از localStorage
     try {
       if (typeof localStorage !== 'undefined') {
         const saved = localStorage.getItem('taakaa_offline_cache');
@@ -208,7 +224,6 @@ class StorageManager {
       let data = await this.kv.get(key, 'json');
       if (data) {
         this.memCache[key] = { data: data, exp: Date.now() + 30000 };
-        // ذخیره در کش آفلاین
         this._saveToOfflineCache(key, data);
         return data;
       }
@@ -328,6 +343,7 @@ class StorageManager {
     config.ADMIN_PASSWORD_HASH = hash;
     config.setupAt = Date.now();
     config.version = 'v16.5-pro';
+    config.brand = 'TaaKaa-Xi';
     await this.put('system:config', config);
     return config;
   }
@@ -345,7 +361,11 @@ class StorageManager {
       }
     } catch (e) {}
   }
-}
+      }
+// =============================================
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۳: Session + Rate Limiter + User Manager
+// =============================================
 
 // ==================== Session Manager ====================
 class SessionManager {
@@ -524,10 +544,10 @@ class UserManager {
     
     await this.storage.put('user:' + uuid, user);
   }
-}
+        }
 // =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// بخش ۳: Config Generator, Scanner, Proxy, Subscription
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۴: Config Generator + Scanner
 // =============================================
 
 // ==================== Config Generator ====================
@@ -637,9 +657,7 @@ async function scanIP(ip, timeout) {
       ip: ip, 
       alive: response.status < 500, 
       latency: Date.now() - start,
-      status: response.status,
-      location: 'IR',
-      operator: detectOperator(ip)
+      status: response.status
     };
   } catch (e) {
     clearTimeout(timer);
@@ -647,36 +665,16 @@ async function scanIP(ip, timeout) {
       ip: ip, 
       alive: false, 
       latency: Infinity, 
-      error: e.message,
-      location: 'IR',
-      operator: detectOperator(ip)
+      error: e.message 
     };
   }
-}
-
-function detectOperator(ip) {
-  // تشخیص اپراتور بر اساس IP
-  const mtn = ['185.143.234', '185.143.233', '185.143.232', '185.143.231', '5.74.', '86.104.'];
-  const mci = ['5.160.', '2.176.', '5.160.1', '5.160.2'];
-  const rtl = ['46.209.', '188.212.', '91.107.', '188.121.'];
-  
-  for (let prefix of mtn) {
-    if (ip.startsWith(prefix)) return 'mtn';
-  }
-  for (let prefix of mci) {
-    if (ip.startsWith(prefix)) return 'mci';
-  }
-  for (let prefix of rtl) {
-    if (ip.startsWith(prefix)) return 'rtl';
-  }
-  return 'unknown';
 }
 
 async function quickScan() {
   const results = [];
   for (let i = 0; i < TEST_IPS.length; i++) {
     const r = await scanIP(TEST_IPS[i].ip, 2000);
-    r.operator = TEST_IPS[i].operator || detectOperator(TEST_IPS[i].ip);
+    r.operator = TEST_IPS[i].operator;
     results.push(r);
   }
   return results.sort(function(a, b) { return a.latency - b.latency; });
@@ -686,11 +684,15 @@ async function fullScan() {
   const results = [];
   for (let i = 0; i < TEST_IPS.length; i++) {
     const r = await scanIP(TEST_IPS[i].ip, 3000);
-    r.operator = TEST_IPS[i].operator || detectOperator(TEST_IPS[i].ip);
+    r.operator = TEST_IPS[i].operator;
     results.push(r);
   }
   return results.sort(function(a, b) { return a.latency - b.latency; });
-}
+               }
+// =============================================
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۵: Proxy Handler + Subscription
+// =============================================
 
 // ==================== Proxy Handler ====================
 class ProxyHandler {
@@ -829,13 +831,12 @@ async function handleSubscription(request, storage) {
   }
 
   return null;
-}
+      }
 // =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// بخش ۴: CSS + JavaScript Helper (تم نارنجی-مشکی)
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۶: CSS Styles (تم نارنجی-مشکی)
 // =============================================
 
-// ==================== CSS Styles (تم نارنجی-مشکی) ====================
 function getStyles() {
   return `
     :root {
@@ -862,11 +863,7 @@ function getStyles() {
       --gradient-dark: linear-gradient(135deg, #0a0a0f, #1a1a2e);
     }
     
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
       background: var(--bg-deep);
@@ -879,10 +876,7 @@ function getStyles() {
       line-height: 1.6;
     }
     
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
+    .container { max-width: 1400px; margin: 0 auto; }
     
     /* ========== Header ========== */
     .header {
@@ -925,10 +919,7 @@ function getStyles() {
       gap: 10px;
     }
     
-    .brand-icon {
-      -webkit-text-fill-color: initial;
-      color: #ff6b00;
-    }
+    .brand-icon { -webkit-text-fill-color: initial; color: #ff6b00; }
     
     /* ========== Navigation ========== */
     .nav {
@@ -954,7 +945,6 @@ function getStyles() {
       text-decoration: none;
       transition: all 0.3s ease;
       white-space: nowrap;
-      position: relative;
     }
     
     .nav a.active, .nav button.active {
@@ -966,11 +956,6 @@ function getStyles() {
     .nav a:hover, .nav button:hover {
       background: rgba(255,107,0,0.15);
       color: var(--text);
-    }
-    
-    .nav a.active:hover, .nav button.active:hover {
-      background: var(--gradient-orange);
-      box-shadow: 0 4px 20px rgba(255,107,0,0.45);
     }
     
     /* ========== Cards ========== */
@@ -992,38 +977,10 @@ function getStyles() {
       box-shadow: var(--shadow), var(--shadow-glow);
     }
     
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 0% 0%, rgba(255,107,0,0.03), transparent 60%);
-      pointer-events: none;
-    }
-    
     /* ========== Grids ========== */
-    .grid4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .grid2 {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .grid3 {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 20px; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; }
+    .grid3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
     
     /* ========== Stat Values ========== */
     .stat-val {
@@ -1036,11 +993,7 @@ function getStyles() {
       line-height: 1.2;
     }
     
-    .stat-label {
-      color: var(--text2);
-      font-size: 13px;
-      font-weight: 500;
-    }
+    .stat-label { color: var(--text2); font-size: 13px; font-weight: 500; }
     
     .stat-card {
       background: var(--bg-card);
@@ -1072,8 +1025,6 @@ function getStyles() {
       transition: all 0.3s ease;
       box-shadow: 0 4px 15px rgba(255,107,0,0.25);
       font-size: 14px;
-      position: relative;
-      overflow: hidden;
     }
     
     .btn:hover {
@@ -1081,15 +1032,7 @@ function getStyles() {
       box-shadow: 0 6px 25px rgba(255,107,0,0.4);
     }
     
-    .btn:active {
-      transform: translateY(0px);
-    }
-    
-    .btn-sm {
-      padding: 6px 14px;
-      font-size: 13px;
-      border-radius: 20px;
-    }
+    .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 20px; }
     
     .btn-outline {
       background: transparent;
@@ -1101,7 +1044,6 @@ function getStyles() {
     .btn-outline:hover {
       background: var(--primary);
       color: white;
-      box-shadow: 0 4px 15px rgba(255,107,0,0.3);
     }
     
     .btn-danger {
@@ -1109,17 +1051,9 @@ function getStyles() {
       box-shadow: 0 4px 15px rgba(239,68,68,0.3);
     }
     
-    .btn-danger:hover {
-      box-shadow: 0 6px 25px rgba(239,68,68,0.4);
-    }
-    
     .btn-warn {
       background: linear-gradient(135deg, #f59e0b, #d97706);
       box-shadow: 0 4px 15px rgba(245,158,11,0.3);
-    }
-    
-    .btn-warn:hover {
-      box-shadow: 0 6px 25px rgba(245,158,11,0.4);
     }
     
     .btn-success {
@@ -1128,10 +1062,7 @@ function getStyles() {
     }
     
     /* ========== Tables ========== */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
     
     th, td {
       padding: 12px 16px;
@@ -1147,13 +1078,9 @@ function getStyles() {
       letter-spacing: 0.5px;
     }
     
-    td {
-      font-size: 14px;
-    }
+    td { font-size: 14px; }
     
-    tr:hover td {
-      background: rgba(255,255,255,0.02);
-    }
+    tr:hover td { background: rgba(255,255,255,0.02); }
     
     /* ========== Badges ========== */
     .badge {
@@ -1164,25 +1091,10 @@ function getStyles() {
       display: inline-block;
     }
     
-    .badge-ok {
-      background: rgba(22,163,74,0.15);
-      color: var(--success);
-    }
-    
-    .badge-err {
-      background: rgba(239,68,68,0.15);
-      color: var(--danger);
-    }
-    
-    .badge-warn {
-      background: rgba(245,158,11,0.15);
-      color: var(--warning);
-    }
-    
-    .badge-primary {
-      background: rgba(255,107,0,0.15);
-      color: var(--primary);
-    }
+    .badge-ok { background: rgba(22,163,74,0.15); color: var(--success); }
+    .badge-err { background: rgba(239,68,68,0.15); color: var(--danger); }
+    .badge-warn { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-primary { background: rgba(255,107,0,0.15); color: var(--primary); }
     
     /* ========== Progress Bar ========== */
     .progress {
@@ -1200,13 +1112,8 @@ function getStyles() {
       transition: width 0.6s ease;
     }
     
-    .progress-fill.danger {
-      background: linear-gradient(90deg, #ef4444, #dc2626);
-    }
-    
-    .progress-fill.warning {
-      background: linear-gradient(90deg, #f59e0b, #d97706);
-    }
+    .progress-fill.danger { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .progress-fill.warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
     
     /* ========== Form Elements ========== */
     input, select, textarea {
@@ -1228,9 +1135,7 @@ function getStyles() {
       box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
     }
     
-    input::placeholder, textarea::placeholder {
-      color: var(--text3);
-    }
+    input::placeholder, textarea::placeholder { color: var(--text3); }
     
     label {
       color: var(--text2);
@@ -1249,11 +1154,7 @@ function getStyles() {
       flex-shrink: 0;
     }
     
-    .toggle input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
     
     .toggle .slider {
       position: absolute;
@@ -1279,13 +1180,8 @@ function getStyles() {
       border-radius: 50%;
     }
     
-    .toggle input:checked + .slider {
-      background: var(--gradient-orange);
-    }
-    
-    .toggle input:checked + .slider:before {
-      transform: translateX(22px);
-    }
+    .toggle input:checked + .slider { background: var(--gradient-orange); }
+    .toggle input:checked + .slider:before { transform: translateX(22px); }
     
     /* ========== Modal ========== */
     .modal-overlay {
@@ -1303,9 +1199,7 @@ function getStyles() {
       justify-content: center;
     }
     
-    .modal-overlay.active {
-      display: flex;
-    }
+    .modal-overlay.active { display: flex; }
     
     .modal {
       background: var(--bg-card);
@@ -1321,14 +1215,8 @@ function getStyles() {
     }
     
     @keyframes modalSlideIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     
     .modal h3 {
@@ -1339,32 +1227,11 @@ function getStyles() {
     }
     
     /* ========== Flex Utilities ========== */
-    .flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .flex-start {
-      justify-content: flex-start;
-    }
-    
-    .flex-end {
-      justify-content: flex-end;
-    }
-    
-    .flex-wrap {
-      flex-wrap: wrap;
-    }
-    
-    .flex-center {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    
+    .flex { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .flex-start { justify-content: flex-start; }
+    .flex-end { justify-content: flex-end; }
+    .flex-wrap { flex-wrap: wrap; }
+    .flex-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
     .gap-5 { gap: 5px; }
     .gap-10 { gap: 10px; }
     .gap-15 { gap: 15px; }
@@ -1405,27 +1272,13 @@ function getStyles() {
     }
     
     /* ========== Animations ========== */
-    .fade-in {
-      animation: fadeIn 0.5s ease;
-    }
-    
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-    
-    .slide-in {
-      animation: slideIn 0.3s ease;
-    }
+    .fade-in { animation: fadeIn 0.5s ease; }
+    .pulse { animation: pulse 2s infinite; }
+    .slide-in { animation: slideIn 0.3s ease; }
     
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     
     @keyframes pulse {
@@ -1434,19 +1287,8 @@ function getStyles() {
     }
     
     @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-    
-    @keyframes glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(255,107,0,0.1); }
-      50% { box-shadow: 0 0 40px rgba(255,107,0,0.25); }
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
     
     /* ========== Toast ========== */
@@ -1468,21 +1310,10 @@ function getStyles() {
       font-weight: 500;
     }
     
-    .toast-success {
-      border-right: 4px solid var(--success);
-    }
-    
-    .toast-error {
-      border-right: 4px solid var(--danger);
-    }
-    
-    .toast-warning {
-      border-right: 4px solid var(--warning);
-    }
-    
-    .toast-info {
-      border-right: 4px solid var(--primary);
-    }
+    .toast-success { border-right: 4px solid var(--success); }
+    .toast-error { border-right: 4px solid var(--danger); }
+    .toast-warning { border-right: 4px solid var(--warning); }
+    .toast-info { border-right: 4px solid var(--primary); }
     
     /* ========== Scanner ========== */
     .scanner-result {
@@ -1496,33 +1327,12 @@ function getStyles() {
       transition: all 0.3s ease;
     }
     
-    .scanner-result:hover {
-      border-color: var(--primary);
-    }
-    
-    .scanner-result .ip {
-      font-family: monospace;
-      font-size: 14px;
-      color: var(--text);
-    }
-    
-    .scanner-result .latency {
-      font-size: 13px;
-      color: var(--text2);
-    }
-    
-    .scanner-result .status {
-      font-size: 13px;
-      font-weight: 600;
-    }
-    
-    .scanner-result .status.alive {
-      color: var(--success);
-    }
-    
-    .scanner-result .status.dead {
-      color: var(--danger);
-    }
+    .scanner-result:hover { border-color: var(--primary); }
+    .scanner-result .ip { font-family: monospace; font-size: 14px; color: var(--text); }
+    .scanner-result .latency { font-size: 13px; color: var(--text2); }
+    .scanner-result .status { font-size: 13px; font-weight: 600; }
+    .scanner-result .status.alive { color: var(--success); }
+    .scanner-result .status.dead { color: var(--danger); }
     
     /* ========== Offline Indicator ========== */
     .offline-indicator {
@@ -1538,31 +1348,35 @@ function getStyles() {
       gap: 8px;
     }
     
-    .offline-indicator.show {
-      display: inline-flex;
+    .offline-indicator.show { display: inline-flex; }
+    
+    /* ========== nginx 404 ========== */
+    .nginx-404 {
+      text-align: center;
+      padding: 60px 20px;
     }
+    
+    .nginx-404 .logo {
+      font-size: 48px;
+      font-weight: bold;
+      color: #ff6b00;
+      margin-bottom: 20px;
+    }
+    
+    .nginx-404 .logo span { color: #ffffff; }
+    .nginx-404 h1 { font-size: 72px; color: #ff6b00; margin: 20px 0; }
+    .nginx-404 p { color: #a0a0b8; font-size: 18px; margin: 10px 0; }
     
     /* ========== Responsive ========== */
     @media (max-width: 1024px) {
-      .grid3 {
-        grid-template-columns: 1fr 1fr;
-      }
+      .grid3 { grid-template-columns: 1fr 1fr; }
     }
     
     @media (max-width: 768px) {
-      .grid4 {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .grid2, .grid3 {
-        grid-template-columns: 1fr;
-      }
-      .header {
-        flex-direction: column;
-        text-align: center;
-      }
-      .brand {
-        font-size: 1.4rem;
-      }
+      .grid4 { grid-template-columns: repeat(2, 1fr); }
+      .grid2, .grid3 { grid-template-columns: 1fr; }
+      .header { flex-direction: column; text-align: center; }
+      .brand { font-size: 1.4rem; }
       .nav {
         overflow-x: auto;
         flex-wrap: nowrap;
@@ -1570,69 +1384,43 @@ function getStyles() {
         padding: 4px;
         gap: 4px;
       }
-      .nav a, .nav button {
-        padding: 8px 12px;
-        font-size: 12px;
-      }
-      body {
-        padding: 10px;
-      }
-      .card {
-        padding: 16px;
-      }
+      .nav a, .nav button { padding: 8px 12px; font-size: 12px; }
+      body { padding: 10px; }
+      .card { padding: 16px; }
     }
     
     @media (max-width: 480px) {
-      .grid4 {
-        grid-template-columns: 1fr;
-      }
-      .stat-val {
-        font-size: 1.5rem;
-      }
-      .modal {
-        padding: 20px;
-        width: 95%;
-      }
-      .toast {
-        right: 10px;
-        left: 10px;
-        top: 10px;
-        max-width: none;
-      }
+      .grid4 { grid-template-columns: 1fr; }
+      .stat-val { font-size: 1.5rem; }
+      .modal { padding: 20px; width: 95%; }
+      .toast { right: 10px; left: 10px; top: 10px; max-width: none; }
     }
   `;
 }
 
-// ==================== JavaScript Helper ====================
+// ==================== JS Helper ====================
 function getJS() {
   return `
-    // =============================================
-    // TaaKaa-Xi Helper Functions
-    // =============================================
-    
-    // ========== Toast ==========
     function showToast(msg, type) {
       var t = document.createElement('div');
       t.className = 'toast toast-' + (type || 'info');
       t.innerHTML = msg;
       document.body.appendChild(t);
-      setTimeout(function() { 
+      setTimeout(function() {
         t.style.opacity = '0';
         t.style.transform = 'translateX(50px)';
         setTimeout(function() { t.remove(); }, 300);
       }, 3000);
     }
     
-    // ========== Modal ==========
-    function openModal(id) { 
-      document.getElementById(id).classList.add('active'); 
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
     }
     
-    function closeModal(id) { 
-      document.getElementById(id).classList.remove('active'); 
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
     }
     
-    // ========== Copy Text ==========
     function copyText(text) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text).then(function() {
@@ -1649,23 +1437,21 @@ function getJS() {
       }
     }
     
-    // ========== API ==========
     async function api(url, method, body) {
       var o = { method: method || 'GET', headers: {} };
-      if (body) { 
-        o.headers['Content-Type'] = 'application/json'; 
-        o.body = JSON.stringify(body); 
+      if (body) {
+        o.headers['Content-Type'] = 'application/json';
+        o.body = JSON.stringify(body);
       }
       var r = await fetch(url, o);
       return await r.json();
     }
     
-    // ========== User Actions ==========
     async function toggleUser(uuid) {
-      var r = await api('/api/toggle-user', 'POST', { uuid: uuid });
-      if (r.success) { 
-        showToast('وضعیت تغییر کرد', 'success'); 
-        setTimeout(function(){ location.reload(); }, 500); 
+      var r = await api('/taakaa/api/toggle-user', 'POST', { uuid: uuid });
+      if (r.success) {
+        showToast('وضعیت تغییر کرد', 'success');
+        setTimeout(function(){ location.reload(); }, 500);
       } else {
         showToast(r.error || 'خطا', 'error');
       }
@@ -1673,20 +1459,20 @@ function getJS() {
     
     async function deleteUser(uuid) {
       if (!confirm('آیا مطمئن هستید؟')) return;
-      var r = await api('/api/delete-user', 'POST', { uuid: uuid });
-      if (r.success) { 
-        showToast('کاربر حذف شد', 'success'); 
-        setTimeout(function(){ location.reload(); }, 500); 
+      var r = await api('/taakaa/api/delete-user', 'POST', { uuid: uuid });
+      if (r.success) {
+        showToast('کاربر حذف شد', 'success');
+        setTimeout(function(){ location.reload(); }, 500);
       } else {
         showToast(r.error || 'خطا', 'error');
       }
     }
     
     async function resetUsage(uuid) {
-      var r = await api('/api/reset-usage', 'POST', { uuid: uuid });
-      if (r.success) { 
-        showToast('مصرف ریست شد', 'success'); 
-        setTimeout(function(){ location.reload(); }, 500); 
+      var r = await api('/taakaa/api/reset-usage', 'POST', { uuid: uuid });
+      if (r.success) {
+        showToast('مصرف ریست شد', 'success');
+        setTimeout(function(){ location.reload(); }, 500);
       } else {
         showToast(r.error || 'خطا', 'error');
       }
@@ -1700,7 +1486,7 @@ function getJS() {
       resultsDiv.innerHTML = '<div class="pulse text-center" style="padding:30px;">⏳ در حال اسکن...</div>';
       
       try {
-        var r = await api('/api/quick-scan');
+        var r = await api('/taakaa/api/quick-scan');
         if (r.success) {
           var html = '<div class="mb-20"><h4>نتایج اسکن:</h4></div>';
           
@@ -1715,13 +1501,9 @@ function getJS() {
             var statusClass = x.alive ? 'alive' : 'dead';
             var statusText = x.alive ? '✅ زنده' : '❌ مرده';
             var latencyText = x.alive ? x.latency + 'ms' : '—';
-            var operatorName = x.operator === 'mci' ? 'همراه اول' : 
-                              x.operator === 'mtn' ? 'ایرانسل' : 
-                              x.operator === 'rtl' ? 'رایتل' : 'نامشخص';
             
             html += '<div class="scanner-result">' +
                     '<span class="ip">' + x.ip + '</span>' +
-                    '<span style="color:var(--text2);font-size:13px;">' + operatorName + '</span>' +
                     '<span class="latency">' + latencyText + '</span>' +
                     '<span class="status ' + statusClass + '">' + statusText + '</span>' +
                     '<button class="btn btn-sm" onclick="applyIP(\'' + x.ip + '\')">اعمال</button>' +
@@ -1774,7 +1556,6 @@ function getJS() {
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
     
-    // ========== Init ==========
     document.addEventListener('DOMContentLoaded', function() {
       checkOnlineStatus();
     });
@@ -1792,13 +1573,54 @@ function wrapHTML(content, title) {
     '<div class="container">\n' + content + '\n</div>\n' +
     '<script>' + getJS() + '</script>\n' +
     '</body>\n</html>';
-    }
+}
+
+// ==================== nginx 404 Page ====================
+function nginx404Page() {
+  return `
+    <div class="nginx-404">
+      <div class="logo">
+        <span>nginx</span>/TaaKaa-Xi
+      </div>
+      <h1>404</h1>
+      <p>صفحه مورد نظر یافت نشد</p>
+      <p style="font-size:14px;color:#6b6b8a;">The page you are looking for does not exist.</p>
+      <a href="/taakaa" class="btn" style="margin-top:30px;">🏠 بازگشت به صفحه اصلی</a>
+      <div style="margin-top:40px;color:#3a3a4a;font-size:13px;">
+        <p>TaaKaa-Xi PRO v16.5 &bull; @TaaKaaOrg</p>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== Welcome to nginx Page ====================
+function nginxWelcomePage() {
+  return `
+    <div style="text-align:center;padding:60px 20px;">
+      <div style="font-size:48px;font-weight:bold;color:#ff6b00;margin-bottom:20px;">
+        <span style="color:#ffffff;">welcome to</span> nginx
+      </div>
+      <p style="color:#a0a0b8;font-size:18px;margin:20px 0;">
+        🚀 TaaKaa-Xi Gateway is ready<br>
+        برای دسترسی به پنل مدیریت، <strong style="color:#ff6b00;">/taakaa</strong> را به آدرس اضافه کنید
+      </p>
+      <div style="margin-top:30px;padding:20px;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);display:inline-block;">
+        <code style="color:#ff6b00;font-size:16px;">https://your-domain.workers.dev/taakaa</code>
+      </div>
+      <div style="margin-top:40px;color:#3a3a4a;font-size:13px;">
+        <p>TaaKaa-Xi PRO v16.5 &bull; @TaaKaaOrg</p>
+      </div>
+    </div>
+  `;
+}
 // =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// بخش ۵: تمام صفحات (Login, Setup, Dashboard, Users, Settings, Scanner)
+// TaaKaa-Xi PRO v16.5 - شخصی‌سازی شده
+// بخش ۷: Pages + Export Default
 // =============================================
 
-// ==================== Login Page ====================
+// ==================== Pages ====================
+
+// ===== Login Page =====
 function loginPage(error) {
   var errorHTML = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
   
@@ -1820,7 +1642,7 @@ function loginPage(error) {
         
         ${errorHTML}
         
-        <form method="POST" action="/api/login">
+        <form method="POST" action="/taakaa/api/login">
           <div style="margin-bottom:15px;">
             <label>رمز عبور</label>
             <input type="password" name="password" placeholder="رمز عبور خود را وارد کنید" required autofocus style="padding:14px 16px;">
@@ -1851,7 +1673,7 @@ function loginPage(error) {
   return wrapHTML(content, 'TaaKaa-Xi | ورود');
 }
 
-// ==================== Setup Page ====================
+// ===== Setup Page =====
 function setupPage(error) {
   var errorHTML = error ? '<div class="card" style="border:1px solid var(--danger);color:var(--danger);text-align:center;">' + error + '</div>' : '';
   
@@ -1873,7 +1695,7 @@ function setupPage(error) {
         
         ${errorHTML}
         
-        <form method="POST" action="/api/setup">
+        <form method="POST" action="/taakaa/api/setup">
           <div style="margin-bottom:15px;">
             <label>رمز عبور جدید</label>
             <input type="password" name="password" placeholder="رمز عبور قوی وارد کنید" required minlength="6" style="padding:14px 16px;">
@@ -1902,7 +1724,7 @@ function setupPage(error) {
   return wrapHTML(content, 'TaaKaa-Xi | Setup');
 }
 
-// ==================== Dashboard Page ====================
+// ===== Dashboard Page =====
 function dashboardPage(users, config) {
   var activeUsers = users.filter(function(u) { return u.status === 'active'; }).length;
   var totalUsage = users.reduce(function(sum, u) { return sum + (u.usageTotal || 0); }, 0);
@@ -1922,7 +1744,6 @@ function dashboardPage(users, config) {
       '</div>';
   }).join('') : '<p style="color:var(--text2);text-align:center;padding:20px;">هنوز فعالیتی ثبت نشده</p>';
   
-  // Online/Offline indicator
   var offlineHTML = '<span id="offline-indicator" class="offline-indicator" style="display:none;">📡 حالت آفلاین</span>';
   
   var content = `
@@ -1938,13 +1759,13 @@ function dashboardPage(users, config) {
     </div>
     
     <div class="nav fade-in">
-      <a href="/" class="active">📊 داشبورد</a>
-      <a href="/users">👥 کاربران</a>
-      <a href="/settings">⚙️ تنظیمات</a>
-      <a href="/scanner">📡 اسکنر</a>
-      <a href="/info-protocols">📖 پروتکل‌ها</a>
-      <a href="/subscription">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa" class="active">📊 داشبورد</a>
+      <a href="/taakaa/users">👥 کاربران</a>
+      <a href="/taakaa/settings">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="grid4 fade-in">
@@ -2026,7 +1847,7 @@ function dashboardPage(users, config) {
   return wrapHTML(content, 'TaaKaa-Xi | داشبورد');
 }
 
-// ==================== Users Page ====================
+// ===== Users Page (خلاصه) =====
 function usersPage(users) {
   var rows = users.map(function(u) {
     var usagePercent = u.quotaTotal > 0 ? Math.min(100, ((u.usageTotal || 0) / u.quotaTotal) * 100) : 0;
@@ -2064,13 +1885,13 @@ function usersPage(users) {
     </div>
     
     <div class="nav fade-in">
-      <a href="/">📊 داشبورد</a>
-      <a href="/users" class="active">👥 کاربران</a>
-      <a href="/settings">⚙️ تنظیمات</a>
-      <a href="/scanner">📡 اسکنر</a>
-      <a href="/info-protocols">📖 پروتکل‌ها</a>
-      <a href="/subscription">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa">📊 داشبورد</a>
+      <a href="/taakaa/users" class="active">👥 کاربران</a>
+      <a href="/taakaa/settings">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="card fade-in">
@@ -2132,7 +1953,6 @@ function usersPage(users) {
       </div>
     </div>
     
-    <!-- Edit User Modal -->
     <div id="edit-user-modal" class="modal-overlay">
       <div class="modal fade-in">
         <h3>✏️ ویرایش کاربر</h3>
@@ -2162,20 +1982,13 @@ function usersPage(users) {
         var d = new FormData(f);
         var data = {};
         d.forEach(function(v,k){ data[k] = v; });
-        
-        var r = await api('/api/create-user', 'POST', data);
-        if (r.success) {
-          showToast('✅ کاربر ایجاد شد', 'success');
-          closeModal('add-user-modal');
-          setTimeout(function(){ location.reload(); }, 500);
-        } else {
-          showToast('❌ ' + (r.error || 'خطا'), 'error');
-        }
+        var r = await api('/taakaa/api/create-user', 'POST', data);
+        if(r.success){ showToast('✅ کاربر ایجاد شد', 'success'); closeModal('add-user-modal'); setTimeout(function(){ location.reload(); }, 500); }
+        else showToast('❌ ' + (r.error || 'خطا'), 'error');
       }
-      
       async function editUser(uuid) {
-        var r = await api('/api/get-user?uuid=' + uuid);
-        if (r.success && r.user) {
+        var r = await api('/taakaa/api/get-user?uuid=' + uuid);
+        if(r.success && r.user){
           document.getElementById('edit-uuid').value = r.user.uuid;
           document.getElementById('edit-name').value = r.user.name;
           document.getElementById('edit-ip').value = r.user.ip || '';
@@ -2186,21 +1999,14 @@ function usersPage(users) {
           openModal('edit-user-modal');
         }
       }
-      
       async function saveEditUser() {
         var f = document.getElementById('edit-user-form');
         var d = new FormData(f);
         var data = {};
         d.forEach(function(v,k){ data[k] = v; });
-        
-        var r = await api('/api/edit-user', 'POST', data);
-        if (r.success) {
-          showToast('✅ ذخیره شد', 'success');
-          closeModal('edit-user-modal');
-          setTimeout(function(){ location.reload(); }, 500);
-        } else {
-          showToast('❌ ' + (r.error || 'خطا'), 'error');
-        }
+        var r = await api('/taakaa/api/edit-user', 'POST', data);
+        if(r.success){ showToast('✅ ذخیره شد', 'success'); closeModal('edit-user-modal'); setTimeout(function(){ location.reload(); }, 500); }
+        else showToast('❌ ' + (r.error || 'خطا'), 'error');
       }
     </script>
   `;
@@ -2208,7 +2014,7 @@ function usersPage(users) {
   return wrapHTML(content, 'TaaKaa-Xi | کاربران');
 }
 
-// ==================== Settings Page ====================
+// ===== Settings Page (خلاصه) =====
 function settingsPage(config) {
   var offlineHTML = '<span id="offline-indicator" class="offline-indicator" style="display:none;">📡 حالت آفلاین</span>';
   
@@ -2222,13 +2028,13 @@ function settingsPage(config) {
     </div>
     
     <div class="nav fade-in">
-      <a href="/">📊 داشبورد</a>
-      <a href="/users">👥 کاربران</a>
-      <a href="/settings" class="active">⚙️ تنظیمات</a>
-      <a href="/scanner">📡 اسکنر</a>
-      <a href="/info-protocols">📖 پروتکل‌ها</a>
-      <a href="/subscription">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa">📊 داشبورد</a>
+      <a href="/taakaa/users">👥 کاربران</a>
+      <a href="/taakaa/settings" class="active">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="grid2">
@@ -2237,62 +2043,27 @@ function settingsPage(config) {
         
         <form onsubmit="event.preventDefault();saveSettings()" id="settings-form">
           <div class="flex" style="margin:15px 0;">
-            <div>
-              <strong>Fragment</strong>
-              <br>
-              <small style="color:var(--text2);">تکه‌تکه کردن پکت TLS Hello</small>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" name="fragment_enabled" ${config.FRAGMENT_ENABLED ? 'checked' : ''}>
-              <span class="slider"></span>
-            </label>
+            <div><strong>Fragment</strong><br><small style="color:var(--text2);">تکه‌تکه کردن پکت TLS Hello</small></div>
+            <label class="toggle"><input type="checkbox" name="fragment_enabled" ${config.FRAGMENT_ENABLED ? 'checked' : ''}><span class="slider"></span></label>
           </div>
           
-          <div style="margin:15px 0;">
-            <label>Fragment Size</label>
-            <input type="text" name="fragment_size" value="${config.FRAGMENT_SIZE || '1-5'}">
-          </div>
+          <div style="margin:15px 0;"><label>Fragment Size</label><input type="text" name="fragment_size" value="${config.FRAGMENT_SIZE || '1-5'}"></div>
+          <div style="margin:15px 0;"><label>Fragment Count</label><input type="number" name="fragment_count" value="${config.FRAGMENT_COUNT || 3}" min="1" max="10"></div>
+          <div style="margin:15px 0;"><label>Fragment Delay</label><input type="text" name="fragment_delay" value="${config.FRAGMENT_DELAY || '1-3'}"></div>
           
-          <div style="margin:15px 0;">
-            <label>Fragment Count</label>
-            <input type="number" name="fragment_count" value="${config.FRAGMENT_COUNT || 3}" min="1" max="10">
-          </div>
-          
-          <div style="margin:15px 0;">
-            <label>Fragment Delay</label>
-            <input type="text" name="fragment_delay" value="${config.FRAGMENT_DELAY || '1-3'}">
+          <div class="flex" style="margin:15px 0;">
+            <div><strong>WARP</strong><br><small style="color:var(--text2);">مسیریابی Cloudflare WARP</small></div>
+            <label class="toggle"><input type="checkbox" name="warp_enabled" ${config.WARP_ENABLED ? 'checked' : ''}><span class="slider"></span></label>
           </div>
           
           <div class="flex" style="margin:15px 0;">
-            <div>
-              <strong>WARP</strong>
-              <br>
-              <small style="color:var(--text2);">مسیریابی Cloudflare WARP</small>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" name="warp_enabled" ${config.WARP_ENABLED ? 'checked' : ''}>
-              <span class="slider"></span>
-            </label>
+            <div><strong>WARP Pro</strong></div>
+            <label class="toggle"><input type="checkbox" name="warp_pro_enabled" ${config.WARP_PRO_ENABLED ? 'checked' : ''}><span class="slider"></span></label>
           </div>
           
           <div class="flex" style="margin:15px 0;">
-            <div>
-              <strong>WARP Pro</strong>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" name="warp_pro_enabled" ${config.WARP_PRO_ENABLED ? 'checked' : ''}>
-              <span class="slider"></span>
-            </label>
-          </div>
-          
-          <div class="flex" style="margin:15px 0;">
-            <div>
-              <strong>ECH</strong>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" name="ech_enabled" ${config.ECH_ENABLED ? 'checked' : ''}>
-              <span class="slider"></span>
-            </label>
+            <div><strong>ECH</strong></div>
+            <label class="toggle"><input type="checkbox" name="ech_enabled" ${config.ECH_ENABLED ? 'checked' : ''}><span class="slider"></span></label>
           </div>
           
           <div style="margin:15px 0;">
@@ -2311,7 +2082,6 @@ function settingsPage(config) {
       <div>
         <div class="card fade-in">
           <h3 style="margin-bottom:20px;color:var(--text);">🔐 تغییر رمز عبور</h3>
-          
           <form onsubmit="event.preventDefault();changePassword()">
             <input type="password" name="current" placeholder="رمز فعلی" required>
             <input type="password" name="new_password" placeholder="رمز جدید" required minlength="6">
@@ -2329,7 +2099,7 @@ function settingsPage(config) {
         <div class="card fade-in mt-20">
           <h3 style="margin-bottom:20px;color:var(--text);">🧹 اسکنر IP تمیز</h3>
           <p style="color:var(--text2);font-size:13px;margin-bottom:15px;">اسکن و پیدا کردن بهترین IP برای کانفیگ‌ها</p>
-          <button class="btn" onclick="window.location.href='/scanner'" style="width:100%;margin-top:10px;">📡 رفتن به اسکنر</button>
+          <button class="btn" onclick="window.location.href='/taakaa/scanner'" style="width:100%;margin-top:10px;">📡 رفتن به اسکنر</button>
         </div>
       </div>
     </div>
@@ -2340,19 +2110,13 @@ function settingsPage(config) {
         var d = new FormData(f);
         var o = {};
         d.forEach(function(v,k){ o[k] = v; });
-        
         o.fragment_enabled = d.get('fragment_enabled') === 'on';
         o.warp_enabled = d.get('warp_enabled') === 'on';
         o.warp_pro_enabled = d.get('warp_pro_enabled') === 'on';
         o.ech_enabled = d.get('ech_enabled') === 'on';
-        
-        var r = await api('/api/update-settings', 'POST', o);
-        if (r.success) {
-          showToast('✅ تنظیمات ذخیره شد', 'success');
-          setTimeout(function(){ location.reload(); }, 500);
-        } else {
-          showToast('❌ خطا در ذخیره سازی', 'error');
-        }
+        var r = await api('/taakaa/api/update-settings', 'POST', o);
+        if(r.success){ showToast('✅ تنظیمات ذخیره شد', 'success'); setTimeout(function(){ location.reload(); }, 500); }
+        else showToast('❌ خطا در ذخیره سازی', 'error');
       }
       
       async function changePassword() {
@@ -2363,28 +2127,15 @@ function settingsPage(config) {
           new_password: d.get('new_password'),
           confirm: d.get('confirm')
         };
-        
-        if (o.new_password !== o.confirm) {
-          showToast('❌ رمزهای جدید مطابقت ندارند', 'error');
-          return;
-        }
-        
-        if (o.new_password.length < 6) {
-          showToast('❌ رمز جدید حداقل ۶ کاراکتر باشد', 'error');
-          return;
-        }
-        
-        var r = await api('/api/change-password', 'POST', o);
-        if (r.success) {
-          showToast('✅ رمز با موفقیت تغییر کرد', 'success');
-          f.reset();
-        } else {
-          showToast('❌ ' + (r.error || 'خطا'), 'error');
-        }
+        if(o.new_password !== o.confirm){ showToast('❌ رمزهای جدید مطابقت ندارند', 'error'); return; }
+        if(o.new_password.length < 6){ showToast('❌ رمز جدید حداقل ۶ کاراکتر باشد', 'error'); return; }
+        var r = await api('/taakaa/api/change-password', 'POST', o);
+        if(r.success){ showToast('✅ رمز با موفقیت تغییر کرد', 'success'); f.reset(); }
+        else showToast('❌ ' + (r.error || 'خطا'), 'error');
       }
       
       async function downloadBackup() {
-        var r = await api('/api/backup-kv');
+        var r = await api('/taakaa/api/backup-kv');
         var b = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
         var u = URL.createObjectURL(b);
         var a = document.createElement('a');
@@ -2399,7 +2150,7 @@ function settingsPage(config) {
   return wrapHTML(content, 'TaaKaa-Xi | تنظیمات');
 }
 
-// ==================== Scanner Page ====================
+// ===== Scanner Page =====
 function scannerPage() {
   var offlineHTML = '<span id="offline-indicator" class="offline-indicator" style="display:none;">📡 حالت آفلاین</span>';
   
@@ -2413,13 +2164,13 @@ function scannerPage() {
     </div>
     
     <div class="nav fade-in">
-      <a href="/">📊 داشبورد</a>
-      <a href="/users">👥 کاربران</a>
-      <a href="/settings">⚙️ تنظیمات</a>
-      <a href="/scanner" class="active">📡 اسکنر</a>
-      <a href="/info-protocols">📖 پروتکل‌ها</a>
-      <a href="/subscription">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa">📊 داشبورد</a>
+      <a href="/taakaa/users">👥 کاربران</a>
+      <a href="/taakaa/settings">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner" class="active">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="card fade-in">
@@ -2456,14 +2207,10 @@ function scannerPage() {
       
       async function fullScan() {
         document.getElementById('scan-results').innerHTML = '<div class="pulse text-center" style="padding:30px;">⏳ اسکن کامل در حال انجام... (حدود ۳۰ ثانیه)</div>';
-        
         try {
-          var r = await api('/api/full-scan');
-          if (r.success) {
-            displayResults(r);
-          } else {
-            document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا در اسکن</div>';
-          }
+          var r = await api('/taakaa/api/full-scan');
+          if(r.success) displayResults(r);
+          else document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا در اسکن</div>';
         } catch(e) {
           document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا: ' + e.message + '</div>';
         }
@@ -2471,14 +2218,10 @@ function scannerPage() {
       
       async function quickScan() {
         document.getElementById('scan-results').innerHTML = '<div class="pulse text-center" style="padding:30px;">⏳ در حال اسکن...</div>';
-        
         try {
-          var r = await api('/api/quick-scan');
-          if (r.success) {
-            displayResults(r);
-          } else {
-            document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا در اسکن</div>';
-          }
+          var r = await api('/taakaa/api/quick-scan');
+          if(r.success) displayResults(r);
+          else document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا در اسکن</div>';
         } catch(e) {
           document.getElementById('scan-results').innerHTML = '<div style="color:var(--danger);text-align:center;padding:30px;">❌ خطا: ' + e.message + '</div>';
         }
@@ -2487,7 +2230,6 @@ function scannerPage() {
       function displayResults(r) {
         var aliveCount = r.results.filter(function(x) { return x.alive; }).length;
         var html = '';
-        
         html += '<div class="flex" style="margin-bottom:15px;padding:12px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--border);">' +
                 '<span>✅ زنده: <strong>' + aliveCount + '</strong></span>' +
                 '<span>❌ مرده: <strong>' + (r.results.length - aliveCount) + '</strong></span>' +
@@ -2499,13 +2241,8 @@ function scannerPage() {
           var statusClass = x.alive ? 'badge-ok' : 'badge-err';
           var statusText = x.alive ? '✅ زنده' : '❌ مرده';
           var latencyText = x.alive ? x.latency + 'ms' : '—';
-          var operatorName = x.operator === 'mci' ? 'همراه اول' : 
-                            x.operator === 'mtn' ? 'ایرانسل' : 
-                            x.operator === 'rtl' ? 'رایتل' : 'نامشخص';
-          
           html += '<div class="scanner-result">' +
                   '<span class="ip">' + x.ip + '</span>' +
-                  '<span style="color:var(--text2);font-size:13px;">' + operatorName + '</span>' +
                   '<span class="latency">' + latencyText + '</span>' +
                   '<span class="badge ' + statusClass + '">' + statusText + '</span>' +
                   '<button class="btn btn-sm" onclick="addIP(\'' + x.ip + '\')">➕</button>' +
@@ -2513,7 +2250,7 @@ function scannerPage() {
         });
         html += '</div>';
         
-        if (r.bestIP) {
+        if(r.bestIP) {
           bestIPData = r.bestIP;
           html += '<div id="best-ip-section" style="margin-top:20px;padding:20px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--primary);">' +
                   '<h4 style="color:var(--primary);">🌟 بهترین IP:</h4>' +
@@ -2521,40 +2258,27 @@ function scannerPage() {
                   '<button class="btn btn-sm mt-10" onclick="applyBestIP()">✅ اعمال به تنظیمات</button>' +
                   '</div>';
         }
-        
         document.getElementById('scan-results').innerHTML = html;
       }
       
       function addIP(ip) {
         var input = document.getElementById('clean-ips-input');
         var current = input.value.trim();
-        if (current) {
-          input.value = current + '\\n' + ip;
-        } else {
-          input.value = ip;
-        }
+        if(current) input.value = current + '\\n' + ip;
+        else input.value = ip;
         showToast('IP ' + ip + ' اضافه شد', 'success');
       }
       
       function applyBestIP() {
-        if (bestIPData) {
-          addIP(bestIPData.ip);
-        }
+        if(bestIPData) addIP(bestIPData.ip);
       }
       
       async function saveCleanIPs() {
         var ips = document.getElementById('clean-ips-input').value.trim();
-        if (!ips) {
-          showToast('❌ لطفاً حداقل یک IP وارد کنید', 'error');
-          return;
-        }
-        
-        var r = await api('/api/update-settings', 'POST', { clean_ips: ips });
-        if (r.success) {
-          showToast('✅ IPها ذخیره شدند', 'success');
-        } else {
-          showToast('❌ خطا در ذخیره سازی', 'error');
-        }
+        if(!ips){ showToast('❌ لطفاً حداقل یک IP وارد کنید', 'error'); return; }
+        var r = await api('/taakaa/api/update-settings', 'POST', { clean_ips: ips });
+        if(r.success) showToast('✅ IPها ذخیره شدند', 'success');
+        else showToast('❌ خطا در ذخیره سازی', 'error');
       }
     </script>
   `;
@@ -2562,7 +2286,7 @@ function scannerPage() {
   return wrapHTML(content, 'TaaKaa-Xi | اسکنر');
 }
 
-// ==================== Info Protocols Page ====================
+// ===== Info Protocols Page =====
 function infoProtocolsPage(config) {
   var content = `
     <div class="header fade-in">
@@ -2573,13 +2297,13 @@ function infoProtocolsPage(config) {
     </div>
     
     <div class="nav fade-in">
-      <a href="/">📊 داشبورد</a>
-      <a href="/users">👥 کاربران</a>
-      <a href="/settings">⚙️ تنظیمات</a>
-      <a href="/scanner">📡 اسکنر</a>
-      <a href="/info-protocols" class="active">📖 پروتکل‌ها</a>
-      <a href="/subscription">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa">📊 داشبورد</a>
+      <a href="/taakaa/users">👥 کاربران</a>
+      <a href="/taakaa/settings">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols" class="active">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="card fade-in">
@@ -2616,14 +2340,6 @@ function infoProtocolsPage(config) {
       </div>
     </div>
     
-    <div class="card fade-in">
-      <h4 style="color:var(--primary);font-size:18px;margin-bottom:10px;">🛡️ TOTP 2FA</h4>
-      <p style="color:var(--text2);">احراز هویت دو مرحله‌ای برای امنیت بیشتر پنل مدیریت</p>
-      <div style="margin-top:10px;">
-        <span class="badge badge-ok">✅ فعال</span>
-      </div>
-    </div>
-    
     <p style="text-align:center;color:var(--text2);margin-top:30px;font-size:13px;">
       📢 @TaaKaaOrg | ⚡ نسخه ۱۶.۵ پرو
     </p>
@@ -2632,7 +2348,7 @@ function infoProtocolsPage(config) {
   return wrapHTML(content, 'TaaKaa-Xi | پروتکل‌ها');
 }
 
-// ==================== Subscription Page ====================
+// ===== Subscription Page =====
 function subscriptionPage(users, config, domain) {
   var opts = users.map(function(u) {
     return '<option value="' + u.uuid + '">' + u.name + '</option>';
@@ -2650,13 +2366,13 @@ function subscriptionPage(users, config, domain) {
     </div>
     
     <div class="nav fade-in">
-      <a href="/">📊 داشبورد</a>
-      <a href="/users">👥 کاربران</a>
-      <a href="/settings">⚙️ تنظیمات</a>
-      <a href="/scanner">📡 اسکنر</a>
-      <a href="/info-protocols">📖 پروتکل‌ها</a>
-      <a href="/subscription" class="active">📦 اشتراک</a>
-      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+      <a href="/taakaa">📊 داشبورد</a>
+      <a href="/taakaa/users">👥 کاربران</a>
+      <a href="/taakaa/settings">⚙️ تنظیمات</a>
+      <a href="/taakaa/scanner">📡 اسکنر</a>
+      <a href="/taakaa/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/taakaa/subscription" class="active">📦 اشتراک</a>
+      <a href="/taakaa/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
     </div>
     
     <div class="card fade-in">
@@ -2686,40 +2402,20 @@ function subscriptionPage(users, config, domain) {
           <h4 style="color:var(--text);margin-bottom:10px;">📦 Base64 (سابسکریشن):</h4>
           <textarea id="sub-base64" readonly class="code-block" style="height:60px;width:100%;resize:vertical;margin:0;"></textarea>
         </div>
-        
-        <div style="margin-top:15px;padding:16px;background:var(--bg-deep);border-radius:var(--radius-sm);border:1px solid var(--border);">
-          <h4 style="color:var(--text);margin-bottom:10px;">📊 آمار مصرف:</h4>
-          <div id="sub-stats" style="color:var(--text2);font-size:14px;"></div>
-        </div>
       </div>
     </div>
     
     <script>
       var DOMAIN = "${domain}";
-      
       async function updateSubscription() {
         var u = document.getElementById('sub-user-select').value;
-        if (!u) {
-          document.getElementById('subscription-links').style.display = 'none';
-          return;
-        }
-        
-        var r = await api('/api/get-configs?uuid=' + u);
-        if (r.success) {
+        if(!u){ document.getElementById('subscription-links').style.display = 'none'; return; }
+        var r = await api('/taakaa/api/get-configs?uuid=' + u);
+        if(r.success){
           document.getElementById('subscription-links').style.display = 'block';
           document.getElementById('sub-url').value = 'https://' + DOMAIN + '/sub/' + u;
           document.getElementById('vless-config').value = r.configs.vless;
           document.getElementById('sub-base64').value = r.configs.subscription;
-          
-          // Show user stats
-          var statsHTML = '';
-          if (r.user) {
-            statsHTML += '<div>👤 کاربر: <strong style="color:var(--primary);">' + r.user.name + '</strong></div>';
-            statsHTML += '<div>📊 مصرف کل: <strong style="color:var(--primary);">' + formatBytes(r.user.usageTotal || 0) + '</strong> / ' + formatBytes(r.user.quotaTotal) + '</div>';
-            statsHTML += '<div>📅 روزهای باقی‌مانده: <strong style="color:var(--primary);">' + formatDuration(r.user.expiryDays || 0) + '</strong></div>';
-            statsHTML += '<div>🟢 وضعیت: <span class="badge ' + (r.user.status === 'active' ? 'badge-ok' : 'badge-err') + '">' + (r.user.status === 'active' ? 'فعال' : 'معلق') + '</span></div>';
-          }
-          document.getElementById('sub-stats').innerHTML = statsHTML || 'اطلاعات کاربری موجود نیست';
         } else {
           showToast('❌ خطا در دریافت کانفیگ', 'error');
         }
@@ -2730,7 +2426,7 @@ function subscriptionPage(users, config, domain) {
   return wrapHTML(content, 'TaaKaa-Xi | اشتراک');
 }
 
-// ==================== Owners Page ====================
+// ===== Owners Page =====
 function ownersPage() {
   var content = `
     <div class="header fade-in" style="justify-content:center;">
@@ -2750,20 +2446,12 @@ function ownersPage() {
       <p style="color:var(--primary);font-size:20px;font-weight:bold;margin:20px 0;">
         📢 @TaaKaaOrg
       </p>
-      <a href="/" class="btn" style="margin-top:20px;">🏠 بازگشت به داشبورد</a>
+      <a href="/taakaa" class="btn" style="margin-top:20px;">🏠 بازگشت به داشبورد</a>
     </div>
-    
-    <p style="text-align:center;color:var(--text2);margin-top:20px;font-size:13px;">
-      🚀 تمامی حقوق محفوظ است | TaaKaa-Xi PRO v16.5
-    </p>
   `;
   
   return wrapHTML(content, 'TaaKaa-Xi | Owners');
-          }
-// =============================================
-// TaaKaa-Xi PRO v16.5 - Complete Worker
-// بخش ۶: Export Default + API Routes + 404 Handler
-// =============================================
+}
 
 // ==================== Response Helpers ====================
 function jsonResponse(data, status) {
@@ -2789,103 +2477,6 @@ function htmlResponse(html) {
   });
 }
 
-// ==================== 404 Handler (nginx-like) ====================
-function nginx404Page() {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>404 Not Found</title>
-      <style>
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: #0a0a0f;
-          color: #ffffff;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          margin: 0;
-          flex-direction: column;
-        }
-        .container {
-          text-align: center;
-          padding: 40px;
-        }
-        .nginx-logo {
-          font-size: 48px;
-          font-weight: bold;
-          color: #ff6b00;
-          margin-bottom: 20px;
-        }
-        .nginx-logo span {
-          color: #ffffff;
-        }
-        h1 {
-          font-size: 72px;
-          color: #ff6b00;
-          margin: 20px 0;
-        }
-        p {
-          color: #a0a0b8;
-          font-size: 18px;
-          margin: 10px 0;
-        }
-        .btn {
-          display: inline-block;
-          margin-top: 30px;
-          padding: 14px 40px;
-          background: linear-gradient(135deg, #ff6b00, #ff8c42);
-          color: white;
-          border: none;
-          border-radius: 30px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          text-decoration: none;
-          transition: 0.3s;
-          box-shadow: 0 4px 15px rgba(255,107,0,0.3);
-        }
-        .btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 25px rgba(255,107,0,0.4);
-        }
-        .footer {
-          margin-top: 40px;
-          color: #3a3a4a;
-          font-size: 13px;
-        }
-        .footer a {
-          color: #ff6b00;
-          text-decoration: none;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="nginx-logo">
-          <span>nginx</span>/TaaKaa-Xi
-        </div>
-        <h1>404</h1>
-        <p>صفحه مورد نظر یافت نشد</p>
-        <p style="font-size:14px;color:#6b6b8a;">The page you are looking for does not exist.</p>
-        <a href="/" class="btn">🏠 بازگشت به صفحه اصلی</a>
-        <div class="footer">
-          <p>TaaKaa-Xi PRO v16.5 &bull; @TaaKaaOrg</p>
-        </div>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-function html404Response() {
-  return new Response(nginx404Page(), {
-    status: 404,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-  });
-}
-
 // ==================== Full Scan API ====================
 async function handleFullScan() {
   var results = await fullScan();
@@ -2897,14 +2488,6 @@ async function handleFullScan() {
     total: results.length,
     alive: results.filter(function(r) { return r.alive; }).length
   });
-}
-
-// ==================== Clean IPs Update ====================
-async function updateCleanIPs(storage, ips) {
-  var config = await storage.getSystemConfig();
-  config.CLEAN_IPS = ips;
-  await storage.saveSystemConfig(config);
-  return config;
 }
 
 // ==================== EXPORT DEFAULT ====================
@@ -2931,28 +2514,36 @@ export default {
     );
 
     var isFirstRun = await storage.isFirstRun();
-    if (isFirstRun && path !== '/api/setup') {
-      return htmlResponse(setupPage());
-    }
 
-    var session = null;
-    if (sessionToken) {
-      session = await sessionMgr.validate(sessionToken);
-    }
-
-    // ==================== Public Routes ====================
+    // ===== مسیرهای عمومی =====
     if (path === '/' || path === '') {
+      // اگر تنظیمات وجود نداره -> برو setup
+      if (isFirstRun) return htmlResponse(setupPage());
+      // اگر تنظیمات داره -> welcome to nginx
+      return htmlResponse(nginxWelcomePage());
+    }
+
+    // ===== مسیر پنل =====
+    if (path === '/taakaa' || path === '/taakaa/') {
+      // اگر تنظیمات وجود نداره -> برو setup
+      if (isFirstRun) return htmlResponse(setupPage());
+      
+      var session = null;
+      if (sessionToken) session = await sessionMgr.validate(sessionToken);
       if (!session) return htmlResponse(loginPage());
+      
       var config = await storage.getSystemConfig();
       var users = await storage.getAllUsers();
       return htmlResponse(dashboardPage(users, config));
     }
 
-    if (path === '/setup') return htmlResponse(setupPage());
-    if (path === '/owners') return htmlResponse(ownersPage());
+    // ===== Setup مستقیم =====
+    if (path === '/taakaa/setup' || path === '/setup') {
+      return htmlResponse(setupPage());
+    }
 
-    // ==================== API Routes ====================
-    if (path === '/api/login' && method === 'POST') {
+    // ===== API Routes =====
+    if (path === '/taakaa/api/login' && method === 'POST') {
       if (!rateCheck.allowed) {
         return jsonResponse({ success: false, error: 'تلاش‌ها تمام شد' }, 429);
       }
@@ -2975,7 +2566,7 @@ export default {
         return jsonResponse({ success: false, error: 'راه‌اندازی نشده' }, 500);
       }
 
-      var validPassword = await verifyPassword(password, adminHash);
+      var validPassword = await verifyPass(password, adminHash);
       if (!validPassword) {
         return htmlResponse(loginPage('❌ رمز عبور اشتباه است'));
       }
@@ -2990,10 +2581,10 @@ export default {
         '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' +
         SYSTEM_CONFIG.SESSION_EXPIRY;
 
-      return redirectResponse('/', cookie);
+      return redirectResponse('/taakaa', cookie);
     }
 
-    if (path === '/api/setup' && method === 'POST') {
+    if (path === '/taakaa/api/setup' && method === 'POST') {
       var body = await request.formData();
       var password = body.get('password');
       var confirm = body.get('confirm');
@@ -3011,231 +2602,221 @@ export default {
         '; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=' +
         SYSTEM_CONFIG.SESSION_EXPIRY;
 
-      return redirectResponse('/', cookie);
+      return redirectResponse('/taakaa', cookie);
     }
 
-    if (path === '/logout') {
+    // ===== لاگ اوت =====
+    if (path === '/taakaa/logout' || path === '/logout') {
       await sessionMgr.destroy(sessionToken);
       return redirectResponse('/', 'taakaa_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0');
     }
 
-    if (!session) {
-      if (path.startsWith('/api/')) {
-        return jsonResponse({ success: false, error: 'لطفاً وارد شوید' }, 401);
-      }
-      return htmlResponse(loginPage());
-    }
-
-    // ==================== Authenticated Routes ====================
-    if (path === '/users') {
-      var users = await storage.getAllUsers();
-      return htmlResponse(usersPage(users));
-    }
-
-    if (path === '/settings') {
-      var config = await storage.getSystemConfig();
-      return htmlResponse(settingsPage(config));
-    }
-
-    if (path === '/scanner') {
-      return htmlResponse(scannerPage());
-    }
-
-    if (path === '/info-protocols') {
-      var config = await storage.getSystemConfig();
-      return htmlResponse(infoProtocolsPage(config));
-    }
-
-    if (path === '/subscription') {
-      var config = await storage.getSystemConfig();
-      var users = await storage.getAllUsers();
-      return htmlResponse(subscriptionPage(users, config, domain));
-    }
-
-    // ==================== API: Create User ====================
-    if (path === '/api/create-user' && method === 'POST') {
-      var data = await request.json();
-      var user = await userMgr.create(data);
-      return jsonResponse({ success: true, user: user });
-    }
-
-    // ==================== API: Get User ====================
-    if (path === '/api/get-user') {
-      var uuid = url.searchParams.get('uuid');
-      var user = await userMgr.get(uuid);
-      if (!user) {
-        return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
-      }
-      var stats = await userMgr.getStats(uuid);
-      return jsonResponse({ success: true, user: stats });
-    }
-
-    // ==================== API: Edit User ====================
-    if (path === '/api/edit-user' && method === 'POST') {
-      var data = await request.json();
-      var user = await userMgr.update(data.uuid, data);
-      if (!user) {
-        return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
-      }
-      return jsonResponse({ success: true, user: user });
-    }
-
-    // ==================== API: Delete User ====================
-    if (path === '/api/delete-user' && method === 'POST') {
-      var data = await request.json();
-      await userMgr.delete(data.uuid);
-      return jsonResponse({ success: true });
-    }
-
-    // ==================== API: Toggle User ====================
-    if (path === '/api/toggle-user' && method === 'POST') {
-      var data = await request.json();
-      var user = await userMgr.toggleStatus(data.uuid);
-      if (!user) {
-        return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
-      }
-      return jsonResponse({ success: true, user: user });
-    }
-
-    // ==================== API: Reset Usage ====================
-    if (path === '/api/reset-usage' && method === 'POST') {
-      var data = await request.json();
-      var user = await userMgr.resetUsage(data.uuid);
-      if (!user) {
-        return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
-      }
-      return jsonResponse({ success: true, user: user });
-    }
-
-    // ==================== API: Update Settings ====================
-    if (path === '/api/update-settings' && method === 'POST') {
-      var data = await request.json();
-      var config = await storage.getSystemConfig();
-
-      if (data.fragment_enabled !== undefined) {
-        config.FRAGMENT_ENABLED = data.fragment_enabled === true ||
-          data.fragment_enabled === 'true' ||
-          data.fragment_enabled === 'on';
-      }
-      if (data.fragment_size) config.FRAGMENT_SIZE = data.fragment_size;
-      if (data.fragment_count) config.FRAGMENT_COUNT = parseInt(data.fragment_count);
-      if (data.fragment_delay) config.FRAGMENT_DELAY = data.fragment_delay;
-      if (data.warp_enabled !== undefined) {
-        config.WARP_ENABLED = data.warp_enabled === true ||
-          data.warp_enabled === 'true' ||
-          data.warp_enabled === 'on';
-      }
-      if (data.warp_pro_enabled !== undefined) {
-        config.WARP_PRO_ENABLED = data.warp_pro_enabled === true ||
-          data.warp_pro_enabled === 'true' ||
-          data.warp_pro_enabled === 'on';
-      }
-      if (data.ech_enabled !== undefined) {
-        config.ECH_ENABLED = data.ech_enabled === true ||
-          data.ech_enabled === 'true' ||
-          data.ech_enabled === 'on';
-      }
-      if (data.sni) {
-        config.SNI_LIST = [data.sni, ...config.SNI_LIST.filter(function(s) {
-          return s !== data.sni;
-        })];
-      }
-      if (data.clean_ips) {
-        config.CLEAN_IPS = data.clean_ips;
+    // ===== بقیه مسیرهای پنل =====
+    if (path.startsWith('/taakaa/')) {
+      var session = null;
+      if (sessionToken) session = await sessionMgr.validate(sessionToken);
+      if (!session) {
+        return htmlResponse(loginPage());
       }
 
-      await storage.saveSystemConfig(config);
-      return jsonResponse({ success: true });
-    }
+      var cleanPath = path.replace('/taakaa', '');
 
-    // ==================== API: Change Password ====================
-    if (path === '/api/change-password' && method === 'POST') {
-      var data = await request.json();
-      var config = await storage.getSystemConfig();
-
-      var validCurrent = await verifyPassword(data.current, config.ADMIN_PASSWORD_HASH);
-      if (!validCurrent) {
-        return jsonResponse({ success: false, error: 'رمز فعلی اشتباه است' });
+      if (cleanPath === '/users' || cleanPath === '/users/') {
+        var users = await storage.getAllUsers();
+        return htmlResponse(usersPage(users));
       }
 
-      if (data.new_password !== data.confirm) {
-        return jsonResponse({ success: false, error: 'رمزهای جدید مطابقت ندارند' });
+      if (cleanPath === '/settings' || cleanPath === '/settings/') {
+        var config = await storage.getSystemConfig();
+        return htmlResponse(settingsPage(config));
       }
 
-      config.ADMIN_PASSWORD_HASH = await hashPassword(data.new_password);
-      await storage.saveSystemConfig(config);
-      return jsonResponse({ success: true });
-    }
-
-    // ==================== API: Backup ====================
-    if (path === '/api/backup-kv') {
-      var config = await storage.getSystemConfig();
-      var users = await storage.getAllUsers();
-      return jsonResponse({
-        exportedAt: new Date().toISOString(),
-        version: 'v16.5-pro',
-        config: config,
-        users: users,
-        totalUsers: users.length
-      });
-    }
-
-    // ==================== API: Quick Scan ====================
-    if (path === '/api/quick-scan') {
-      var results = await quickScan();
-      var bestIP = results.find(function(r) { return r.alive; });
-      return jsonResponse({
-        success: true,
-        results: results,
-        bestIP: bestIP,
-        total: results.length,
-        alive: results.filter(function(r) { return r.alive; }).length
-      });
-    }
-
-    // ==================== API: Full Scan ====================
-    if (path === '/api/full-scan') {
-      return await handleFullScan();
-    }
-
-    // ==================== API: Get Configs ====================
-    if (path === '/api/get-configs') {
-      var uuid = url.searchParams.get('uuid');
-      var user = await userMgr.get(uuid);
-      if (!user) {
-        return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      if (cleanPath === '/scanner' || cleanPath === '/scanner/') {
+        return htmlResponse(scannerPage());
       }
 
-      var config = await storage.getSystemConfig();
-      var stats = await userMgr.getStats(uuid);
+      if (cleanPath === '/info-protocols' || cleanPath === '/info-protocols/') {
+        var config = await storage.getSystemConfig();
+        return htmlResponse(infoProtocolsPage(config));
+      }
 
-      return jsonResponse({
-        success: true,
-        user: stats,
-        configs: {
-          vless: generateVlessConfig(user, config, domain),
-          trojan: generateTrojanConfig(user, config, domain),
-          shadowsocks: generateShadowsocksConfig(user, config, domain),
-          subscription: generateSubscription(user, config, domain)
+      if (cleanPath === '/subscription' || cleanPath === '/subscription/') {
+        var config = await storage.getSystemConfig();
+        var users = await storage.getAllUsers();
+        return htmlResponse(subscriptionPage(users, config, domain));
+      }
+
+      if (cleanPath === '/owners' || cleanPath === '/owners/') {
+        return htmlResponse(ownersPage());
+      }
+
+      // ===== API ها =====
+      if (cleanPath === '/api/create-user' && method === 'POST') {
+        var data = await request.json();
+        var user = await userMgr.create(data);
+        return jsonResponse({ success: true, user: user });
+      }
+
+      if (cleanPath === '/api/get-user') {
+        var uuid = url.searchParams.get('uuid');
+        var user = await userMgr.get(uuid);
+        if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+        var stats = await userMgr.getStats(uuid);
+        return jsonResponse({ success: true, user: stats });
+      }
+
+      if (cleanPath === '/api/edit-user' && method === 'POST') {
+        var data = await request.json();
+        var user = await userMgr.update(data.uuid, data);
+        if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+        return jsonResponse({ success: true, user: user });
+      }
+
+      if (cleanPath === '/api/delete-user' && method === 'POST') {
+        var data = await request.json();
+        await userMgr.delete(data.uuid);
+        return jsonResponse({ success: true });
+      }
+
+      if (cleanPath === '/api/toggle-user' && method === 'POST') {
+        var data = await request.json();
+        var user = await userMgr.toggleStatus(data.uuid);
+        if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+        return jsonResponse({ success: true, user: user });
+      }
+
+      if (cleanPath === '/api/reset-usage' && method === 'POST') {
+        var data = await request.json();
+        var user = await userMgr.resetUsage(data.uuid);
+        if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+        return jsonResponse({ success: true, user: user });
+      }
+
+      if (cleanPath === '/api/update-settings' && method === 'POST') {
+        var data = await request.json();
+        var config = await storage.getSystemConfig();
+
+        if (data.fragment_enabled !== undefined) {
+          config.FRAGMENT_ENABLED = data.fragment_enabled === true ||
+            data.fragment_enabled === 'true' ||
+            data.fragment_enabled === 'on';
         }
-      });
-    }
+        if (data.fragment_size) config.FRAGMENT_SIZE = data.fragment_size;
+        if (data.fragment_count) config.FRAGMENT_COUNT = parseInt(data.fragment_count);
+        if (data.fragment_delay) config.FRAGMENT_DELAY = data.fragment_delay;
+        if (data.warp_enabled !== undefined) {
+          config.WARP_ENABLED = data.warp_enabled === true ||
+            data.warp_enabled === 'true' ||
+            data.warp_enabled === 'on';
+        }
+        if (data.warp_pro_enabled !== undefined) {
+          config.WARP_PRO_ENABLED = data.warp_pro_enabled === true ||
+            data.warp_pro_enabled === 'true' ||
+            data.warp_pro_enabled === 'on';
+        }
+        if (data.ech_enabled !== undefined) {
+          config.ECH_ENABLED = data.ech_enabled === true ||
+            data.ech_enabled === 'true' ||
+            data.ech_enabled === 'on';
+        }
+        if (data.sni) {
+          config.SNI_LIST = [data.sni, ...config.SNI_LIST.filter(function(s) {
+            return s !== data.sni;
+          })];
+        }
+        if (data.clean_ips) {
+          config.CLEAN_IPS = data.clean_ips;
+        }
 
-    // ==================== Subscription Handler ====================
-    var subResult = await handleSubscription(request, storage);
-    if (subResult) return subResult;
-
-    // ==================== WebSocket Handler ====================
-    if (path === '/ws' || path === '/trojan' || path === '/ss') {
-      var users = await storage.getAllUsers();
-      var activeUser = users.find(function(u) { return u.status === 'active'; });
-      if (!activeUser) {
-        return new Response('هیچ کاربر فعالی وجود ندارد', { status: 503 });
+        await storage.saveSystemConfig(config);
+        return jsonResponse({ success: true });
       }
-      return await proxyHandler.handle(request, activeUser);
+
+      if (cleanPath === '/api/change-password' && method === 'POST') {
+        var data = await request.json();
+        var config = await storage.getSystemConfig();
+
+        var validCurrent = await verifyPass(data.current, config.ADMIN_PASSWORD_HASH);
+        if (!validCurrent) {
+          return jsonResponse({ success: false, error: 'رمز فعلی اشتباه است' });
+        }
+
+        if (data.new_password !== data.confirm) {
+          return jsonResponse({ success: false, error: 'رمزهای جدید مطابقت ندارند' });
+        }
+
+        config.ADMIN_PASSWORD_HASH = await hashPass(data.new_password);
+        await storage.saveSystemConfig(config);
+        return jsonResponse({ success: true });
+      }
+
+      if (cleanPath === '/api/backup-kv') {
+        var config = await storage.getSystemConfig();
+        var users = await storage.getAllUsers();
+        return jsonResponse({
+          exportedAt: new Date().toISOString(),
+          version: 'v16.5-pro',
+          config: config,
+          users: users,
+          totalUsers: users.length
+        });
+      }
+
+      if (cleanPath === '/api/quick-scan') {
+        var results = await quickScan();
+        var bestIP = results.find(function(r) { return r.alive; });
+        return jsonResponse({
+          success: true,
+          results: results,
+          bestIP: bestIP,
+          total: results.length,
+          alive: results.filter(function(r) { return r.alive; }).length
+        });
+      }
+
+      if (cleanPath === '/api/full-scan') {
+        return await handleFullScan();
+      }
+
+      if (cleanPath === '/api/get-configs') {
+        var uuid = url.searchParams.get('uuid');
+        var user = await userMgr.get(uuid);
+        if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+
+        var config = await storage.getSystemConfig();
+        var stats = await userMgr.getStats(uuid);
+
+        return jsonResponse({
+          success: true,
+          user: stats,
+          configs: {
+            vless: generateVlessConfig(user, config, domain),
+            trojan: generateTrojanConfig(user, config, domain),
+            shadowsocks: generateShadowsocksConfig(user, config, domain),
+            subscription: generateSubscription(user, config, domain)
+          }
+        });
+      }
+
+      // ===== سابسکریپشن =====
+      var subResult = await handleSubscription(request, storage);
+      if (subResult) return subResult;
+
+      // ===== WebSocket =====
+      if (cleanPath === '/ws' || cleanPath === '/trojan' || cleanPath === '/ss') {
+        var users = await storage.getAllUsers();
+        var activeUser = users.find(function(u) { return u.status === 'active'; });
+        if (!activeUser) {
+          return new Response('هیچ کاربر فعالی وجود ندارد', { status: 503 });
+        }
+        return await proxyHandler.handle(request, activeUser);
+      }
+
+      // ===== 404 =====
+      return htmlResponse(nginx404Page());
     }
 
-    // ==================== 404 Page (nginx style) ====================
-    return html404Response();
+    // ===== 404 نهایی =====
+    return htmlResponse(nginx404Page());
   }
 };
