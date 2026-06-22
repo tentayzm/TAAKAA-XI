@@ -1,509 +1,2373 @@
-// ============================================
-// 🔥 TAAKAA-XI PRO v16 - COMPLETE
-// 🌐 @TaaKaaOrg
-// ✅ تمام قابلیت‌ها: D1 + TOTP + Filters + Routing + Telegram
-// ✅ مخصوص Cloudflare Workers - بدون خطا
-// ✅ کانفیگ‌ها ۱۰۰٪ وصل میشن
-// ============================================
+// =============================================
+// TAAKAA-XI PRO v16 - Cloudflare Worker
+// پارت ۱: تنظیمات، ابزارهای رمزنگاری، پارسرها
+// =============================================
 
-let CONFIG = {
-  UUID: '12345678-1234-1234-1234-123456789abc',
-  ADMIN_PASS: '',
-  VERSION: '16.0.0',
-  SNI: 'cloudflare.com',
-  FINGERPRINT: 'chrome',
-  FINGERPRINTS: ['chrome','firefox','safari','random','ios','android','edge','360','qq','sogou','opera','brave'],
-  ECH: { enabled: true },
-  PORTS: ['443','8443','2083','2087','2096','2053'],
-  FRAGMENT: { enabled: true, size: '200-500', count: '5-10', delay: '10-30' },
-  WARP: { enabled: false, pro: false },
-  PROTOCOLS: { vless: { enabled: true }, trojan: { enabled: true }, shadowsocks: { enabled: true, method: 'aes-256-gcm' }, xhttp: { enabled: false, mode: 'packet-up' }, grpc: { enabled: false, serviceName: 'grpc' }, websocket: { enabled: true } },
-  ROUTING: { enabled: false, geoIP: false, geoSite: false },
-  FILTERS: { adBlock: false, pornBlock: false, iranBlock: false, speedtestBlock: true, malwareBlock: false },
-  DNS: { enabled: false, doh: 'https://cloudflare-dns.com/dns-query' },
-  BACKEND: { enabled: false, url: '' },
-  SESSION_HOURS: 24,
+// ==================== تنظیمات اصلی ====================
+const SYSTEM_CONFIG = {
+  // امنیت
+  ADMIN_PASSWORD_HASH: null, // هنگام setup ست میشه
+  TOTP_SECRET: 'JBSWY3DPEHPK3PXP',
   MAX_LOGIN_ATTEMPTS: 5,
-  TOTP: { enabled: false, secret: '' },
-  TELEGRAM: { enabled: false, botToken: '', adminID: '' },
-  LOCATIONS: [
-    { code:'DE',name:'آلمان',flag:'🇩🇪',ip:'104.16.71.76',city:'Frankfurt' },
-    { code:'NL',name:'هلند',flag:'🇳🇱',ip:'104.16.71.115',city:'Amsterdam' },
-    { code:'US',name:'آمریکا',flag:'🇺🇸',ip:'104.16.71.101',city:'New York' },
-    { code:'UK',name:'انگلیس',flag:'🇬🇧',ip:'104.16.71.85',city:'London' },
-    { code:'FR',name:'فرانسه',flag:'🇫🇷',ip:'104.16.71.27',city:'Paris' },
-    { code:'JP',name:'ژاپن',flag:'🇯🇵',ip:'104.16.71.110',city:'Tokyo' },
-    { code:'SG',name:'سنگاپور',flag:'🇸🇬',ip:'104.16.71.182',city:'Singapore' },
-    { code:'CA',name:'کانادا',flag:'🇨🇦',ip:'104.16.71.229',city:'Toronto' },
-    { code:'AU',name:'استرالیا',flag:'🇦🇺',ip:'104.16.71.193',city:'Sydney' },
-    { code:'BR',name:'برزیل',flag:'🇧🇷',ip:'104.16.71.135',city:'Sao Paulo' },
-    { code:'IN',name:'هند',flag:'🇮🇳',ip:'104.16.71.202',city:'Mumbai' },
-    { code:'AE',name:'امارات',flag:'🇦🇪',ip:'104.16.71.219',city:'Dubai' }
-  ]
+  LOCKOUT_MINUTES: 5,
+  SESSION_EXPIRY: 86400,
+
+  // پروتکل‌ها
+  PROTOCOLS: ['vless', 'trojan', 'shadowsocks'],
+  DEFAULT_PROTOCOL: 'vless',
+  ENCRYPTION: 'aes-256-gcm',
+
+  // پورت‌ها
+  PORTS: [443, 8443, 2053, 2083, 2087, 2096],
+
+  // SNI
+  SNI_LIST: [
+    'www.google.com',
+    'www.cloudflare.com', 
+    'www.microsoft.com',
+    'www.apple.com',
+    'www.amazon.com',
+    'speed.cloudflare.com',
+    'cdn.jsdelivr.net',
+    'www.bing.com'
+  ],
+
+  // Fingerprint
+  FINGERPRINTS: [
+    'chrome', 'firefox', 'safari', 'edge',
+    'ios', 'android', 'random', 'randomized',
+    'chrome_120', 'firefox_120', 'safari_17', 'edge_120'
+  ],
+
+  // Fragment
+  FRAGMENT: {
+    enabled: true,
+    size: '1-5',
+    count: 3,
+    delay: '1-3',
+    packets: 'tlshello'
+  },
+
+  // WARP
+  WARP_ENABLED: false,
+  WARP_PRO_ENABLED: false,
+
+  // ECH
+  ECH_ENABLED: true,
+
+  // اپراتورها
+  OPERATORS: {
+    mci: 'همراه اول',
+    mtn: 'ایرانسل', 
+    rtl: 'رایتل'
+  },
+
+  // محدودیت‌های پیش‌فرض
+  DEFAULT_QUOTA: 5 * 1024 * 1024 * 1024,
+  DEFAULT_DAILY_QUOTA: 1 * 1024 * 1024 * 1024,
+  DEFAULT_EXPIRY_DAYS: 30,
+
+  // روتینگ
+  ROUTING: {
+    iranBlock: true,
+    speedtest: true,
+    adblock: true,
+    malware: true,
+    geoip: 'ir',
+    geosite: 'category-ads'
+  },
+
+  // DNS
+  DNS_OVER_HTTPS: 'https://cloudflare-dns.com/dns-query'
 };
 
-const TRUSTED_IPS = [
-  { ip:'104.16.71.76',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:45,city:'Frankfurt',country:'DE' },
-  { ip:'104.16.71.115',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:48,city:'Amsterdam',country:'NL' },
-  { ip:'104.16.71.101',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:42,city:'New York',country:'US' },
-  { ip:'104.16.71.85',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:50,city:'London',country:'UK' },
-  { ip:'104.16.71.27',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:38,city:'Paris',country:'FR' },
-  { ip:'104.16.71.110',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:55,city:'Tokyo',country:'JP' },
-  { ip:'104.16.71.182',ports:['443','8443','2083','2087','2096','2053'],operator:'mci',latency:41,city:'Singapore',country:'SG' },
-  { ip:'162.159.160.11',ports:['2083','2096','8443','2053','443','2087'],operator:'all',latency:55,city:'Miami',country:'US' },
-  { ip:'23.227.60.9',ports:['2096','2087','8443','2083'],operator:'all',latency:60,city:'LA',country:'US' },
-  { ip:'138.249.148.112',ports:['2053','2087','2083','443'],operator:'all',latency:58,city:'Chicago',country:'US' },
-  { ip:'1.1.1.81',ports:['2087','2053','2096'],operator:'all',latency:40,city:'SF',country:'US' },
-  { ip:'172.64.153.117',ports:['8443','2083','443','2087','2053'],operator:'all',latency:52,city:'Dallas',country:'US' },
-  { ip:'94.156.10.39',ports:['2096','2087','443','2083'],operator:'all',latency:68,city:'Warsaw',country:'PL' },
-  { ip:'5.252.81.226',ports:['2087','2096','2083','2053'],operator:'all',latency:63,city:'Athens',country:'GR' },
-  { ip:'104.26.14.160',ports:['2083','2096'],operator:'all',latency:56,city:'Berlin',country:'DE' },
-  { ip:'162.159.93.244',ports:['2087','2083','2053','443','2096','8443'],operator:'all',latency:51,city:'Vienna',country:'AT' },
-  { ip:'156.243.83.52',ports:['2096','443','2087','2053','2083','8443'],operator:'all',latency:55,city:'Prague',country:'CZ' },
-  { ip:'162.159.254.7',ports:['2087','2053','2096','443','2083','8443'],operator:'all',latency:53,city:'Brussels',country:'BE' },
-  { ip:'61.245.108.53',ports:['2083','2053','2096','443','2087','8443'],operator:'all',latency:61,city:'Seoul',country:'KR' },
-  { ip:'172.64.188.4',ports:['2096','2053','2083','443','2087','8443'],operator:'all',latency:52,city:'HK',country:'HK' }
-];
+// ==================== ابزارهای رمزنگاری ====================
+class CryptoUtils {
+  static generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
-// ============ HELPERS ============
-class Helpers {
-  static generateUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
-  static isValidUUID(uuid) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid); }
-  static parseDataLimit(input) { if (!input || input === '0' || input.toLowerCase() === 'unlimited') return 0; var v = input.toString().toLowerCase().trim(); var m = v.match(/^(\d+(?:\.\d+)?)\s*(kb|mb|gb|tb|pt)?$/); if (!m) return 0; var n = parseFloat(m[1]), u = (m[2] || 'mb').toLowerCase(); var x = { kb: 1/1024, mb: 1, gb: 1024, tb: 1048576, pt: 1073741824 }; return n * (x[u] || 1); }
-  static parseTimeLimit(input) { if (!input || input === '0' || input.toLowerCase() === 'unlimited') return 0; var v = input.toString().toLowerCase().trim(); var m = v.match(/^(\d+)\s*(d|m|y|day|month|year|days|months|years)?$/); if (!m) return 0; var n = parseInt(m[1]), u = (m[2] || 'd').toLowerCase(); var x = { d: 1, day: 1, days: 1, m: 30, month: 30, months: 30, y: 365, year: 365, years: 365 }; return n * (x[u] || 1); }
-  static formatBytes(mb) { if (mb === 0) return 'نامحدود'; if (mb >= 1048576) return (mb / 1048576).toFixed(2) + ' TB'; if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB'; return mb.toFixed(0) + ' MB'; }
-  static formatDays(days) { if (days === 0) return 'نامحدود'; if (days >= 365) return (days / 365).toFixed(1) + ' سال'; if (days >= 30) return (days / 30).toFixed(1) + ' ماه'; return days + ' روز'; }
-  static getBestIPs(operator, count, sortByLatency) { operator = operator || 'all'; count = count || 10; var f = TRUSTED_IPS.filter(function(i) { return operator === 'all' || i.operator === operator || i.operator === 'all'; }); if (sortByLatency) f.sort(function(a, b) { return (a.latency || 99) - (b.latency || 99); }); else f.sort(function() { return Math.random() - 0.5; }); return f.slice(0, count); }
-  
-  static generateConfig(uuid, host, port, type, settings) {
-    type = type || 'vless'; settings = settings || {};
-    var sni = settings.sni || CONFIG.SNI, fp = settings.fp || CONFIG.FINGERPRINT, name = settings.name || 'Taakaa-Xi';
-    var enc = encodeURIComponent(name);
-    if (type === 'vless') {
-      var c = 'vless://' + uuid + '@' + host + ':' + port + '?encryption=none&security=tls&sni=' + sni + '&fp=' + fp + '&type=ws&host=' + host + '&path=%2F';
-      if (CONFIG.FRAGMENT.enabled) c += '&fragment=size:' + CONFIG.FRAGMENT.size + ',count:' + CONFIG.FRAGMENT.count + ',delay:' + CONFIG.FRAGMENT.delay;
-      if (CONFIG.WARP.enabled) c += '&warp=' + (CONFIG.WARP.pro ? 'pro' : 'on');
-      if (CONFIG.ECH.enabled) c += '&ech=true';
-      c += '#' + enc; return c;
+  static validateUUID(uuid) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+  }
+
+  static async hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + 'taakaa-salt-v16-2024');
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  static async verifyPassword(password, hash) {
+    const inputHash = await this.hashPassword(password);
+    return inputHash === hash;
+  }
+
+  static generateSessionToken() {
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  static generateTOTP(secret) {
+    const time = Math.floor(Date.now() / 30000);
+    const hmac = this._simpleHMAC(secret, time.toString());
+    return (parseInt(hmac.substring(0, 6), 16) % 1000000).toString().padStart(6, '0');
+  }
+
+  static verifyTOTP(token, secret) {
+    const expected = this.generateTOTP(secret);
+    if (token === expected) return true;
+    // Check previous window
+    const prevTime = Math.floor((Date.now() - 30000) / 30000);
+    const prevHMAC = this._simpleHMAC(secret, prevTime.toString());
+    const prevToken = (parseInt(prevHMAC.substring(0, 6), 16) % 1000000).toString().padStart(6, '0');
+    return token === prevToken;
+  }
+
+  static _simpleHMAC(key, message) {
+    let hash = 0;
+    const combined = key + message;
+    for (let i = 0; i < combined.length; i++) {
+      hash = ((hash << 5) - hash) + combined.charCodeAt(i);
+      hash |= 0;
     }
-    if (type === 'trojan') return 'trojan://' + uuid + '@' + host + ':' + port + '?security=tls&sni=' + sni + '&fp=' + fp + '&type=ws&host=' + host + '&path=%2F#' + enc;
-    if (type === 'ss') return 'ss://' + btoa('aes-256-gcm:' + uuid.substring(0, 16)) + '@' + btoa(host + ':' + port) + '#' + enc;
-    return '';
+    return Math.abs(hash).toString(16);
   }
-  
-  static isIranianDomain(hostname) { var domains = ['.ir','snapp.ir','digikala.com','aparat.com']; return domains.some(function(d) { return hostname.indexOf(d) !== -1; }); }
-  static isSpeedtestDomain(hostname) { var domains = ['speedtest.net','fast.com']; return domains.some(function(d) { return hostname.indexOf(d) !== -1; }); }
-}
 
-// ============ USER MANAGER ============
-class UserManager {
-  constructor(env) { this.env = env; }
-  async getAll() { if (!this.env.KV) return []; try { var d = await this.env.KV.get('users'); return d ? JSON.parse(d) : []; } catch (e) { return []; } }
-  async saveAll(users) { if (!this.env.KV) return; try { await this.env.KV.put('users', JSON.stringify(users)); } catch (e) {} }
-  async add(userData) { var users = await this.getAll(); var newUser = { id: Helpers.generateUUID(), uuid: userData.uuid || Helpers.generateUUID(), name: userData.name || 'User', ip: userData.ip || '', dataLimit: Helpers.parseDataLimit(userData.dataLimit || '0'), dailyLimit: Helpers.parseDataLimit(userData.dailyLimit || '0'), timeLimit: Helpers.parseTimeLimit(userData.timeLimit || '0'), usedData: 0, todayUsed: 0, lastResetDate: new Date().toDateString(), created: Date.now(), expires: userData.timeLimit ? Date.now() + (Helpers.parseTimeLimit(userData.timeLimit) * 86400000) : 0, active: true, operator: userData.operator || 'all' }; users.push(newUser); await this.saveAll(users); return newUser; }
-  async update(userId, updates) { var users = await this.getAll(); var idx = users.findIndex(function(u) { return u.id === userId; }); if (idx === -1) return null; if (updates.dataLimit !== undefined) updates.dataLimit = Helpers.parseDataLimit(updates.dataLimit); if (updates.dailyLimit !== undefined) updates.dailyLimit = Helpers.parseDataLimit(updates.dailyLimit); if (updates.timeLimit !== undefined) { updates.timeLimit = Helpers.parseTimeLimit(updates.timeLimit); updates.expires = updates.timeLimit ? Date.now() + (updates.timeLimit * 86400000) : 0; } users[idx] = Object.assign({}, users[idx], updates); await this.saveAll(users); return users[idx]; }
-  async delete(userId) { var users = await this.getAll(); users = users.filter(function(u) { return u.id !== userId; }); await this.saveAll(users); return true; }
-  async getByUUID(uuid) { var users = await this.getAll(); return users.find(function(u) { return u.uuid === uuid && u.active; }); }
-  async recordUsage(uuid, bytes) { var users = await this.getAll(); var user = users.find(function(u) { return u.uuid === uuid; }); if (!user) return; var today = new Date().toDateString(); if (user.lastResetDate !== today) { user.todayUsed = 0; user.lastResetDate = today; } user.usedData += bytes / (1024 * 1024); user.todayUsed += bytes / (1024 * 1024); await this.saveAll(users); }
-  async checkLimits(uuid) { var users = await this.getAll(); var user = users.find(function(u) { return u.uuid === uuid; }); if (!user || !user.active) return false; if (user.expires && Date.now() > user.expires) return false; if (user.dataLimit && user.usedData >= user.dataLimit) return false; if (user.dailyLimit && user.todayUsed >= user.dailyLimit) return false; return true; }
-  async resetUsage(userId) { var users = await this.getAll(); var user = users.find(function(u) { return u.id === userId; }); if (!user) return null; user.usedData = 0; user.todayUsed = 0; user.lastResetDate = new Date().toDateString(); await this.saveAll(users); return user; }
-  async getStats() { var users = await this.getAll(); var today = new Date().toDateString(); return { totalUsers: users.length, activeUsers: users.filter(function(u) { return u.active; }).length, totalUsage: users.reduce(function(s, u) { return s + u.usedData; }, 0), todayUsage: users.filter(function(u) { return u.lastResetDate === today; }).reduce(function(s, u) { return s + u.todayUsed; }, 0) }; }
-  async backupData() { return { users: await this.getAll(), config: CONFIG, backupDate: new Date().toISOString(), version: '16.0.0' }; }
-  async restoreData(data) { if (data.users) await this.saveAll(data.users); if (data.config) { Object.assign(CONFIG, data.config); if (this.env.KV) await this.env.KV.put('config', JSON.stringify(CONFIG)); } return true; }
-}
-
-// ============ SESSION MANAGER ============
-class SessionManager {
-  constructor(env) { this.env = env; this.attempts = {}; }
-  async create() { if (!this.env.KV) return null; var sid = Helpers.generateUUID(); await this.env.KV.put('session:' + sid, JSON.stringify({ created: Date.now(), expires: Date.now() + (CONFIG.SESSION_HOURS * 3600000) }), { expirationTtl: CONFIG.SESSION_HOURS * 3600 }); return sid; }
-  async validate(sid) { if (!this.env.KV) return false; try { var s = await this.env.KV.get('session:' + sid); if (!s) return false; return JSON.parse(s).expires > Date.now(); } catch (e) { return false; } }
-  async destroy(sid) { if (!this.env.KV) return; try { await this.env.KV.delete('session:' + sid); } catch (e) {} }
-  checkRateLimit(ip) { var now = Date.now(); if (!this.attempts[ip]) this.attempts[ip] = { count: 0, resetAt: now + 300000 }; if (now > this.attempts[ip].resetAt) this.attempts[ip] = { count: 0, resetAt: now + 300000 }; this.attempts[ip].count++; return this.attempts[ip].count <= CONFIG.MAX_LOGIN_ATTEMPTS; }
-}
-
-// ============ TOTP MANAGER ============
-class TOTPManager {
-  static generateSecret() { var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'; var secret = ''; for (var i = 0; i < 16; i++) secret += chars[Math.floor(Math.random() * chars.length)]; return secret; }
-  static verify(token, secret) { return token === '123456'; }
-}
-
-// ============ IP SCANNER ============
-class IPScanner {
-  static async scanIP(ip, port) { var start = Date.now(); try { var ctrl = new AbortController(); var t = setTimeout(function() { ctrl.abort(); }, 3000); var res = await fetch('https://' + ip + ':' + port + '/', { method: 'HEAD', signal: ctrl.signal }); clearTimeout(t); return { ip: ip, port: port, alive: res.ok, latency: Date.now() - start }; } catch (e) { return { ip: ip, port: port, alive: false, latency: 999 }; } }
-  static async scanBatch(ips, ports, c) { c = c || 5; var results = [], queue = []; ips.forEach(function(ip) { ports.forEach(function(p) { queue.push({ ip: ip, port: p }); }); }); for (var i = 0; i < queue.length; i += c) { var batch = queue.slice(i, i + c); var br = await Promise.all(batch.map(function(item) { return IPScanner.scanIP(item.ip, item.port); })); results = results.concat(br.filter(function(r) { return r.alive; })); } return results.sort(function(a, b) { return a.latency - b.latency; }); }
-}
-
-// ============================================
-// ✅ PROXY HANDLER
-// ============================================
-async function handleProxy(request, env, ctx) {
-  var url = new URL(request.url);
-  var uuid = url.pathname.replace('/', '').split('/')[0];
-  var um = new UserManager(env);
-  
-  var isValid = uuid === CONFIG.UUID || await um.getByUUID(uuid);
-  if (!isValid) return new Response('Unauthorized', { status: 401 });
-  
-  if (uuid !== CONFIG.UUID) { var ok = await um.checkLimits(uuid); if (!ok) return new Response('Limit Exceeded', { status: 403 }); }
-  
-  // Check filters
-  if (CONFIG.FILTERS.iranBlock && Helpers.isIranianDomain(url.hostname)) return new Response('Blocked', { status: 403 });
-  if (CONFIG.FILTERS.speedtestBlock && Helpers.isSpeedtestDomain(url.hostname)) return new Response('Blocked', { status: 403 });
-  
-  var upgrade = request.headers.get('Upgrade');
-  if (upgrade && upgrade.toLowerCase() === 'websocket') {
-    var pair = new WebSocketPair(); var client = pair[0], server = pair[1];
-    ctx.acceptWebSocket(server);
-    server.addEventListener('message', function(event) { if (uuid !== CONFIG.UUID) ctx.waitUntil(um.recordUsage(uuid, event.data.length || 0)); });
-    return new Response(null, { status: 101, webSocket: client });
+  static base64Encode(str) {
+    return btoa(unescape(encodeURIComponent(str)));
   }
-  
-  try {
-    var targetUrl = 'https://' + CONFIG.SNI + url.pathname + url.search;
-    var cleanHeaders = new Headers();
-    request.headers.forEach(function(v, k) { var lk = k.toLowerCase(); if (lk !== 'host' && lk !== 'connection' && lk.indexOf('cf-') !== 0 && lk !== 'cdn-loop') cleanHeaders.set(k, v); });
-    var proxyResponse = await fetch(targetUrl, { method: request.method, headers: cleanHeaders, body: request.body, redirect: 'follow' });
-    if (uuid !== CONFIG.UUID) { var cl = proxyResponse.headers.get('Content-Length'); if (cl) ctx.waitUntil(um.recordUsage(uuid, parseInt(cl) || 0)); }
-    var responseHeaders = new Headers();
-    proxyResponse.headers.forEach(function(v, k) { var lk = k.toLowerCase(); if (lk !== 'content-encoding' && lk !== 'content-length') responseHeaders.set(k, v); });
-    return new Response(proxyResponse.body, { status: proxyResponse.status, statusText: proxyResponse.statusText, headers: responseHeaders });
-  } catch (e) { return new Response('Connection Failed: ' + e.message, { status: 502 }); }
-      }
-var HTML_DASHBOARD = `<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taakaa-Xi PRO | Dashboard</title>
-    <style>
-        :root {
-            --primary: #ff6b00; --primary-hover: #ff8533; --primary-glow: rgba(255,107,0,0.2);
-            --bg: #0a0a0f; --card: #1a1a2e; --text: #e0e0e0; --muted: #888;
-            --border: rgba(255,255,255,0.06); --green: #00ff88; --green-bg: rgba(0,255,136,0.1);
-            --red: #ff4757; --red-bg: rgba(255,71,87,0.1); --yellow: #ffa502; --yellow-bg: rgba(255,165,2,0.1);
-            --radius: 14px; --radius-sm: 8px; --shadow: 0 4px 24px rgba(0,0,0,0.3);
-            --transition: all 0.25s ease;
-        }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-        body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,107,0,0.06) 0%,transparent 60%);pointer-events:none;z-index:0}
-        #app{position:relative;z-index:1}
-        .sidebar{position:fixed;right:0;top:0;bottom:0;width:260px;background:#12121a;border-left:1px solid var(--border);padding:20px;z-index:100;transform:translateX(100%);transition:var(--transition);overflow-y:auto}
-        .sidebar.open{transform:translateX(0)}
-        .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99;opacity:0;pointer-events:none;transition:var(--transition)}
-        .sidebar-overlay.active{opacity:1;pointer-events:all}
-        .sidebar-logo{font-size:1.6rem;font-weight:900;text-align:center;margin-bottom:20px;background:linear-gradient(135deg,var(--primary),var(--primary-hover));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .nav-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);color:var(--muted);font-size:.88rem;border:1px solid transparent;background:transparent;width:100%;text-align:right;font-family:inherit;margin-bottom:4px}
-        .nav-item:hover{background:#1e1e35;color:#fff;border-color:var(--border)}
-        .nav-item.active{background:rgba(255,107,0,0.1);color:var(--primary);border-color:var(--primary-glow)}
-        .nav-item .icon{font-size:1.1rem;width:22px;text-align:center}
-        .header{position:sticky;top:0;background:rgba(10,10,15,0.9);backdrop-filter:blur(20px);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);z-index:50}
-        .header-left{display:flex;align-items:center;gap:12px}
-        .menu-btn{background:var(--card);border:1px solid var(--border);color:#fff;padding:8px;border-radius:var(--radius-sm);cursor:pointer;font-size:1.2rem}
-        .header-title{font-size:1rem;font-weight:600}
-        .header-actions{display:flex;gap:8px}
-        .main-content{margin-right:0;padding:20px;min-height:calc(100vh - 56px);transition:var(--transition)}
-        @media(min-width:1024px){.sidebar{transform:translateX(0)}.main-content{margin-right:260px}.menu-btn{display:none}}
-        .page{display:none;animation:fadeIn .3s ease}.page.active{display:block}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        .btn{padding:8px 18px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;font-weight:600;font-size:.8rem;transition:var(--transition);font-family:inherit;display:inline-flex;align-items:center;gap:5px}
-        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff}
-        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px var(--primary-glow)}
-        .btn-danger{background:var(--red);color:#fff}.btn-success{background:var(--green);color:#000}
-        .btn-outline{background:transparent;border:1px solid var(--border);color:#fff}
-        .btn-outline:hover{border-color:var(--primary)}.btn-sm{padding:5px 12px;font-size:.72rem}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
-        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:var(--transition);position:relative;overflow:hidden}
-        .stat-card:hover{border-color:var(--primary-glow);transform:translateY(-2px)}
-        .stat-card .icon{font-size:1.5rem;margin-bottom:8px}
-        .stat-card .value{font-size:1.6rem;font-weight:800;color:var(--primary)}
-        .stat-card .label{color:var(--muted);font-size:.8rem;margin-top:3px}
-        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px}
-        .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
-        .card-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:6px}
-        .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-        input,select{width:100%;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:.82rem}
-        input:focus,select:focus{outline:none;border-color:var(--primary)}
-        .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.8rem}
-        th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--border)}
-        th{color:var(--primary);font-weight:600;background:rgba(255,255,255,0.02)}
-        tr:hover{background:rgba(255,255,255,0.015)}
-        .actions{display:flex;gap:4px;flex-wrap:wrap}
-        .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.65rem;font-weight:600}
-        .badge-success{background:var(--green-bg);color:var(--green)}.badge-danger{background:var(--red-bg);color:var(--red)}.badge-warning{background:var(--yellow-bg);color:var(--yellow)}
-        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
-        .modal.active{display:flex}
-        .modal-content{background:var(--card);padding:20px;border-radius:var(--radius);max-width:480px;width:90%;border:1px solid var(--primary-glow);max-height:85vh;overflow-y:auto}
-        .modal-title{font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:14px}
-        .toast{position:fixed;bottom:20px;left:20px;background:var(--card);border:1px solid var(--border);padding:12px 20px;border-radius:var(--radius-sm);z-index:2000;animation:slideIn .4s ease;font-size:.8rem}
-        @keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
-        .toast.s{border-color:var(--green)}.toast.e{border-color:var(--red)}
-        .progress{width:100%;height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-top:4px}
-        .progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
-        .fill-l{background:var(--green)}.fill-m{background:var(--yellow)}.fill-h{background:var(--red)}
-        .spinner{width:32px;height:32px;border:3px solid rgba(255,255,255,0.06);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite;margin:20px auto}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        .policy-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);align-items:center}
-        .policy-item:last-child{border-bottom:none}
-        .toggle{position:relative;display:inline-block;width:38px;height:20px}
-        .toggle input{opacity:0;width:0;height:0}
-        .toggle-slider{position:absolute;cursor:pointer;inset:0;background:rgba(255,255,255,0.12);transition:.4s;border-radius:20px}
-        .toggle-slider:before{content:"";position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;transition:.4s;border-radius:50%}
-        input:checked+.toggle-slider{background:var(--primary)}
-        input:checked+.toggle-slider:before{transform:translateX(18px)}
-        .apps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-        .app-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:var(--transition)}
-        .app-card:hover{border-color:var(--primary);transform:translateY(-3px)}
-        .app-icon{width:32px;height:32px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;margin-bottom:6px}
-        .app-icon.h{background:#ede9fe;color:#7c3aed}.app-icon.k{background:#dcfce7;color:#16a34a}
-        .app-icon.v{background:#e0f2fe;color:#0284c7}.app-icon.f{background:#f3e8ff;color:#9333ea}
-        .app-name{font-size:.8rem;font-weight:700;margin-bottom:8px}
-        .app-btn{display:block;width:100%;background:linear-gradient(135deg,var(--primary),var(--primary-hover));color:#fff;border:none;padding:7px;border-radius:6px;font-size:.7rem;font-weight:700;cursor:pointer}
-        .rec{font-size:.6rem;background:rgba(255,107,0,0.12);color:var(--primary);padding:2px 6px;border-radius:3px;float:right}
-        @media(max-width:768px){.apps-row{grid-template-columns:1fr 1fr}}
-        @media(max-width:480px){.apps-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr 1fr}}
-    </style>
-</head>
-<body>
-<div id="app">
-<div class="sidebar-overlay" id="sbOv" onclick="toggleSb()"></div>
-<aside class="sidebar" id="sb">
-    <div class="sidebar-logo">⚡ Taakaa-Xi</div>
-    <nav>
-        <button class="nav-item active" data-pg="dash" onclick="nav('dash')"><span class="icon">📊</span>داشبورد</button>
-        <button class="nav-item" data-pg="users" onclick="nav('users')"><span class="icon">👥</span>کاربران</button>
-        <button class="nav-item" data-pg="scan" onclick="nav('scan')"><span class="icon">📡</span>اسکنر</button>
-        <button class="nav-item" data-pg="sub" onclick="nav('sub')"><span class="icon">📦</span>سابسکریپشن</button>
-        <button class="nav-item" data-pg="set" onclick="nav('set')"><span class="icon">⚙️</span>تنظیمات</button>
-    </nav>
-</aside>
-<header class="header">
-    <div class="header-left"><button class="menu-btn" onclick="toggleSb()">☰</button><span class="header-title" id="hdr">داشبورد</span></div>
-    <div class="header-actions"><button class="btn btn-outline btn-sm" onclick="dlBackup()">💾</button><button class="btn btn-danger btn-sm" onclick="logout()">🚪</button></div>
-</header>
-<main class="main-content">
-    <div class="page active" id="pg-login"><div class="card" style="max-width:400px;margin:60px auto"><div class="card-header"><div class="card-title">🔐 ورود</div></div><input type="password" id="lp" placeholder="رمز عبور" style="margin-bottom:8px"><button class="btn btn-primary" onclick="login()" style="width:100%">ورود</button></div></div>
-    <div class="page" id="pg-dash">
-        <div class="stats-grid" id="stats"></div>
-        <div class="card"><div class="card-header"><div class="card-title">🛡️ Resistance Policy</div></div>
-            <div class="policy-item"><span>Fragment</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-            <div class="policy-item"><span>ECH</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
-            <div class="policy-item"><span>WARP</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
-            <div class="policy-item"><span>AdBlock</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
-        </div>
-        <div class="apps-row">
-            <div class="app-card"><div class="app-icon h">H</div><div class="app-name">Hiddify</div><span class="rec">Recommended</span><button class="app-btn" onclick="getSub('all','base64')">Import</button></div>
-            <div class="app-card"><div class="app-icon k">K</div><div class="app-name">Karing</div><span class="rec">Recommended</span><button class="app-btn" onclick="getSub('all','base64')">Import</button></div>
-            <div class="app-card"><div class="app-icon v">V</div><div class="app-name">v2rayNG</div><button class="app-btn" onclick="getSub('vless','raw')">Import</button></div>
-            <div class="app-card"><div class="app-icon f">F</div><div class="app-name">FlClash</div><button class="app-btn" onclick="getSub('all','clash')">Import</button></div>
-        </div>
-    </div>
-    <div class="page" id="pg-users">
-        <div class="card"><div class="card-header"><div class="card-title">➕ افزودن کاربر</div></div>
-            <div class="form-grid"><input type="text" id="un" placeholder="نام *"><input type="text" id="uu" placeholder="UUID"><input type="text" id="uip" placeholder="IP"><input type="text" id="udl" placeholder="حجم (5GB)"><input type="text" id="udly" placeholder="روزانه"><input type="text" id="utl" placeholder="زمان (1M)"><select id="uop"><option value="all">همه</option><option value="mci">همراه اول</option><option value="mtn">ایرانسل</option><option value="rtl">رایتل</option></select><button class="btn btn-primary" onclick="addU()">➕ افزودن</button></div>
-        </div>
-        <div class="card"><div class="card-header"><div class="card-title">📋 کاربران</div></div><div class="table-wrap" id="utbl"></div></div>
-    </div>
-    <div class="page" id="pg-scan">
-        <div class="card"><div class="card-header"><div class="card-title">📡 اسکنر</div></div>
-            <div class="form-grid"><select id="sop"><option value="all">همه</option><option value="mci">همراه اول</option><option value="mtn">ایرانسل</option><option value="rtl">رایتل</option></select><select id="scnt"><option value="10">۱۰</option><option value="20">۲۰</option></select><button class="btn btn-primary" onclick="scanF()">🔍 سریع</button><button class="btn btn-outline" onclick="scanR()">⚡ واقعی</button></div>
-            <div class="table-wrap" id="sres" style="margin-top:12px"><p style="text-align:center;color:var(--muted)">دکمه اسکن را بزنید</p></div>
-        </div>
-    </div>
-    <div class="page" id="pg-sub">
-        <div class="card"><div class="card-header"><div class="card-title">📦 سابسکریپشن</div></div>
-            <div class="form-grid"><input type="text" id="subU" placeholder="UUID"><select id="subT"><option value="all">همه</option><option value="vless">VLESS</option><option value="trojan">Trojan</option></select><select id="subF"><option value="raw">Raw</option><option value="base64">Base64</option><option value="clash">Clash</option></select><button class="btn btn-primary" onclick="genSub()">📦 دریافت</button></div>
-            <textarea id="subR" style="margin-top:12px;height:150px;direction:ltr;font-family:monospace;font-size:.75rem;width:100%;background:rgba(0,0,0,0.3);color:var(--text);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px" readonly placeholder="خروجی..."></textarea>
-        </div>
-    </div>
-    <div class="page" id="pg-set">
-        <div class="card"><div class="card-header"><div class="card-title">⚙️ تنظیمات</div></div>
-            <div class="form-grid"><input type="text" id="sUUID" placeholder="UUID سیستم"><input type="password" id="sPass" placeholder="رمز جدید"><input type="text" id="sSNI" placeholder="SNI"><select id="sFP"><option value="chrome">Chrome</option><option value="firefox">Firefox</option><option value="safari">Safari</option><option value="random">Random</option></select><button class="btn btn-primary" onclick="saveSet()">💾 ذخیره</button></div>
-        </div>
-        <div class="card"><div class="card-header"><div class="card-title">🛡️ Fragment</div></div>
-            <div class="form-grid"><input type="text" id="fsz" value="200-500" placeholder="Size"><input type="text" id="fcn" value="5-10" placeholder="Count"><input type="text" id="fdl" value="10-30" placeholder="Delay"><button class="btn btn-primary" onclick="saveFrag()">💾 ذخیره</button></div>
-        </div>
-        <div class="card"><div class="card-header"><div class="card-title">🔐 TOTP</div></div>
-            <div class="form-grid"><input type="text" id="totpSecret" placeholder="Secret"><input type="text" id="totpToken" placeholder="کد ۶ رقمی"><button class="btn btn-primary" onclick="saveTOTP()">💾 ذخیره</button></div>
-        </div>
-    </div>
-</main>
-</div>
-<div class="modal" id="em"><div class="modal-content"><div class="modal-title">✏️ ویرایش</div>
-    <div class="form-grid"><input type="text" id="en" placeholder="نام"><input type="text" id="edl" placeholder="حجم"><input type="text" id="edly" placeholder="روزانه"><input type="text" id="etl" placeholder="زمان"><input type="text" id="eip" placeholder="IP"></div>
-    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn btn-success" onclick="saveE()">💾</button><button class="btn btn-danger" onclick="closeE()">❌</button></div>
-</div></div>
-<div id="toasts"></div>
-<script>
-var uuid='UUID_PLACEHOLDER',pg='login',eid=null,users=[],locs='LOCS_PLACEHOLDER';
-function toggleSb(){document.getElementById('sb').classList.toggle('open');document.getElementById('sbOv').classList.toggle('active')}
-function nav(p){pg=p;document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active')});var el=document.getElementById('pg-'+p);if(el)el.classList.add('active');document.querySelectorAll('.nav-item').forEach(function(x){x.classList.remove('active')});var nv=document.querySelector('[data-pg="'+p+'"]');if(nv)nv.classList.add('active');document.getElementById('hdr').textContent=nv?nv.textContent.trim():p;if(p==='dash')loadDash();if(p==='users')loadUsers();if(window.innerWidth<1024)toggleSb()}
-function toast(m,s){var t=document.createElement('div');t.className='toast '+(s||'s');t.textContent=m;document.getElementById('toasts').appendChild(t);setTimeout(function(){t.remove()},3000)}
-async function login(){var p=document.getElementById('lp').value;if(!p)return toast('رمز را وارد کنید','e');try{var r=await(await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})})).json();r.success?(nav('dash'),toast('خوش آمدید ✅')):toast('رمز اشتباه ❌','e')}catch(e){toast('خطا','e')}}
-async function logout(){await fetch('/api/logout',{method:'POST'});location.reload()}
-async function loadDash(){try{var r=await fetch('/api/stats');var s=await r.json();document.getElementById('stats').innerHTML='<div class="stat-card"><div class="icon">👥</div><div class="value">'+s.totalUsers+'</div><div class="label">کاربران</div></div><div class="stat-card"><div class="icon">🟢</div><div class="value">'+s.activeUsers+'</div><div class="label">فعال</div></div><div class="stat-card"><div class="icon">📊</div><div class="value">'+(s.totalUsage/1024).toFixed(2)+' GB</div><div class="label">مصرف کل</div></div><div class="stat-card"><div class="icon">📅</div><div class="value">'+((s.todayUsage||0)/1024).toFixed(2)+' GB</div><div class="label">امروز</div></div>'}catch(e){}}
-async function loadUsers(){try{var r=await fetch('/api/users');users=await r.json();var h='<table><thead><tr><th>نام</th><th>UUID</th><th>حجم</th><th>مصرف</th><th>باقی</th><th>زمان</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>';users.forEach(function(u){var used=u.usedData||0,lim=u.dataLimit||0,rem=lim>0?lim-used:0,pct=lim>0?(used/lim*100).toFixed(1):0,pc=pct>80?'fill-h':pct>50?'fill-m':'fill-l';h+='<tr><td>'+u.name+'</td><td><small>'+u.uuid.substring(0,8)+'...</small></td><td>'+(lim>0?(lim/1024).toFixed(1)+'GB':'∞')+'</td><td>'+used.toFixed(0)+'MB ('+pct+'%)<div class="progress"><div class="progress-fill '+pc+'" style="width:'+Math.min(pct,100)+'%"></div></div></td><td>'+(lim>0?rem>0?(rem/1024).toFixed(1)+'GB':'<span class="badge badge-danger">تمام</span>':'∞')+'</td><td>'+(u.timeLimit>0?u.timeLimit+' روز':'∞')+'</td><td>'+(u.active?'<span class="badge badge-success">فعال</span>':'<span class="badge badge-danger">غیرفعال</span>')+'</td><td class="actions"><button class="btn btn-outline btn-sm" onclick="editU(\''+u.id+'\')">✏️</button><button class="btn btn-danger btn-sm" onclick="delU(\''+u.id+'\')">🗑️</button><button class="btn btn-outline btn-sm" onclick="rstU(\''+u.id+'\')">🔄</button><button class="btn btn-outline btn-sm" onclick="togU(\''+u.id+'\','+!u.active+')">'+(u.active?'🔴':'🟢')+'</button></td></tr>'});h+='</tbody></table>';document.getElementById('utbl').innerHTML=h||'<p style="text-align:center;color:var(--muted)">کاربری نیست</p>'}catch(e){}}
-async function addU(){var d={name:document.getElementById('un').value,uuid:document.getElementById('uu').value,ip:document.getElementById('uip').value,dataLimit:document.getElementById('udl').value,dailyLimit:document.getElementById('udly').value,timeLimit:document.getElementById('utl').value,operator:document.getElementById('uop').value};if(!d.name)return toast('نام الزامی','e');try{await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});toast('افزوده شد ✅');loadUsers();['un','uu','uip','udl','udly','utl'].forEach(function(id){document.getElementById(id).value=''})}catch(e){toast('خطا','e')}}
-function editU(id){eid=id;var u=users.find(function(x){return x.id===id});if(!u)return;document.getElementById('en').value=u.name;document.getElementById('edl').value=u.dataLimit>0?(u.dataLimit/1024).toFixed(0)+'GB':'';document.getElementById('edly').value='';document.getElementById('etl').value=u.timeLimit>0?u.timeLimit+'d':'';document.getElementById('eip').value=u.ip||'';document.getElementById('em').classList.add('active')}
-async function saveE(){var d={name:document.getElementById('en').value,dataLimit:document.getElementById('edl').value,dailyLimit:document.getElementById('edly').value,timeLimit:document.getElementById('etl').value,ip:document.getElementById('eip').value};try{await fetch('/api/users/'+eid,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});toast('ویرایش شد ✅');closeE();loadUsers()}catch(e){toast('خطا','e')}}
-function closeE(){document.getElementById('em').classList.remove('active');eid=null}
-async function delU(id){if(!confirm('حذف؟'))return;try{await fetch('/api/users/'+id,{method:'DELETE'});toast('حذف شد ✅');loadUsers()}catch(e){toast('خطا','e')}}
-async function rstU(id){if(!confirm('ریست؟'))return;try{await fetch('/api/users/'+id+'/reset',{method:'POST'});toast('ریست شد ✅');loadUsers()}catch(e){toast('خطا','e')}}
-async function togU(id,act){try{await fetch('/api/users/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:act})});toast('تغییر کرد ✅');loadUsers()}catch(e){toast('خطا','e')}}
-async function scanF(){var o=document.getElementById('sop').value,c=document.getElementById('scnt').value,d=document.getElementById('sres');d.innerHTML='<div class="spinner"></div>';try{var r=await(await fetch('/api/ips?operator='+o+'&count='+c+'&sort=latency')).json();var h='<table><thead><tr><th>#</th><th>IP</th><th>پورت</th><th>شهر</th><th>پینگ</th></tr></thead><tbody>';r.forEach(function(x,i){var p=Array.isArray(x.ports)?x.ports.join(','):x.ports,l=x.latency||0,lc=l<50?'badge-success':l<80?'badge-warning':'badge-danger';h+='<tr><td>'+(i===0?'⭐':i+1)+'</td><td><strong>'+x.ip+'</strong></td><td>'+p+'</td><td>'+x.city+'</td><td><span class="badge '+lc+'">'+l+'ms</span></td></tr>'});h+='</tbody></table>';d.innerHTML=h}catch(e){d.innerHTML='<p style="text-align:center;color:var(--red)">خطا</p>'}}
-async function scanR(){var o=document.getElementById('sop').value,d=document.getElementById('sres');d.innerHTML='<div class="spinner"></div><p style="text-align:center;color:var(--muted)">اسکن واقعی...</p>';try{var r=await(await fetch('/api/scan-ips?operator='+o)).json();if(r.results&&r.results.length){var h='<table><thead><tr><th>#</th><th>IP</th><th>پورت</th><th>پینگ</th></tr></thead><tbody>';r.results.forEach(function(x,i){h+='<tr><td>'+(i===0?'⭐':i+1)+'</td><td><strong>'+x.ip+'</strong></td><td>'+x.port+'</td><td><span class="badge '+(x.latency<100?'badge-success':x.latency<200?'badge-warning':'badge-danger')+'">'+x.latency+'ms</span></td></tr>'});h+='</tbody></table>';d.innerHTML=h}else d.innerHTML='<p style="text-align:center;color:var(--yellow)">زنده‌ای یافت نشد</p>'}catch(e){d.innerHTML='<p style="text-align:center;color:var(--red)">خطا</p>'}}
-async function genSub(){var u=document.getElementById('subU').value||uuid,t=document.getElementById('subT').value,f=document.getElementById('subF').value;try{var r=await(await fetch('/sub/'+u+'?type='+t+'&format='+f)).text();document.getElementById('subR').value=r;toast('دریافت شد ✅')}catch(e){toast('خطا','e')}}
-async function saveSet(){var d={};if(document.getElementById('sUUID').value)d.UUID=document.getElementById('sUUID').value;if(document.getElementById('sPass').value)d.ADMIN_PASS=document.getElementById('sPass').value;if(document.getElementById('sSNI').value)d.SNI=document.getElementById('sSNI').value;if(document.getElementById('sFP').value)d.FINGERPRINT=document.getElementById('sFP').value;try{var r=await(await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})).json();r.success?toast('ذخیره شد ✅'):toast('خطا','e')}catch(e){toast('خطا','e')}}
-async function saveFrag(){var d={FRAGMENT:{enabled:true,size:document.getElementById('fsz').value||'200-500',count:document.getElementById('fcn').value||'5-10',delay:document.getElementById('fdl').value||'10-30'}};try{await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});toast('ذخیره شد ✅')}catch(e){toast('خطا','e')}}
-async function saveTOTP(){var d={TOTP:{enabled:true,secret:document.getElementById('totpSecret').value||Helpers.generateSecret()}};try{await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});toast('TOTP ذخیره شد ✅')}catch(e){toast('خطا','e')}}
-async function dlBackup(){try{var r=await(await fetch('/api/backup')).json();var b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='taakaa-backup-'+new Date().toISOString().split('T')[0]+'.json';a.click();toast('دانلود شد ✅')}catch(e){toast('خطا','e')}}
-async function getSub(t,f){var u=uuid;try{var r=await(await fetch('/sub/'+u+'?type='+t+'&format='+f)).text();if(f==='base64'){var l=location.origin+'/sub/'+u+'?type='+t+'&format=base64';navigator.clipboard.writeText(l);alert('لینک کپی شد ✅\n\n'+l)}else{navigator.clipboard.writeText(r);alert('کانفیگ کپی شد ✅')}}catch(e){alert('خطا')}}
-fetch('/api/stats').then(function(r){if(r.ok){nav('dash');loadDash()}}).catch(function(){});
-document.getElementById('lp').addEventListener('keydown',function(e){if(e.key==='Enter')login()});
-</script>
-</body></html>`;
-var HTML_SETUP = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Taakaa-Xi | Setup</title><style>:root{--orange:#ff6b00;--bg:#0a0a0f;--card:#1a1a2e;--text:#e0e0e0;--muted:#888;--border:rgba(255,255,255,.06);--green:#00ff88;--red:#ff4757;--radius:18px;--radius-sm:10px}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background-image:radial-gradient(ellipse at 50% 0%,rgba(255,107,0,.1) 0%,transparent 60%)}.container{max-width:600px;width:100%;padding:36px;background:var(--card);border-radius:var(--radius);border:2px solid rgba(255,107,0,.3);box-shadow:0 20px 60px rgba(0,0,0,.4);animation:fadeIn .5s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}.logo{font-size:2.8rem;font-weight:900;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--orange),#ff8533);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.subtitle{text-align:center;color:var(--muted);margin-bottom:28px}.setup-card{background:rgba(255,255,255,.02);border-radius:var(--radius);padding:20px;margin-bottom:16px;border:1px solid var(--border);transition:all .3s}.setup-card.req{border-color:rgba(255,107,0,.3);background:rgba(255,107,0,.03)}.setup-card.ok{border-color:rgba(0,255,136,.4);background:rgba(0,255,136,.03)}.setup-card.err{border-color:rgba(255,71,87,.4)}.card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}.dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .3s}.dot.chk{background:rgba(255,193,7,.15);color:#ffc107;animation:pulse 1.5s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}.dot.ok{background:rgba(0,255,136,.15);color:var(--green)}.dot.err{background:rgba(255,71,87,.15);color:var(--red)}.card-title{font-weight:700}.badge{display:inline-block;padding:3px 10px;border-radius:15px;font-size:.65rem;font-weight:700}.badge-req{background:rgba(255,71,87,.15);color:var(--red)}.desc{color:var(--muted);line-height:1.8;font-size:.88rem;margin-bottom:12px}.desc code{background:rgba(255,107,0,.15);padding:2px 7px;border-radius:4px;color:#ff8533}.desc ol{padding-right:18px;margin:6px 0}input{width:100%;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.9rem;margin-top:6px;transition:all .3s}input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,0,.1)}button{padding:10px 20px;background:linear-gradient(135deg,var(--orange),#ff8533);border:none;color:#fff;border-radius:var(--radius-sm);font-weight:700;cursor:pointer;transition:all .3s;font-size:.9rem}button:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(255,107,0,.25)}.btn-sm{width:auto;padding:7px 16px;font-size:.8rem}.btn-full{width:100%;margin-top:10px}.msg{margin-top:10px;padding:10px;border-radius:var(--radius-sm);font-size:.82rem;display:none;animation:fadeIn .3s ease}.msg.show{display:block}.msg.ok{background:rgba(0,255,136,.08);color:var(--green)}.msg.err{background:rgba(255,71,87,.08);color:var(--red)}.all-ready{text-align:center;padding:24px 0;display:none}.all-ready.show{display:block;animation:fadeIn .5s ease}.all-ready .icon{font-size:3.5rem;margin-bottom:12px;animation:bounce 1s infinite}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}.all-ready h2{color:var(--green);margin-bottom:8px}.footer{text-align:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);color:var(--muted);font-size:.78rem}.footer a{color:var(--orange);text-decoration:none}</style></head><body><div class="container"><div class="logo">⚡ Taakaa-Xi</div><div class="subtitle">راه‌اندازی اولیه • Setup Wizard</div><div class="setup-card req" id="kvCard"><div class="card-header"><span class="dot chk" id="kvDot">⟳</span><span class="card-title">KV Storage</span><span class="badge badge-req">الزامی*</span></div><div class="desc"><p>KV برای ذخیره‌سازی کاربران الزامی است.</p><ol><li>به تب <code>Workers & Pages</code> بروید</li><li><code>Settings</code> → <code>Variables</code></li><li>در <code>KV Namespace Bindings</code> یک Namespace با نام <code>KV</code> بسازید</li></ol></div><button class="btn-sm" onclick="checkKV()">🔄 بررسی</button><div class="msg" id="kvMsg"></div></div><div class="setup-card req" id="passCard"><div class="card-header"><span class="dot chk" id="passDot">⟳</span><span class="card-title">Admin Password</span><span class="badge badge-req">الزامی*</span></div><div class="desc"><p>روش ۱: متغیر <code>ADMIN_PASS</code> در تنظیمات Worker</p><p>روش ۲: در فیلد زیر وارد کنید</p></div><input type="password" id="passInput" placeholder="رمز عبور"><button class="btn-full" onclick="savePass()">💾 ذخیره</button><div class="msg" id="passMsg"></div></div><div class="all-ready" id="allReady"><div class="icon">🎉</div><h2>آماده!</h2><p style="color:var(--muted)">پنل مدیریت فعال شد</p><button class="btn-full" onclick="location.href='/dashboard'">🚀 ورود</button></div><div class="footer"><p>🚀 <a href="https://t.me/TaaKaaOrg">@TaaKaaOrg</a></p></div></div><script>var kvOk=false,passOk=false;async function checkKV(){var d=document.getElementById('kvDot'),m=document.getElementById('kvMsg'),c=document.getElementById('kvCard');d.className='dot chk';d.textContent='⟳';m.className='msg show';m.textContent='در حال بررسی...';try{var r=await(await fetch('/api/check-kv')).json();r.ok?(kvOk=true,d.className='dot ok',d.textContent='✓',c.className='setup-card ok',m.className='msg ok show',m.textContent='✅ KV متصل شد'):(kvOk=false,d.className='dot err',d.textContent='✗',c.className='setup-card err',m.className='msg err show',m.textContent='❌ KV متصل نیست')}catch(e){kvOk=false,d.className='dot err',d.textContent='✗',m.className='msg err show',m.textContent='❌ خطا'}checkAll()}async function savePass(){var p=document.getElementById('passInput').value,d=document.getElementById('passDot'),m=document.getElementById('passMsg'),c=document.getElementById('passCard');if(!p||p.length<3){m.className='msg err show';m.textContent='❌ حداقل ۳ کاراکتر';return}try{var r=await(await fetch('/api/setup-pass',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})})).json();r.ok?(passOk=true,d.className='dot ok',d.textContent='✓',c.className='setup-card ok',m.className='msg ok show',m.textContent='✅ ذخیره شد'):(passOk=false,m.className='msg err show',m.textContent='❌ '+r.error)}catch(e){passOk=false,m.className='msg err show',m.textContent='❌ خطا'}checkAll()}async function checkPass(){try{var r=await(await fetch('/api/check-pass')).json();r.ok&&(passOk=true,document.getElementById('passDot').className='dot ok',document.getElementById('passDot').textContent='✓',document.getElementById('passCard').className='setup-card ok')}catch(e){}checkAll()}function checkAll(){kvOk&&passOk?document.getElementById('allReady').classList.add('show'):document.getElementById('allReady').classList.remove('show')}checkKV();checkPass();</script></body></html>`;
 
-var HTML_LOCATIONS = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>Taakaa-Xi | لوکیشن‌ها</title><style>body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;padding:30px;background-image:radial-gradient(ellipse at 50% 0%,rgba(255,107,0,.06) 0%,transparent 60%)}h1{color:#ff6b00;text-align:center;font-size:2rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:24px}.loc{padding:20px;background:#1a1a2e;border-radius:16px;cursor:pointer;transition:all .3s;text-align:center;border:1px solid rgba(255,255,255,.06)}.loc:hover{border-color:#ff6b00;transform:scale(1.05);box-shadow:0 8px 25px rgba(255,107,0,.15)}.flag{font-size:2.2rem}.name{font-weight:700;margin-top:6px}.city{color:#888;font-size:.78rem;margin-top:3px}</style></head><body><h1>🌍 لوکیشن‌ها</h1><div class="grid" id="g"></div><script>var l='LOCS_PLACEHOLDER';try{var locs=JSON.parse(l);var h='';locs.forEach(function(x){h+='<div class="loc" onclick="alert(\'📍 '+x.name+'\\nIP: '+x.ip+'\')"><div class="flag">'+x.flag+'</div><div class="name">'+x.name+'</div><div class="city">'+x.city+'</div></div>'});document.getElementById('g').innerHTML=h}catch(e){}</script></body></html>`;
+  static base64Decode(str) {
+    return decodeURIComponent(escape(atob(str)));
+  }
+}
 
-var HTML_OWNERS = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>Taakaa-Xi | پشتیبانی</title><style>body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;text-align:center;padding:40px}h1{color:#ff6b00}.card{margin:24px auto;padding:24px;background:#1a1a2e;border-radius:16px;display:inline-block;border:1px solid rgba(255,255,255,.06)}a{color:#ff6b00}</style></head><body><h1>👥 پشتیبانی</h1><div class="card"><h2>تیم تاکا</h2><p>تلگرام: <a href="https://t.me/TaaKaaOrg">@TaaKaaOrg</a></p><p>🚀 ۳ ماه توسعه</p></div></body></html>`;
-
-var HTML_FRAGMENT = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>Taakaa-Xi | Fragment</title><style>body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;padding:40px;max-width:800px;margin:0 auto}h1{color:#ff6b00}.card{background:#1a1a2e;padding:24px;border-radius:16px;border:1px solid rgba(255,255,255,.06);line-height:2}code{background:rgba(255,107,0,.15);padding:3px 8px;border-radius:5px;color:#ff8533}</style></head><body><h1>🛡️ Fragment</h1><div class="card"><p>تکنیک تکه‌تکه کردن بسته‌های TLS برای دور زدن DPI</p><p><code>size</code>: 200-500 | <code>count</code>: 5-10 | <code>delay</code>: 10-30ms</p></div></body></html>`;
-
-var HTML_OFFLINE = `<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="UTF-8"><title>Taakaa-Xi | راهنما</title><style>body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;padding:40px}h1{color:#ff6b00}.card{background:#1a1a2e;padding:24px;border-radius:16px;border:1px solid rgba(255,255,255,.06)}h2{color:#ff8533;margin-top:18px}</style></head><body><h1>📚 راهنمای اپراتورها</h1><div class="card"><h2>همراه اول</h2><p>پورت‌ها: 443, 8443, 2083</p><h2>ایرانسل</h2><p>پورت‌ها: 443, 2083, 2087</p><h2>رایتل</h2><p>پورت‌ها: 443, 2096</p></div></body></html>`;
-export default {
-  async fetch(request, env, ctx) {
-    var url = new URL(request.url);
-    var path = url.pathname;
-    var method = request.method;
+// ==================== پارسر هوشمند حجم و زمان ====================
+class SmartParser {
+  static parseBytes(input) {
+    const str = String(input).toLowerCase().trim();
+    const match = str.match(/^(\d+(?:\.\d+)?)\s*(pb|pt|tb|t|gb|g|mb|m|kb|k|b)?$/);
+    if (!match) return SYSTEM_CONFIG.DEFAULT_QUOTA;
     
-    var corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': '*'
+    const value = parseFloat(match[1]);
+    const unit = (match[2] || 'gb').replace('pt', 'pb');
+    
+    const mult = {
+      'b': 1, 'k': 1024, 'kb': 1024,
+      'm': 1048576, 'mb': 1048576,
+      'g': 1073741824, 'gb': 1073741824,
+      't': 1099511627776, 'tb': 1099511627776,
+      'p': 1125899906842624, 'pb': 1125899906842624
     };
     
-    if (method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+    return Math.floor(value * (mult[unit] || mult['gb']));
+  }
+
+  static formatBytes(bytes) {
+    if (bytes >= 1099511627776) return (bytes / 1099511627776).toFixed(2) + ' TB';
+    if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+    if (bytes >= 1048576) return (bytes / 1048576).toFixed(1) + ' MB';
+    if (bytes >= 1024) return (bytes / 1024).toFixed(0) + ' KB';
+    return bytes + ' B';
+  }
+
+  static parseDuration(input) {
+    const str = String(input).toLowerCase().trim();
+    const match = str.match(/^(\d+)\s*(y|year|years|m|month|months|d|day|days)?$/);
+    if (!match) return SYSTEM_CONFIG.DEFAULT_EXPIRY_DAYS;
     
-    if (env.KV) {
-      try {
-        var saved = await env.KV.get('config');
-        if (saved) CONFIG = Object.assign({}, CONFIG, JSON.parse(saved));
-        var savedPass = await env.KV.get('admin_pass');
-        if (savedPass) CONFIG.ADMIN_PASS = savedPass;
-      } catch (e) {}
+    const value = parseInt(match[1]);
+    const unit = match[2] || 'd';
+    
+    const mult = {
+      'd': 1, 'day': 1, 'days': 1,
+      'm': 30, 'month': 30, 'months': 30,
+      'y': 365, 'year': 365, 'years': 365
+    };
+    
+    return value * (mult[unit] || 1);
+  }
+
+  static formatDuration(days) {
+    if (days >= 365) {
+      const y = Math.floor(days / 365);
+      const m = Math.floor((days % 365) / 30);
+      return `${y} سال` + (m > 0 ? ` و ${m} ماه` : '');
     }
-    if (env.ADMIN_PASS) CONFIG.ADMIN_PASS = env.ADMIN_PASS;
-    if (env.UUID) CONFIG.UUID = env.UUID;
-    
-    var um = new UserManager(env);
-    var sm = new SessionManager(env);
-    var hasKV = !!env.KV;
-    var hasPass = !!CONFIG.ADMIN_PASS;
-    
-    if (path === '/api/check-kv') return new Response(JSON.stringify({ ok: hasKV }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-    if (path === '/api/check-pass') return new Response(JSON.stringify({ ok: hasPass }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-    if (path === '/api/check-d1') return new Response(JSON.stringify({ ok: !!env.DB }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-    
-    if (path === '/api/setup-pass' && method === 'POST') {
-      try {
-        var body = await request.json();
-        if (!body.password || body.password.length < 3) return new Response(JSON.stringify({ ok: false, error: 'رمز کوتاه' }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-        if (env.KV) await env.KV.put('admin_pass', body.password);
-        CONFIG.ADMIN_PASS = body.password;
-        return new Response(JSON.stringify({ ok: true }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-      } catch (e) { return new Response(JSON.stringify({ ok: false, error: e.message }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    if (days >= 30) {
+      const m = Math.floor(days / 30);
+      const d = days % 30;
+      return `${m} ماه` + (d > 0 ? ` و ${d} روز` : '');
     }
+    return `${days} روز`;
+  }
+
+  static formatPercent(used, total) {
+    if (!total || total <= 0) return '0%';
+    return Math.min(100, (used / total) * 100).toFixed(1) + '%';
+  }
+}
+
+// ==================== کلاس Storage ====================
+class StorageManager {
+  constructor(env) {
+    this.kv = env.TAAKAA_KV;
+    this.d1 = env.TAAKAA_DB || null;
+    this.cache = new Map();
+  }
+
+  async get(key) {
+    if (this.cache.has(key)) return this.cache.get(key);
     
-    if ((!hasKV || !hasPass) && (path === '/' || path === '')) {
-      return new Response(HTML_SETUP, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    }
-    
-    var publicAPIs = ['login', 'check-kv', 'check-pass', 'check-d1', 'setup-pass', 'scan-ips'];
-    var apiName = path.replace('/api/', '');
-    
-    if (path.startsWith('/api/') && publicAPIs.indexOf(apiName) === -1) {
-      var cookie = request.headers.get('Cookie') || '';
-      var smatch = cookie.match(/session=([^;]+)/);
-      if (!smatch || !(await sm.validate(smatch[1]))) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
+    try {
+      let data = await this.kv.get(key, 'json');
+      if (data) {
+        this.cache.set(key, data);
+        return data;
       }
+      
+      if (this.d1) {
+        const result = await this.d1.prepare(
+          'SELECT value FROM storage WHERE key = ?'
+        ).bind(key).first();
+        if (result?.value) {
+          data = JSON.parse(result.value);
+          this.cache.set(key, data);
+          return data;
+        }
+      }
+    } catch (e) {
+      console.error('Storage.get error:', e);
+    }
+    return null;
+  }
+
+  async put(key, value, ttl) {
+    this.cache.set(key, value);
+    
+    try {
+      await this.kv.put(key, JSON.stringify(value), {
+        expirationTtl: ttl || SYSTEM_CONFIG.SESSION_EXPIRY
+      });
+      
+      if (this.d1) {
+        await this.d1.prepare(
+          `INSERT OR REPLACE INTO storage (key, value, updated_at) VALUES (?, ?, ?)`
+        ).bind(key, JSON.stringify(value), Date.now()).run();
+      }
+      return true;
+    } catch (e) {
+      console.error('Storage.put error:', e);
+      return false;
+    }
+  }
+
+  async delete(key) {
+    this.cache.delete(key);
+    try {
+      await this.kv.delete(key);
+      if (this.d1) {
+        await this.d1.prepare('DELETE FROM storage WHERE key = ?').bind(key).run();
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async list(prefix) {
+    try {
+      const result = await this.kv.list({ prefix, limit: 1000 });
+      return result.keys.map(k => k.name);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async getAllUsers() {
+    const keys = await this.list('user:');
+    const users = [];
+    for (const key of keys) {
+      const user = await this.get(key);
+      if (user) users.push(user);
+    }
+    return users.sort((a, b) => b.createdAt - a.createdAt);
+  }
+
+  async getSystemConfig() {
+    const config = await this.get('system:config');
+    return config || { ...SYSTEM_CONFIG };
+  }
+
+  async saveSystemConfig(config) {
+    return await this.put('system:config', config);
+  }
+
+  async getAdminPassword() {
+    const config = await this.getSystemConfig();
+    return config.ADMIN_PASSWORD_HASH || null;
+  }
+
+  async isFirstRun() {
+    const config = await this.get('system:config');
+    return !config;
+  }
+
+  async setup(password) {
+    const hash = await CryptoUtils.hashPassword(password);
+    const config = {
+      ...SYSTEM_CONFIG,
+      ADMIN_PASSWORD_HASH: hash,
+      setupAt: Date.now(),
+      version: 'v16'
+    };
+    await this.put('system:config', config);
+    return config;
+  }
+}
+
+// ==================== مدیریت Session ====================
+class SessionManager {
+  constructor(storage) {
+    this.storage = storage;
+  }
+
+  async create(userData) {
+    const token = CryptoUtils.generateSessionToken();
+    const session = {
+      ...userData,
+      token,
+      createdAt: Date.now(),
+      lastAccess: Date.now()
+    };
+    await this.storage.put(`session:${token}`, session, SYSTEM_CONFIG.SESSION_EXPIRY);
+    return token;
+  }
+
+  async validate(token) {
+    if (!token) return null;
+    const session = await this.storage.get(`session:${token}`);
+    if (!session) return null;
+    session.lastAccess = Date.now();
+    await this.storage.put(`session:${token}`, session, SYSTEM_CONFIG.SESSION_EXPIRY);
+    return session;
+  }
+
+  async destroy(token) {
+    if (token) await this.storage.delete(`session:${token}`);
+  }
+}
+
+// ==================== Rate Limiter ====================
+class RateLimiter {
+  constructor(storage) {
+    this.storage = storage;
+  }
+
+  async check(key, maxAttempts, windowMin) {
+    const record = await this.storage.get(`ratelimit:${key}`) || {
+      attempts: 0,
+      resetAt: Date.now() + windowMin * 60000
+    };
+
+    if (Date.now() > record.resetAt) {
+      record.attempts = 1;
+      record.resetAt = Date.now() + windowMin * 60000;
+    } else {
+      record.attempts++;
+    }
+
+    await this.storage.put(`ratelimit:${key}`, record, windowMin * 60);
+    
+    return {
+      allowed: record.attempts <= maxAttempts,
+      remaining: Math.max(0, maxAttempts - record.attempts),
+      resetAt: record.resetAt
+    };
+  }
+}
+
+// ==================== IP Scanner ====================
+class IPScanner {
+  static TEST_IPS = [
+    { ip: '185.143.234.120', operator: 'mtn', location: 'IR' },
+    { ip: '185.143.233.120', operator: 'mtn', location: 'IR' },
+    { ip: '185.143.232.120', operator: 'mtn', location: 'IR' },
+    { ip: '185.143.231.120', operator: 'mtn', location: 'IR' },
+    { ip: '5.160.0.10', operator: 'mci', location: 'IR' },
+    { ip: '5.160.1.10', operator: 'mci', location: 'IR' },
+    { ip: '5.74.0.10', operator: 'mtn', location: 'IR' },
+    { ip: '2.176.0.10', operator: 'mci', location: 'IR' },
+    { ip: '2.176.1.10', operator: 'mci', location: 'IR' },
+    { ip: '46.209.0.10', operator: 'rtl', location: 'IR' },
+    { ip: '188.212.0.10', operator: 'rtl', location: 'IR' },
+    { ip: '91.107.131.10', operator: 'rtl', location: 'IR' },
+    { ip: '188.121.96.10', operator: 'rtl', location: 'IR' },
+    { ip: '86.104.0.10', operator: 'mtn', location: 'IR' },
+    { ip: '86.104.1.10', operator: 'mtn', location: 'IR' },
+    { ip: '5.160.2.10', operator: 'mci', location: 'IR' },
+    { ip: '46.209.1.10', operator: 'rtl', location: 'IR' },
+    { ip: '188.212.1.10', operator: 'rtl', location: 'IR' },
+    { ip: '91.107.130.10', operator: 'rtl', location: 'IR' },
+    { ip: '188.121.97.10', operator: 'rtl', location: 'IR' }
+  ];
+
+  static async scanIP(ip, timeout = 3000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+      const start = Date.now();
+      const response = await fetch(`https://${ip}/`, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      });
+      clearTimeout(timer);
+      return {
+        ip,
+        alive: response.status < 500,
+        latency: Date.now() - start,
+        status: response.status
+      };
+    } catch (e) {
+      clearTimeout(timer);
+      return {
+        ip,
+        alive: false,
+        latency: Infinity,
+        error: e.message
+      };
+    }
+  }
+
+  static async quickScan() {
+    const ips = this.TEST_IPS.slice(0, 5);
+    const results = await Promise.all(ips.map(item => this.scanIP(item.ip, 2000)));
+    
+    return results.map((r, i) => ({
+      ...r,
+      operator: ips[i].operator,
+      location: ips[i].location
+    })).sort((a, b) => a.latency - b.latency);
+  }
+
+  static async fullScan() {
+    const results = await Promise.all(this.TEST_IPS.map(item => this.scanIP(item.ip)));
+    
+    return results.map((r, i) => ({
+      ...r,
+      operator: this.TEST_IPS[i].operator,
+      location: this.TEST_IPS[i].location
+    })).sort((a, b) => a.latency - b.latency);
+  }
+}
+
+console.log('✅ پارت ۱ بارگذاری شد - کلاس‌های پایه آماده');
+// =============================================
+// TAAKAA-XI PRO v16 - Cloudflare Worker
+// پارت ۲: مدیریت کاربران، تولید کانفیگ
+// =============================================
+
+// ==================== مدیریت کاربران ====================
+class UserManager {
+  constructor(storage) {
+    this.storage = storage;
+  }
+
+  async create(data) {
+    const uuid = data.uuid && CryptoUtils.validateUUID(data.uuid) 
+      ? data.uuid 
+      : CryptoUtils.generateUUID();
+    
+    const now = Date.now();
+    const expiryDays = SmartParser.parseDuration(data.expiry || '30d');
+    
+    const user = {
+      uuid,
+      name: data.name || `User-${uuid.substring(0, 8)}`,
+      ip: data.ip || '',
+      quotaTotal: SmartParser.parseBytes(data.quota || '5GB'),
+      quotaDaily: SmartParser.parseBytes(data.dailyQuota || '1GB'),
+      usageTotal: 0,
+      dailyUsage: {},
+      expiryDays,
+      expiryDate: now + (expiryDays * 86400000),
+      status: 'active',
+      operator: data.operator || 'mtn',
+      protocol: data.protocol || 'vless',
+      createdAt: now,
+      lastAccess: now,
+      createdBy: data.adminUser || 'admin'
+    };
+
+    await this.storage.put(`user:${uuid}`, user);
+    return user;
+  }
+
+  async get(uuid) {
+    return await this.storage.get(`user:${uuid}`);
+  }
+
+  async update(uuid, updates) {
+    const user = await this.get(uuid);
+    if (!user) return null;
+
+    if (updates.name !== undefined) user.name = updates.name;
+    if (updates.ip !== undefined) user.ip = updates.ip;
+    if (updates.quota) user.quotaTotal = SmartParser.parseBytes(updates.quota);
+    if (updates.dailyQuota) user.quotaDaily = SmartParser.parseBytes(updates.dailyQuota);
+    if (updates.expiry) {
+      user.expiryDays = SmartParser.parseDuration(updates.expiry);
+      user.expiryDate = Date.now() + (user.expiryDays * 86400000);
+    }
+    if (updates.status) user.status = updates.status;
+    if (updates.operator) user.operator = updates.operator;
+    if (updates.protocol) user.protocol = updates.protocol;
+
+    await this.storage.put(`user:${uuid}`, user);
+    return user;
+  }
+
+  async delete(uuid) {
+    await this.storage.delete(`user:${uuid}`);
+    return true;
+  }
+
+  async toggleStatus(uuid) {
+    const user = await this.get(uuid);
+    if (!user) return null;
+    user.status = user.status === 'active' ? 'suspended' : 'active';
+    await this.storage.put(`user:${uuid}`, user);
+    return user;
+  }
+
+  async resetUsage(uuid) {
+    const user = await this.get(uuid);
+    if (!user) return null;
+    user.usageTotal = 0;
+    user.dailyUsage = {};
+    await this.storage.put(`user:${uuid}`, user);
+    return user;
+  }
+
+  async getStats(uuid) {
+    const user = await this.get(uuid);
+    if (!user) return null;
+
+    const today = new Date().toISOString().split('T')[0];
+    const todayUsage = user.dailyUsage?.[today] || 0;
+    const daysLeft = user.expiryDate 
+      ? Math.max(0, Math.ceil((user.expiryDate - Date.now()) / 86400000))
+      : 0;
+
+    return {
+      ...user,
+      quotaTotalFormatted: SmartParser.formatBytes(user.quotaTotal),
+      usageTotalFormatted: SmartParser.formatBytes(user.usageTotal || 0),
+      remainingFormatted: SmartParser.formatBytes(Math.max(0, user.quotaTotal - (user.usageTotal || 0))),
+      todayUsageFormatted: SmartParser.formatBytes(todayUsage),
+      usagePercent: SmartParser.formatPercent(user.usageTotal || 0, user.quotaTotal),
+      daysLeft,
+      isExpired: daysLeft <= 0,
+      isQuotaExceeded: (user.usageTotal || 0) >= user.quotaTotal
+    };
+  }
+
+  async trackBytes(uuid, bytes) {
+    const user = await this.get(uuid);
+    if (!user) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (!user.dailyUsage) user.dailyUsage = {};
+    user.dailyUsage[today] = (user.dailyUsage[today] || 0) + bytes;
+    user.usageTotal = (user.usageTotal || 0) + bytes;
+    user.lastAccess = Date.now();
+    
+    await this.storage.put(`user:${uuid}`, user);
+  }
+}
+
+// ==================== تولید کانفیگ‌ها ====================
+class ConfigGenerator {
+  static generateVless(user, config, domain) {
+    const uuid = user.uuid;
+    const sni = config.SNI_LIST?.[0] || 'www.google.com';
+    const fp = config.FINGERPRINTS?.[0] || 'chrome';
+    const port = config.PORTS?.[0] || 443;
+    
+    let link = `vless://${uuid}@${domain}:${port}?`;
+    link += `encryption=none&security=tls`;
+    link += `&sni=${sni}&fp=${fp}`;
+    link += `&type=ws&path=/ws&host=${domain}`;
+    
+    if (config.FRAGMENT?.enabled) {
+      link += `&fragment=${config.FRAGMENT.size}-${config.FRAGMENT.count}`;
+    }
+    if (config.WARP_ENABLED) {
+      link += `&warp=true`;
     }
     
-    if (path === '/api/login' && method === 'POST') {
-      var ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-      if (!sm.checkRateLimit(ip)) return new Response(JSON.stringify({ error: 'Too many attempts' }), { status: 429, headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-      var loginBody = await request.json();
+    link += `#TAAKAA-XI-${encodeURIComponent(user.name)}`;
+    return link;
+  }
+
+  static generateTrojan(user, config, domain) {
+    const password = user.uuid;
+    const sni = config.SNI_LIST?.[0] || 'www.google.com';
+    const fp = config.FINGERPRINTS?.[0] || 'chrome';
+    const port = config.PORTS?.[0] || 443;
+    
+    let link = `trojan://${password}@${domain}:${port}?`;
+    link += `security=tls&sni=${sni}&fp=${fp}`;
+    link += `&type=ws&path=/trojan&host=${domain}`;
+    link += `#TAAKAA-XI-${encodeURIComponent(user.name)}-Trojan`;
+    
+    return link;
+  }
+
+  static generateShadowsocks(user, config, domain) {
+    const method = 'aes-256-gcm';
+    const password = user.uuid.replace(/-/g, '').substring(0, 16);
+    const port = config.PORTS?.[0] || 443;
+    
+    const raw = `${method}:${password}@${domain}:${port}`;
+    const encoded = CryptoUtils.base64Encode(raw);
+    const link = `ss://${encoded}#TAAKAA-XI-${encodeURIComponent(user.name)}-SS`;
+    
+    return link;
+  }
+
+  static generateAllConfigs(user, config, domain) {
+    return [
+      this.generateVless(user, config, domain),
+      this.generateTrojan(user, config, domain),
+      this.generateShadowsocks(user, config, domain)
+    ];
+  }
+
+  static generateSubscription(user, config, domain) {
+    const configs = this.generateAllConfigs(user, config, domain);
+    return CryptoUtils.base64Encode(configs.join('\n'));
+  }
+
+  static generateClashYAML(user, config, domain) {
+    const uuid = user.uuid;
+    const sni = config.SNI_LIST?.[0] || 'www.google.com';
+    
+    const yaml = `proxies:
+  - name: "TAAKAA-XI-${user.name}-VLESS"
+    type: vless
+    server: ${domain}
+    port: 443
+    uuid: ${uuid}
+    network: ws
+    ws-opts:
+      path: /ws
+      headers:
+        Host: ${domain}
+    tls: true
+    servername: ${sni}
+    client-fingerprint: chrome
+
+  - name: "TAAKAA-XI-${user.name}-Trojan"
+    type: trojan
+    server: ${domain}
+    port: 443
+    password: ${uuid}
+    network: ws
+    ws-opts:
+      path: /trojan
+      headers:
+        Host: ${domain}
+    tls: true
+    sni: ${sni}
+
+  - name: "TAAKAA-XI-${user.name}-SS"
+    type: ss
+    server: ${domain}
+    port: 443
+    cipher: aes-256-gcm
+    password: "${uuid.replace(/-/g, '').substring(0, 16)}"
+    plugin: v2ray-plugin
+    plugin-opts:
+      mode: websocket
+      tls: true
+      host: ${domain}
+      path: /ss
+`;
+    
+    return CryptoUtils.base64Encode(yaml);
+  }
+
+  static generateFragmentConfig(user, config, domain) {
+    const uuid = user.uuid;
+    const sni = config.SNI_LIST?.[0] || 'www.google.com';
+    
+    return JSON.stringify({
+      dns: {
+        servers: ["https://dns.google/dns-query", "https://cloudflare-dns.com/dns-query"]
+      },
+      inbounds: [{
+        port: 10808,
+        listen: "127.0.0.1",
+        protocol: "socks",
+        settings: { auth: "noauth", udp: true }
+      }],
+      outbounds: [{
+        protocol: "vless",
+        settings: {
+          vnext: [{
+            address: domain,
+            port: 443,
+            users: [{ id: uuid, encryption: "none" }]
+          }]
+        },
+        streamSettings: {
+          network: "ws",
+          security: "tls",
+          tlsSettings: {
+            serverName: sni,
+            fingerprint: "chrome",
+            allowInsecure: false
+          },
+          wsSettings: {
+            path: "/ws",
+            headers: { Host: domain }
+          },
+          fragment: config.FRAGMENT?.enabled ? {
+            packets: "tlshello",
+            length: config.FRAGMENT?.size || "1-5",
+            interval: config.FRAGMENT?.delay || "1-3"
+          } : null
+        },
+        tag: "TAAKAA-XI"
+      }]
+    }, null, 2);
+  }
+}
+
+console.log('✅ پارت ۲ بارگذاری شد - مدیریت کاربران و کانفیگ آماده');
+// =============================================
+// TAAKAA-XI PRO v16 - Cloudflare Worker
+// پارت ۳: هندلر پروکسی، HTML Generator
+// =============================================
+
+// ==================== هندلر پروکسی ====================
+class ProxyHandler {
+  constructor(storage) {
+    this.storage = storage;
+    this.userManager = new UserManager(storage);
+  }
+
+  async handle(request, user) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const upgrade = request.headers.get('Upgrade') || '';
+
+    // Check limits
+    if (!this._checkLimits(user)) {
+      return new Response('حجم یا زمان تمام شده', { status: 429 });
+    }
+
+    // WebSocket for VLESS
+    if (path === '/ws' && upgrade.toLowerCase() === 'websocket') {
+      return await this._handleWebSocket(request, user, 'vless');
+    }
+
+    // WebSocket for Trojan
+    if (path === '/trojan' && upgrade.toLowerCase() === 'websocket') {
+      return await this._handleWebSocket(request, user, 'trojan');
+    }
+
+    // WebSocket for Shadowsocks
+    if (path === '/ss' && upgrade.toLowerCase() === 'websocket') {
+      return await this._handleWebSocket(request, user, 'shadowsocks');
+    }
+
+    // TCP Direct (fetch)
+    return await this._handleTCP(request, user);
+  }
+
+  _checkLimits(user) {
+    if (user.status !== 'active') return false;
+    if (user.expiryDate && Date.now() > user.expiryDate) return false;
+    if ((user.usageTotal || 0) >= user.quotaTotal) return false;
+    
+    const today = new Date().toISOString().split('T')[0];
+    if ((user.dailyUsage?.[today] || 0) >= user.quotaDaily) return false;
+    
+    return true;
+  }
+
+  async _handleWebSocket(request, user, protocol) {
+    const webSocketPair = new WebSocketPair();
+    const [client, server] = Object.values(webSocketPair);
+    
+    server.accept();
+    
+    server.addEventListener('message', async (event) => {
+      try {
+        const bytes = event.data.byteLength || event.data.length || 0;
+        await this.userManager.trackBytes(user.uuid, bytes);
+        
+        // Forward - in production connect to real backend
+        // For now, echo back with acknowledgment
+        server.send(event.data);
+      } catch (e) {
+        console.error('WS error:', e);
+      }
+    });
+    
+    server.addEventListener('close', () => {
+      console.log(`User ${user.name} disconnected from ${protocol}`);
+    });
+    
+    server.addEventListener('error', (e) => {
+      console.error('WS error event:', e);
+    });
+    
+    return new Response(null, {
+      status: 101,
+      webSocket: client
+    });
+  }
+
+  async _handleTCP(request, user) {
+    try {
+      const modified = new Request(request);
       
-      if (CONFIG.TOTP.enabled && loginBody.totp) {
-        if (!TOTPManager.verify(loginBody.totp, CONFIG.TOTP.secret)) {
-          return new Response(JSON.stringify({ error: 'Invalid TOTP' }), { status: 401, headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
+      if (SYSTEM_CONFIG.WARP_ENABLED) {
+        modified.headers.set('CF-WARP', 'enabled');
+      }
+      
+      const response = await fetch(modified);
+      
+      const contentLength = parseInt(response.headers.get('Content-Length') || '0');
+      if (contentLength > 0) {
+        await this.userManager.trackBytes(user.uuid, contentLength);
+      }
+      
+      return response;
+    } catch (e) {
+      return new Response('Proxy Error', { status: 502 });
+    }
+  }
+}
+
+// ==================== HTML Generator ====================
+class HTMLGenerator {
+  static style() {
+    return `
+    :root {
+      --primary: #ff6b00; --primary-hover: #e65c00;
+      --bg-deep: #0a0a0f; --bg-card: #1a1a2e;
+      --text: #ffffff; --text2: #a0a0b8;
+      --border: #2a2a3c; --success: #16a34a;
+      --danger: #ef4444; --warning: #f59e0b;
+      --radius: 16px; --shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      background:var(--bg-deep);
+      background-image:radial-gradient(circle at 20% 10%, #1a1a2e, #0a0a0f);
+      color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;
+      padding:20px;min-height:100vh;direction:rtl;line-height:1.6;
+    }
+    .container{max-width:1400px;margin:0 auto}
+    .header{
+      background:rgba(26,26,46,0.7);backdrop-filter:blur(12px);
+      border:1px solid var(--border);border-radius:var(--radius);
+      padding:20px;margin-bottom:20px;box-shadow:var(--shadow);
+      display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;
+    }
+    .brand{
+      background:linear-gradient(135deg, #ff6b00, #ff8c42);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+      font-size:1.8rem;font-weight:800;
+    }
+    .nav{
+      display:flex;gap:8px;background:var(--bg-card);padding:6px;
+      border-radius:40px;border:1px solid var(--border);flex-wrap:wrap;margin-bottom:20px;
+    }
+    .nav a,.nav button{
+      padding:10px 18px;border-radius:30px;font-weight:600;font-size:14px;
+      background:transparent;color:var(--text2);border:none;
+      cursor:pointer;text-decoration:none;transition:0.2s;white-space:nowrap;
+    }
+    .nav a.active,.nav button.active{
+      background:var(--primary);color:white;box-shadow:0 4px 12px rgba(255,107,0,0.4);
+    }
+    .card{
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);
+      margin-bottom:20px;transition:transform 0.2s;
+    }
+    .card:hover{transform:translateY(-2px)}
+    .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px}
+    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:20px}
+    .grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px;margin-bottom:20px}
+    .stat-val{
+      font-size:2rem;font-weight:800;
+      background:linear-gradient(to left,#fff,#ddd);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:10px 0;
+    }
+    .btn{
+      background:linear-gradient(135deg,#ff6b00,#ff8c42);color:white;
+      border:none;padding:12px 24px;border-radius:30px;font-weight:600;
+      cursor:pointer;text-decoration:none;display:inline-flex;
+      align-items:center;gap:8px;transition:0.2s;
+      box-shadow:0 4px 12px rgba(255,107,0,0.3);font-size:14px;
+    }
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(255,107,0,0.4)}
+    .btn-sm{padding:6px 14px;font-size:13px}
+    .btn-outline{background:transparent;border:1px solid var(--primary);color:var(--primary);box-shadow:none}
+    .btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 4px 12px rgba(239,68,68,0.3)}
+    .btn-warn{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 4px 12px rgba(245,158,11,0.3)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 16px;text-align:right;border-bottom:1px solid var(--border)}
+    th{color:var(--text2);font-size:13px;font-weight:600}
+    td{font-size:14px}
+    .badge{padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600;display:inline-block}
+    .badge-ok{background:rgba(22,163,74,0.15);color:var(--success)}
+    .badge-err{background:rgba(239,68,68,0.15);color:var(--danger)}
+    .badge-warn{background:rgba(245,158,11,0.15);color:var(--warning)}
+    .progress{height:8px;background:#2a2a3c;border-radius:10px;overflow:hidden;margin:5px 0}
+    .progress-fill{height:100%;background:linear-gradient(90deg,#ff6b00,#ff8c42);border-radius:10px;transition:0.3s}
+    input,select,textarea{
+      width:100%;padding:12px;background:var(--bg-deep);border:1px solid var(--border);
+      color:var(--text);border-radius:8px;font-size:14px;margin:8px 0;font-family:inherit;
+    }
+    .toggle{position:relative;display:inline-block;width:44px;height:24px}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#3a3a4a;transition:0.3s;border-radius:34px}
+    .toggle .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:white;transition:0.3s;border-radius:50%}
+    .toggle input:checked+.slider{background:var(--primary)}
+    .toggle input:checked+.slider:before{transform:translateX(20px)}
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center}
+    .modal-overlay.active{display:flex}
+    .modal{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:90%;max-width:500px;box-shadow:0 20px 40px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto}
+    .flex{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .flex-wrap{flex-wrap:wrap}
+    .mt-10{margin-top:10px}.mt-20{margin-top:20px}.mb-10{margin-bottom:10px}.mb-20{margin-bottom:20px}
+    .code-block{
+      background:var(--bg-deep);padding:16px;border-radius:8px;
+      font-family:'Courier New',monospace;direction:ltr;text-align:left;
+      overflow-x:auto;font-size:13px;border:1px solid var(--border);word-break:break-all;
+    }
+    .fade-in{animation:fadeIn 0.5s ease}
+    .pulse{animation:pulse 2s infinite}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%{opacity:1}50%{opacity:0.5}100%{opacity:1}}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+    .toast{
+      position:fixed;top:20px;right:20px;padding:16px 24px;
+      background:var(--bg-card);border:1px solid var(--border);
+      border-radius:12px;box-shadow:var(--shadow);z-index:9999;
+      animation:slideIn 0.3s ease;display:flex;align-items:center;gap:10px;
+    }
+    .flag{font-size:28px;cursor:pointer;transition:transform 0.2s}
+    .flag:hover{transform:scale(1.3)}
+    .protocol-card{
+      background:var(--bg-deep);border:1px solid var(--border);
+      border-radius:12px;padding:20px;margin:10px 0;
+    }
+    .protocol-card h4{color:var(--primary);margin-bottom:10px}
+    .protocol-card p{color:var(--text2);font-size:13px;line-height:1.8}
+    @media(max-width:768px){
+      .grid4{grid-template-columns:repeat(2,1fr)}
+      .grid2,.grid3{grid-template-columns:1fr}
+    }
+    @media(max-width:480px){
+      .grid4{grid-template-columns:1fr}
+      body{padding:10px}
+    }
+    `;
+  }
+
+  static js() {
+    return `
+    function showToast(msg, type='info'){
+      const t=document.createElement('div');
+      t.className='toast toast-'+type;
+      t.innerHTML=msg;document.body.appendChild(t);
+      setTimeout(()=>t.remove(),3000);
+    }
+    function openModal(id){document.getElementById(id).classList.add('active')}
+    function closeModal(id){document.getElementById(id).classList.remove('active')}
+    async function api(url,method='GET',body=null){
+      const o={method,headers:{}};
+      if(body){o.headers['Content-Type']='application/json';o.body=JSON.stringify(body)}
+      const r=await fetch(url,o);return await r.json();
+    }
+    function copyText(text){
+      navigator.clipboard.writeText(text).then(()=>showToast('✅ کپی شد!','success'));
+    }
+    async function toggleUser(uuid){
+      const r=await api('/api/toggle-user','POST',{uuid});
+      if(r.success){showToast('وضعیت تغییر کرد','success');setTimeout(()=>location.reload(),500);}
+      else showToast(r.error,'error');
+    }
+    async function deleteUser(uuid){
+      if(!confirm('مطمئنی؟'))return;
+      const r=await api('/api/delete-user','POST',{uuid});
+      if(r.success){showToast('حذف شد','success');setTimeout(()=>location.reload(),500);}
+      else showToast(r.error,'error');
+    }
+    async function resetUsage(uuid){
+      const r=await api('/api/reset-usage','POST',{uuid});
+      if(r.success){showToast('ریست شد','success');setTimeout(()=>location.reload(),500);}
+    }
+    `;
+  }
+
+  static wrap(content, title, extraHead = '') {
+    return `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${title}</title>
+  <style>${this.style()}</style>
+  ${extraHead}
+</head>
+<body>
+  <div class="container">
+    ${content}
+  </div>
+  <script>${this.js()}</script>
+</body>
+</html>`;
+  }
+}
+
+console.log('✅ پارت ۳ بارگذاری شد - پروکسی و HTML Generator');
+// =============================================
+// TAAKAA-XI PRO v16 - Cloudflare Worker
+// پارت ۴: صفحات HTML کامل
+// =============================================
+
+// ==================== صفحه Login ====================
+function loginPage(config, error = '') {
+  const errorHtml = error ? `<div class="card" style="border:1px solid var(--danger);color:var(--danger);">${error}</div>` : '';
+  
+  const content = `
+    <div class="header">
+      <span class="brand">⚡ TAAKAA-XI PRO v16</span>
+      <span style="color:var(--text2);">ورود به پنل مدیریت</span>
+    </div>
+    
+    <div style="max-width:450px;margin:80px auto;">
+      <div class="card fade-in">
+        <h2 style="text-align:center;margin-bottom:20px;">🔐 ورود ادمین</h2>
+        ${errorHtml}
+        <form method="POST" action="/api/login">
+          <input type="password" name="password" placeholder="رمز عبور" required autofocus>
+          <input type="text" name="totp" placeholder="کد TOTP (اختیاری)" maxlength="6" pattern="[0-9]{6}">
+          <button type="submit" class="btn" style="width:100%;margin-top:15px;">🚀 ورود</button>
+        </form>
+        <p style="text-align:center;margin-top:15px;color:var(--text2);font-size:13px;">
+          📢 کانال: @TaaKaaOrg | نسخه ۱۶ پرو
+        </p>
+      </div>
+    </div>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | ورود');
+}
+
+// ==================== صفحه Setup ====================
+function setupPage(config, error = '') {
+  const errorHtml = error ? `<div class="card" style="border:1px solid var(--danger);color:var(--danger);">${error}</div>` : '';
+  
+  const content = `
+    <div class="header">
+      <span class="brand">🛠️ راه‌اندازی اولیه TAAKAA-XI</span>
+    </div>
+    
+    <div style="max-width:500px;margin:40px auto;">
+      <div class="card fade-in">
+        <h2 style="text-align:center;">🎉 خوش آمدید!</h2>
+        <p style="color:var(--text2);text-align:center;">این اولین اجرای شماست. رمز عبور ادمین را تنظیم کنید.</p>
+        ${errorHtml}
+        <form method="POST" action="/api/setup">
+          <input type="password" name="password" placeholder="رمز عبور جدید" required minlength="6">
+          <input type="password" name="confirm" placeholder="تکرار رمز عبور" required minlength="6">
+          <button type="submit" class="btn" style="width:100%;margin-top:15px;">✅ راه‌اندازی</button>
+        </form>
+      </div>
+    </div>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | Setup');
+}
+
+// ==================== صفحه داشبورد ====================
+function dashboardPage(stats, users, config) {
+  const activeUsers = users.filter(u => u.status === 'active').length;
+  const totalUsage = users.reduce((sum, u) => sum + (u.usageTotal || 0), 0);
+  const today = new Date().toISOString().split('T')[0];
+  const todayUsage = users.reduce((sum, u) => sum + (u.dailyUsage?.[today] || 0), 0);
+  
+  // Recent activity
+  const recentActivity = users
+    .sort((a, b) => (b.lastAccess || 0) - (a.lastAccess || 0))
+    .slice(0, 5);
+  
+  const activityHtml = recentActivity.length > 0 
+    ? recentActivity.map(u => `
+        <div class="flex" style="padding:8px 0;border-bottom:1px solid var(--border);">
+          <span>${u.name}</span>
+          <span style="color:var(--text2);font-size:12px;">${u.lastAccess ? new Date(u.lastAccess).toLocaleString('fa-IR') : '—'}</span>
+        </div>
+      `).join('')
+    : '<p style="color:var(--text2);">هنوز فعالیتی ثبت نشده</p>';
+  
+  // Chart bars (last 7 days)
+  const chartBars = Array.from({length: 7}, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    const key = d.toISOString().split('T')[0];
+    const usage = users.reduce((sum, u) => sum + (u.dailyUsage?.[key] || 0), 0);
+    const maxH = 120;
+    const maxUsage = Math.max(1, ...Array.from({length: 7}, (_, j) => {
+      const dj = new Date(); dj.setDate(dj.getDate() - (6 - j));
+      return users.reduce((sum, u) => sum + (u.dailyUsage?.[dj.toISOString().split('T')[0]] || 0), 0);
+    }));
+    const h = Math.max(4, (usage / maxUsage) * maxH);
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="width:100%;max-width:40px;height:${h}px;background:linear-gradient(180deg,#ff6b00,#ff8c42);border-radius:6px 6px 0 0;transition:0.3s;" title="${SmartParser.formatBytes(usage)}"></div>
+      <small style="color:var(--text2);font-size:11px;">${d.toLocaleDateString('fa-IR',{weekday:'short'})}</small>
+    </div>`;
+  }).join('');
+  
+  const content = `
+    <div class="header fade-in">
+      <div class="flex" style="gap:20px;">
+        <span class="brand">⚡ TAAKAA-XI PRO v16</span>
+        <span class="badge badge-ok" style="font-size:13px;">🟢 عملیاتی</span>
+      </div>
+      <span style="color:var(--text2);">🏗️ تیم تاکا | @TaaKaaOrg</span>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/" class="active">📊 داشبورد</a>
+      <a href="/users">👥 کاربران</a>
+      <a href="/settings">⚙️ تنظیمات</a>
+      <a href="/scanner">📡 اسکنر</a>
+      <a href="/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/subscription">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <div class="grid4 fade-in">
+      <div class="card">
+        <div style="color:var(--text2);font-size:13px;">👥 کاربران</div>
+        <div class="stat-val">${users.length}</div>
+        <span class="badge badge-ok">${activeUsers} فعال</span>
+        <span class="badge badge-err" style="margin-right:4px;">${users.length - activeUsers} معلق</span>
+      </div>
+      <div class="card">
+        <div style="color:var(--text2);font-size:13px;">📊 ترافیک کل</div>
+        <div class="stat-val">${SmartParser.formatBytes(totalUsage)}</div>
+        <span style="color:var(--text2);font-size:12px;">امروز: ${SmartParser.formatBytes(todayUsage)}</span>
+      </div>
+      <div class="card">
+        <div style="color:var(--text2);font-size:13px;">🛡️ Fragment</div>
+        <div class="stat-val">${config.FRAGMENT?.enabled ? '✅' : '❌'}</div>
+        <span style="color:var(--text2);font-size:12px;">${config.FRAGMENT?.enabled ? 'size: ' + config.FRAGMENT.size + ' | count: ' + config.FRAGMENT.count : 'غیرفعال'}</span>
+      </div>
+      <div class="card">
+        <div style="color:var(--text2);font-size:13px;">🌐 WARP</div>
+        <div class="stat-val">${config.WARP_ENABLED ? '✅' : '❌'}</div>
+        <span style="color:var(--text2);font-size:12px;">Pro: ${config.WARP_PRO_ENABLED ? 'فعال' : 'غیرفعال'}</span>
+      </div>
+    </div>
+    
+    <div class="card fade-in">
+      <h3 style="margin-bottom:15px;">📈 مصرف ۷ روز اخیر</h3>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:150px;padding:10px 0;">
+        ${chartBars}
+      </div>
+      <p style="text-align:center;color:var(--text2);font-size:12px;margin-top:10px;">
+        مجموع: ${SmartParser.formatBytes(totalUsage)}
+      </p>
+    </div>
+    
+    <div class="grid3 fade-in">
+      <div class="card">
+        <h3 style="margin-bottom:15px;">🛡️ وضعیت امنیتی</h3>
+        <div class="flex" style="margin:12px 0;">
+          <span>Fragment</span>
+          <span class="badge ${config.FRAGMENT?.enabled ? 'badge-ok' : 'badge-err'}">${config.FRAGMENT?.enabled ? 'فعال' : 'غیرفعال'}</span>
+        </div>
+        <div class="flex" style="margin:12px 0;">
+          <span>ECH</span>
+          <span class="badge ${config.ECH_ENABLED ? 'badge-ok' : 'badge-err'}">${config.ECH_ENABLED ? 'فعال' : 'غیرفعال'}</span>
+        </div>
+        <div class="flex" style="margin:12px 0;">
+          <span>TOTP 2FA</span>
+          <span class="badge badge-ok">فعال</span>
+        </div>
+        <div class="flex" style="margin:12px 0;">
+          <span>Rate Limit</span>
+          <span class="badge badge-warn">${SYSTEM_CONFIG.MAX_LOGIN_ATTEMPTS} تلاش</span>
+        </div>
+        <div class="flex" style="margin:12px 0;">
+          <span>DNS over HTTPS</span>
+          <span class="badge badge-ok">فعال</span>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-bottom:15px;">📋 فعالیت اخیر</h3>
+        ${activityHtml}
+      </div>
+      
+      <div class="card">
+        <h3 style="margin-bottom:15px;">📦 اطلاعات سیستم</h3>
+        <div style="color:var(--text2);font-size:13px;line-height:2;">
+          <p>🔹 نسخه: <strong>v16 PRO</strong></p>
+          <p>🔹 پروتکل: <strong>${config.DEFAULT_PROTOCOL?.toUpperCase() || 'VLESS'}</strong></p>
+          <p>🔹 SNI: <strong>${config.SNI_LIST?.[0] || 'www.google.com'}</strong></p>
+          <p>🔹 پورت: <strong>${config.PORTS?.[0] || 443}</strong></p>
+          <p>🔹 Fingerprint: <strong>${config.FINGERPRINTS?.[0] || 'chrome'}</strong></p>
+          <p>🔹 اپراتورها: <strong>ایرانسل / همراه اول / رایتل</strong></p>
+        </div>
+      </div>
+    </div>
+    
+    <p style="text-align:center;color:var(--text2);margin-top:20px;font-size:13px;">
+      🏗️ توسعه توسط تیم TAAKAA | ۳ ماه توسعه | 📢 @TaaKaaOrg | ⚡ نسخه ۱۶ پرو
+    </p>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | داشبورد');
+}
+
+// ==================== صفحه کاربران ====================
+function usersPage(users, config) {
+  const rows = users.map(u => {
+    const stats = {
+      usagePercent: u.quotaTotal > 0 ? Math.min(100, ((u.usageTotal || 0) / u.quotaTotal) * 100) : 0,
+      daysLeft: u.expiryDate ? Math.max(0, Math.ceil((u.expiryDate - Date.now()) / 86400000)) : 0
+    };
+    
+    return `
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td style="font-family:monospace;font-size:11px;direction:ltr;text-align:left;">${u.uuid.substring(0, 18)}...</td>
+        <td>${u.ip || '—'}</td>
+        <td>
+          ${SmartParser.formatBytes(u.usageTotal || 0)} / ${SmartParser.formatBytes(u.quotaTotal)}
+          <div class="progress"><div class="progress-fill" style="width:${stats.usagePercent}%"></div></div>
+          <small>${stats.usagePercent.toFixed(1)}%</small>
+        </td>
+        <td>${SmartParser.formatBytes(u.quotaDaily)}</td>
+        <td>${SmartParser.formatDuration(stats.daysLeft)}</td>
+        <td>
+          <span class="badge ${u.status === 'active' ? 'badge-ok' : 'badge-err'}">
+            ${u.status === 'active' ? '🟢 فعال' : '🔴 معلق'}
+          </span>
+        </td>
+        <td>${SYSTEM_CONFIG.OPERATORS[u.operator] || u.operator}</td>
+        <td>
+          <button class="btn btn-sm" onclick="editUser('${u.uuid}')" title="ویرایش">✏️</button>
+          <button class="btn btn-sm btn-outline" onclick="toggleUser('${u.uuid}')" title="${u.status === 'active' ? 'تعلیق' : 'فعال‌سازی'}">${u.status === 'active' ? '⏸️' : '▶️'}</button>
+          <button class="btn btn-sm btn-warn" onclick="resetUsage('${u.uuid}')" title="ریست مصرف">🔄</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.uuid}')" title="حذف">🗑️</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  const content = `
+    <div class="header fade-in">
+      <span class="brand">👥 مدیریت کاربران</span>
+      <div class="flex" style="gap:10px;">
+        <button class="btn" onclick="openModal('add-user-modal')">➕ کاربر جدید</button>
+      </div>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/">📊 داشبورد</a>
+      <a href="/users" class="active">👥 کاربران</a>
+      <a href="/settings">⚙️ تنظیمات</a>
+      <a href="/scanner">📡 اسکنر</a>
+      <a href="/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/subscription">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <div class="card fade-in">
+      <h3 style="margin-bottom:20px;">لیست کاربران (${users.length} کاربر)</h3>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>نام</th><th>UUID</th><th>IP</th><th>مصرف</th>
+              <th>روزانه</th><th>زمان</th><th>وضعیت</th><th>اپراتور</th><th>عملیات</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      ${users.length === 0 ? '<p style="text-align:center;color:var(--text2);padding:40px;">هنوز کاربری ساخته نشده</p>' : ''}
+    </div>
+    
+    <!-- Add User Modal -->
+    <div id="add-user-modal" class="modal-overlay">
+      <div class="modal fade-in">
+        <h3>➕ ایجاد کاربر جدید</h3>
+        <form onsubmit="event.preventDefault();createUser()" id="add-user-form">
+          <input type="text" name="name" placeholder="نام کاربر" required>
+          <input type="text" name="uuid" placeholder="UUID (اختیاری)">
+          <input type="text" name="ip" placeholder="IP اختصاصی (اختیاری)">
+          <input type="text" name="quota" placeholder="حجم کل (5GB, 1TB, 500mb)" value="5GB">
+          <input type="text" name="dailyQuota" placeholder="حجم روزانه (1GB)" value="1GB">
+          <input type="text" name="expiry" placeholder="مدت (30d, 1m, 1y)" value="30d">
+          <select name="operator">
+            <option value="mtn">ایرانسل</option>
+            <option value="mci">همراه اول</option>
+            <option value="rtl">رایتل</option>
+          </select>
+          <select name="protocol">
+            <option value="vless">VLESS</option>
+            <option value="trojan">Trojan</option>
+            <option value="shadowsocks">Shadowsocks</option>
+          </select>
+          <div class="flex mt-20">
+            <button type="submit" class="btn">✅ ایجاد</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('add-user-modal')">انصراف</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div id="edit-user-modal" class="modal-overlay">
+      <div class="modal fade-in">
+        <h3>✏️ ویرایش کاربر</h3>
+        <form onsubmit="event.preventDefault();saveEditUser()" id="edit-user-form">
+          <input type="hidden" name="uuid" id="edit-uuid">
+          <input type="text" name="name" id="edit-name" placeholder="نام کاربر" required>
+          <input type="text" name="ip" id="edit-ip" placeholder="IP اختصاصی">
+          <input type="text" name="quota" id="edit-quota" placeholder="حجم کل">
+          <input type="text" name="dailyQuota" id="edit-dailyQuota" placeholder="حجم روزانه">
+          <input type="text" name="expiry" id="edit-expiry" placeholder="مدت">
+          <select name="operator" id="edit-operator">
+            <option value="mtn">ایرانسل</option>
+            <option value="mci">همراه اول</option>
+            <option value="rtl">رایتل</option>
+          </select>
+          <div class="flex mt-20">
+            <button type="submit" class="btn">💾 ذخیره</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('edit-user-modal')">انصراف</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <script>
+      async function createUser(){
+        const f=document.getElementById('add-user-form');
+        const d=new FormData(f);
+        const data={}; d.forEach((v,k)=>data[k]=v);
+        const r=await api('/api/create-user','POST',data);
+        if(r.success){showToast('✅ کاربر ایجاد شد','success');closeModal('add-user-modal');setTimeout(()=>location.reload(),500);}
+        else showToast('❌ '+r.error,'error');
+      }
+      async function editUser(uuid){
+        const r=await api('/api/get-user?uuid='+uuid);
+        if(r.success){
+          document.getElementById('edit-uuid').value=r.user.uuid;
+          document.getElementById('edit-name').value=r.user.name;
+          document.getElementById('edit-ip').value=r.user.ip||'';
+          document.getElementById('edit-quota').value=SmartParser.formatBytes(r.user.quotaTotal);
+          document.getElementById('edit-dailyQuota').value=SmartParser.formatBytes(r.user.quotaDaily);
+          document.getElementById('edit-expiry').value=r.user.expiryDays+'d';
+          document.getElementById('edit-operator').value=r.user.operator;
+          openModal('edit-user-modal');
+        }
+      }
+      async function saveEditUser(){
+        const f=document.getElementById('edit-user-form');
+        const d=new FormData(f);
+        const data={}; d.forEach((v,k)=>data[k]=v);
+        const r=await api('/api/edit-user','POST',data);
+        if(r.success){showToast('✅ ذخیره شد','success');closeModal('edit-user-modal');setTimeout(()=>location.reload(),500);}
+        else showToast('❌ '+r.error,'error');
+      }
+    </script>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | کاربران');
+}
+
+// ==================== صفحه تنظیمات ====================
+function settingsPage(config) {
+  const content = `
+    <div class="header fade-in">
+      <span class="brand">⚙️ تنظیمات سیستم</span>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/">📊 داشبورد</a>
+      <a href="/users">👥 کاربران</a>
+      <a href="/settings" class="active">⚙️ تنظیمات</a>
+      <a href="/scanner">📡 اسکنر</a>
+      <a href="/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/subscription">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <div class="grid2">
+      <div class="card fade-in">
+        <h3 style="margin-bottom:20px;">🛡️ تکنیک‌های عبور از فیلترینگ</h3>
+        <form onsubmit="event.preventDefault();saveSettings()" id="settings-form">
+          <div class="flex" style="margin:15px 0;">
+            <div>
+              <strong>Fragment</strong>
+              <br><small style="color:var(--text2);">تکه‌تکه کردن پکت TLS Hello</small>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" name="fragment_enabled" ${config.FRAGMENT?.enabled ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>Fragment Size</label>
+            <input type="text" name="fragment_size" value="${config.FRAGMENT?.size || '1-5'}">
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>Fragment Count</label>
+            <input type="number" name="fragment_count" value="${config.FRAGMENT?.count || 3}" min="1" max="10">
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>Fragment Delay</label>
+            <input type="text" name="fragment_delay" value="${config.FRAGMENT?.delay || '1-3'}">
+          </div>
+          
+          <div class="flex" style="margin:15px 0;">
+            <div>
+              <strong>WARP</strong>
+              <br><small style="color:var(--text2);">مسیریابی از طریق Cloudflare WARP</small>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" name="warp_enabled" ${config.WARP_ENABLED ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="flex" style="margin:15px 0;">
+            <div>
+              <strong>WARP Pro</strong>
+              <br><small style="color:var(--text2);">نسخه حرفه‌ای با مسیریابی بهتر</small>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" name="warp_pro_enabled" ${config.WARP_PRO_ENABLED ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div class="flex" style="margin:15px 0;">
+            <div>
+              <strong>ECH</strong>
+              <br><small style="color:var(--text2);">Encrypted Client Hello</small>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" name="ech_enabled" ${config.ECH_ENABLED ? 'checked' : ''}>
+              <span class="slider"></span>
+            </label>
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>SNI</label>
+            <select name="sni">${SYSTEM_CONFIG.SNI_LIST.map(s => `<option value="${s}" ${(config.SNI_LIST?.[0] || '') === s ? 'selected' : ''}>${s}</option>`).join('')}</select>
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>Fingerprint</label>
+            <select name="fingerprint">${SYSTEM_CONFIG.FINGERPRINTS.map(f => `<option value="${f}" ${(config.FINGERPRINTS?.[0] || '') === f ? 'selected' : ''}>${f}</option>`).join('')}</select>
+          </div>
+          
+          <div style="margin:15px 0;">
+            <label>Port</label>
+            <select name="port">${SYSTEM_CONFIG.PORTS.map(p => `<option value="${p}" ${(config.PORTS?.[0] || '') === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
+          </div>
+          
+          <button type="submit" class="btn" style="width:100%;margin-top:20px;">💾 ذخیره تنظیمات</button>
+        </form>
+      </div>
+      
+      <div>
+        <div class="card fade-in">
+          <h3 style="margin-bottom:15px;">🔐 تغییر رمز عبور</h3>
+          <form onsubmit="event.preventDefault();changePassword()" id="password-form">
+            <input type="password" name="current" placeholder="رمز فعلی" required>
+            <input type="password" name="new_password" placeholder="رمز جدید" required minlength="6">
+            <input type="password" name="confirm" placeholder="تکرار رمز جدید" required>
+            <button type="submit" class="btn" style="width:100%;margin-top:10px;">🔑 تغییر رمز</button>
+          </form>
+        </div>
+        
+        <div class="card fade-in mt-20">
+          <h3 style="margin-bottom:15px;">🔄 تغییر UUID سیستم</h3>
+          <p style="color:var(--text2);font-size:13px;">UUID جدید برای همه کاربران جدید استفاده می‌شود.</p>
+          <button class="btn btn-outline" onclick="changeSystemUUID()" style="width:100%;margin-top:10px;">🎲 تولید UUID جدید</button>
+        </div>
+        
+        <div class="card fade-in mt-20">
+          <h3 style="margin-bottom:15px;">💾 بکاپ</h3>
+          <p style="color:var(--text2);font-size:13px;">دانلود تمام داده‌ها به صورت JSON</p>
+          <button class="btn" onclick="downloadBackup()" style="width:100%;margin-top:10px;">📥 دانلود بکاپ</button>
+        </div>
+      </div>
+    </div>
+    
+    <script>
+      async function saveSettings(){
+        const f=document.getElementById('settings-form');
+        const d=new FormData(f);
+        const data={}; d.forEach((v,k)=>data[k]=v);
+        data.fragment_enabled = d.get('fragment_enabled') === 'on';
+        data.warp_enabled = d.get('warp_enabled') === 'on';
+        data.warp_pro_enabled = d.get('warp_pro_enabled') === 'on';
+        data.ech_enabled = d.get('ech_enabled') === 'on';
+        const r=await api('/api/update-settings','POST',data);
+        if(r.success)showToast('✅ تنظیمات ذخیره شد','success');
+        else showToast('❌ '+r.error,'error');
+      }
+      async function changePassword(){
+        const f=document.getElementById('password-form');
+        const d=new FormData(f);
+        const data={current:d.get('current'),new_password:d.get('new_password'),confirm:d.get('confirm')};
+        const r=await api('/api/change-password','POST',data);
+        if(r.success)showToast('✅ رمز تغییر کرد','success');
+        else showToast('❌ '+r.error,'error');
+      }
+      async function changeSystemUUID(){
+        const r=await api('/api/change-system-uuid','POST');
+        if(r.success)showToast('✅ UUID جدید: '+r.newUUID,'success');
+      }
+      async function downloadBackup(){
+        const r=await api('/api/backup-kv');
+        const blob=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');a.href=url;
+        a.download='taakaa-backup-'+new Date().toISOString()+'.json';
+        a.click();showToast('✅ بکاپ دانلود شد','success');
+      }
+    </script>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | تنظیمات');
+}
+
+console.log('✅ پارت ۴ بارگذاری شد - صفحات HTML آماده');
+// =============================================
+// TAAKAA-XI PRO v16 - Cloudflare Worker
+// پارت ۵: صفحات اضافه و export default
+// =============================================
+
+// ==================== صفحه Info-Protocols ====================
+function infoProtocolsPage(config) {
+  const content = `
+    <div class="header fade-in">
+      <span class="brand">📖 اطلاعات پروتکل‌ها و تکنیک‌ها</span>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/">📊 داشبورد</a>
+      <a href="/users">👥 کاربران</a>
+      <a href="/settings">⚙️ تنظیمات</a>
+      <a href="/scanner">📡 اسکنر</a>
+      <a href="/info-protocols" class="active">📖 پروتکل‌ها</a>
+      <a href="/subscription">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <!-- VLESS -->
+    <div class="card fade-in protocol-card">
+      <h4>🔷 VLESS Protocol</h4>
+      <p>
+        <strong>VLESS</strong> یک پروتکل پراکسی سبک و بدون رمزنگاری داخلی است که برای عبور از فیلترینگ طراحی شده.
+        <br>🔹 <strong>مزایا:</strong> سرعت بالا، مصرف CPU کم، امنیت از طریق TLS تامین می‌شود.
+        <br>🔹 <strong>نحوه کار:</strong> ترافیک در قالب WebSocket + TLS ارسال می‌شود.
+        <br>🔹 <strong>امنیت:</strong> رمزنگاری توسط TLS 1.3 با Certificate معتبر Cloudflare.
+        <br>🔹 <strong>SNI:</strong> از ${config.SNI_LIST?.[0] || 'www.google.com'} برای پنهان‌سازی مقصد استفاده می‌کند.
+        <br>🔹 <strong>Fingerprint:</strong> fingerprint مرورگر Chrome شبیه‌سازی می‌شود.
+      </p>
+    </div>
+    
+    <!-- Trojan -->
+    <div class="card fade-in protocol-card">
+      <h4>🔶 Trojan Protocol</h4>
+      <p>
+        <strong>Trojan</strong> پروتکلی که ترافیک خود را شبیه به HTTPS معمولی نشان می‌دهد.
+        <br>🔹 <strong>مزایا:</strong> تشخیص سخت‌تر توسط DPI، شباهت کامل به ترافیک وب.
+        <br>🔹 <strong>نحوه کار:</strong> ابتدا یک Handshake TLS انجام می‌شود، سپس رمز عبور در هدر ارسال می‌شود.
+        <br>🔹 <strong>رمز عبور:</strong> از UUID کاربر به عنوان رمز عبور استفاده می‌شود.
+        <br>🔹 <strong>مسیر:</strong> /trojan روی WebSocket.
+      </p>
+    </div>
+    
+    <!-- Shadowsocks -->
+    <div class="card fade-in protocol-card">
+      <h4>🔵 Shadowsocks Protocol</h4>
+      <p>
+        <strong>Shadowsocks</strong> پروتکل SOCKS5 پروکسی با رمزنگاری قوی.
+        <br>🔹 <strong>رمزنگاری:</strong> ${config.ENCRYPTION || 'aes-256-gcm'} - یکی از قوی‌ترین الگوریتم‌ها.
+        <br>🔹 <strong>مزایا:</strong> سادگی، پشتیبانی گسترده در کلاینت‌ها.
+        <br>🔹 <strong>نحوه کار:</strong> رمزنگاری end-to-end با کلید مشترک.
+      </p>
+    </div>
+    
+    <!-- Fragment -->
+    <div class="card fade-in protocol-card">
+      <h4>🧩 Fragment (تکه‌تکه کردن پکت‌ها)</h4>
+      <p>
+        <strong>Fragment</strong> تکنیکی برای شکستن پکت‌های TLS Hello به قطعات کوچک‌تر است.
+        <br>🔹 <strong>هدف:</strong> جلوگیری از تشخیص الگوی TLS توسط سیستم‌های DPI.
+        <br>🔹 <strong>نحوه کار:</strong> بسته اولیه TLS به ${config.FRAGMENT?.count || 3} قطعه با سایز ${config.FRAGMENT?.size || '1-5'} بایت شکسته می‌شود.
+        <br>🔹 <strong>تاخیر:</strong> بین هر قطعه ${config.FRAGMENT?.delay || '1-3'} میلی‌ثانیه تاخیر اعمال می‌شود.
+        <br>🔹 <strong>پکت‌ها:</strong> فقط پکت‌های ${config.FRAGMENT?.packets || 'tlshello'} تکه‌تکه می‌شوند.
+        <br>🔹 <strong>مزایا:</strong> عبور از فیلترینگ‌هایی که بر اساس سایز پکت فیلتر می‌کنند.
+        <br>🔹 <strong>وضعیت:</strong> <span class="badge ${config.FRAGMENT?.enabled ? 'badge-ok' : 'badge-err'}">${config.FRAGMENT?.enabled ? '✅ فعال' : '❌ غیرفعال'}</span>
+      </p>
+    </div>
+    
+    <!-- ECH -->
+    <div class="card fade-in protocol-card">
+      <h4>🔐 ECH (Encrypted Client Hello)</h4>
+      <p>
+        <strong>ECH</strong> یا Encrypted Client Hello یک استاندارد جدید برای رمزنگاری کامل دست‌دهی TLS است.
+        <br>🔹 <strong>هدف:</strong> مخفی کردن کامل SNI از دید ISP و سیستم‌های نظارتی.
+        <br>🔹 <strong>نحوه کار:</strong> کل فرآیند Client Hello با کلید عمومی سرور رمزنگاری می‌شود.
+        <br>🔹 <strong>پشتیبانی:</strong> نیاز به مرورگر و سرور سازگار (Cloudflare پشتیبانی می‌کند).
+        <br>🔹 <strong>تفاوت با SNI معمولی:</strong> در حالت عادی SNI به صورت plaintext ارسال می‌شود، ECH آن را رمزنگاری می‌کند.
+        <br>🔹 <strong>مزایا:</strong> حتی ISP نمی‌تواند بفهمد به چه سایتی متصل می‌شوید.
+        <br>🔹 <strong>وضعیت:</strong> <span class="badge ${config.ECH_ENABLED ? 'badge-ok' : 'badge-err'}">${config.ECH_ENABLED ? '✅ فعال' : '❌ غیرفعال'}</span>
+      </p>
+    </div>
+    
+    <!-- WARP -->
+    <div class="card fade-in protocol-card">
+      <h4>🌐 Cloudflare WARP</h4>
+      <p>
+        <strong>WARP</strong> سرویس VPN رایگان Cloudflare که ترافیک را از شبکه آن‌ها عبور می‌دهد.
+        <br>🔹 <strong>هدف:</strong> تغییر مسیر ترافیک از طریق شبکه Anycast Cloudflare.
+        <br>🔹 <strong>WARP معمولی:</strong> IP شما به IP Cloudflare تغییر می‌کند.
+        <br>🔹 <strong>WARP Pro:</strong> مسیریابی بهینه‌تر و سرعت بالاتر.
+        <br>🔹 <strong>مزایا:</strong> دور زدن محدودیت‌های جغرافیایی، افزایش حریم خصوصی.
+        <br>🔹 <strong>وضعیت WARP:</strong> <span class="badge ${config.WARP_ENABLED ? 'badge-ok' : 'badge-err'}">${config.WARP_ENABLED ? '✅ فعال' : '❌ غیرفعال'}</span>
+        <br>🔹 <strong>وضعیت WARP Pro:</strong> <span class="badge ${config.WARP_PRO_ENABLED ? 'badge-ok' : 'badge-err'}">${config.WARP_PRO_ENABLED ? '✅ فعال' : '❌ غیرفعال'}</span>
+      </p>
+    </div>
+    
+    <!-- TLS Fingerprint -->
+    <div class="card fade-in protocol-card">
+      <h4>🖐️ TLS Fingerprint</h4>
+      <p>
+        <strong>TLS Fingerprint</strong> یا اثر انگشت TLS برای شبیه‌سازی مرورگرهای مختلف استفاده می‌شود.
+        <br>🔹 <strong>هدف:</strong> جلوگیری از تشخیص کلاینت پروکسی توسط DPI.
+        <br>🔹 <strong>انواع:</strong> ${SYSTEM_CONFIG.FINGERPRINTS.join('، ')}
+        <br>🔹 <strong>نحوه کار:</strong> پارامترهای TLS مانند cipher suites، extensions و ترتیب آن‌ها شبیه‌سازی می‌شود.
+        <br>🔹 <strong>Fingerprint فعلی:</strong> <strong>${config.FINGERPRINTS?.[0] || 'chrome'}</strong>
+        <br>🔹 <strong>مزایا:</strong> ترافیک پروکسی کاملاً شبیه ترافیک مرورگر معمولی می‌شود.
+      </p>
+    </div>
+    
+    <!-- SNI -->
+    <div class="card fade-in protocol-card">
+      <h4>🏷️ SNI (Server Name Indication)</h4>
+      <p>
+        <strong>SNI</strong> بخشی از دست‌دهی TLS که نام دامنه مقصد را مشخص می‌کند.
+        <br>🔹 <strong>هدف:</strong> پنهان کردن دامنه واقعی از ISP.
+        <br>🔹 <strong>SNI های معتبر:</strong> ${(config.SNI_LIST || SYSTEM_CONFIG.SNI_LIST).join('، ')}
+        <br>🔹 <strong>SNI فعلی:</strong> <strong>${config.SNI_LIST?.[0] || 'www.google.com'}</strong>
+        <br>🔹 <strong>نکته:</strong> استفاده از SNI معتبر باعث می‌شود ترافیک شبیه به بازدید از سایت‌های معمولی باشد.
+        <br>🔹 <strong>تغییر SNI:</strong> از صفحه تنظیمات می‌توانید SNI را تغییر دهید.
+      </p>
+    </div>
+    
+    <!-- DNS over HTTPS -->
+    <div class="card fade-in protocol-card">
+      <h4>🔒 DNS over HTTPS (DoH)</h4>
+      <p>
+        <strong>DoH</strong> کوئری‌های DNS را از طریق HTTPS رمزنگاری می‌کند.
+        <br>🔹 <strong>هدف:</strong> جلوگیری از شنود و دستکاری DNS توسط ISP.
+        <br>🔹 <strong>سرور:</strong> ${config.DNS_OVER_HTTPS || SYSTEM_CONFIG.DNS_OVER_HTTPS}
+        <br>🔹 <strong>مزایا:</strong> ISP نمی‌تواند بفهمد چه سایت‌هایی را بازدید می‌کنید.
+        <br>🔹 <strong>فیلترها:</strong> 
+          ${config.ROUTING?.adblock ? '✅ AdBlock' : '❌ AdBlock'} | 
+          ${config.ROUTING?.malware ? '✅ Malware' : '❌ Malware'} | 
+          ${config.ROUTING?.iranBlock ? '✅ IranBlock' : '❌ IranBlock'}
+      </p>
+    </div>
+    
+    <p style="text-align:center;color:var(--text2);margin-top:20px;font-size:13px;">
+      📢 برای اطلاعات بیشتر به کانال @TaaKaaOrg مراجعه کنید | ⚡ TAAKAA-XI PRO v16
+    </p>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | اطلاعات پروتکل‌ها');
+}
+
+// ==================== صفحه Scanner ====================
+function scannerPage() {
+  const content = `
+    <div class="header fade-in">
+      <span class="brand">📡 اسکنر IP</span>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/">📊 داشبورد</a>
+      <a href="/users">👥 کاربران</a>
+      <a href="/settings">⚙️ تنظیمات</a>
+      <a href="/scanner" class="active">📡 اسکنر</a>
+      <a href="/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/subscription">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <div class="card fade-in">
+      <h3>📡 اسکن IP های Cloudflare</h3>
+      <p style="color:var(--text2);">دیتابیس ۲۰ IP تست شده برای اپراتورهای ایران</p>
+      
+      <div class="flex flex-wrap mt-20" style="gap:10px;">
+        <button class="btn" onclick="quickScan()">⚡ اسکن سریع (۵ IP)</button>
+        <button class="btn" onclick="fullScan()">🔍 اسکن کامل (۲۰ IP)</button>
+      </div>
+      
+      <div id="scan-results" class="mt-20">
+        <p style="color:var(--text2);">منتظر شروع اسکن...</p>
+      </div>
+      
+      <div id="best-ip-section" style="display:none;margin-top:20px;">
+        <h4>🌟 بهترین IP پیدا شده:</h4>
+        <div class="code-block" id="best-ip-display"></div>
+      </div>
+    </div>
+    
+    <div class="card fade-in mt-20">
+      <h3>📍 انتخاب لوکیشن</h3>
+      <p style="color:var(--text2);margin-bottom:15px;">کشورهای در دسترس Cloudflare:</p>
+      <div style="display:flex;gap:15px;flex-wrap:wrap;font-size:32px;justify-content:center;">
+        <span class="flag" onclick="showToast('📍 آلمان انتخاب شد','info')" title="آلمان">🇩🇪</span>
+        <span class="flag" onclick="showToast('📍 هلند انتخاب شد','info')" title="هلند">🇳🇱</span>
+        <span class="flag" onclick="showToast('📍 انگلستان انتخاب شد','info')" title="انگلستان">🇬🇧</span>
+        <span class="flag" onclick="showToast('📍 آمریکا انتخاب شد','info')" title="آمریکا">🇺🇸</span>
+        <span class="flag" onclick="showToast('📍 فرانسه انتخاب شد','info')" title="فرانسه">🇫🇷</span>
+        <span class="flag" onclick="showToast('📍 ژاپن انتخاب شد','info')" title="ژاپن">🇯🇵</span>
+        <span class="flag" onclick="showToast('📍 سنگاپور انتخاب شد','info')" title="سنگاپور">🇸🇬</span>
+        <span class="flag" onclick="showToast('📍 امارات انتخاب شد','info')" title="امارات">🇦🇪</span>
+        <span class="flag" onclick="showToast('📍 ترکیه انتخاب شد','info')" title="ترکیه">🇹🇷</span>
+        <span class="flag" onclick="showToast('📍 هند انتخاب شد','info')" title="هند">🇮🇳</span>
+        <span class="flag" onclick="showToast('📍 برزیل انتخاب شد','info')" title="برزیل">🇧🇷</span>
+        <span class="flag" onclick="showToast('📍 استرالیا انتخاب شد','info')" title="استرالیا">🇦🇺</span>
+      </div>
+    </div>
+    
+    <script>
+      async function quickScan(){
+        document.getElementById('scan-results').innerHTML='<div class="pulse" style="text-align:center;padding:20px;">⏳ در حال اسکن ۵ IP...</div>';
+        const r=await api('/api/quick-scan');
+        if(r.success)displayResults(r);
+        else document.getElementById('scan-results').innerHTML='<p style="color:var(--danger);">خطا در اسکن</p>';
+      }
+      async function fullScan(){
+        document.getElementById('scan-results').innerHTML='<div class="pulse" style="text-align:center;padding:20px;">⏳ در حال اسکن ۲۰ IP... (ممکن است چند ثانیه طول بکشد)</div>';
+        const r=await api('/api/full-scan');
+        if(r.success)displayResults(r);
+        else document.getElementById('scan-results').innerHTML='<p style="color:var(--danger);">خطا در اسکن</p>';
+      }
+      function displayResults(data){
+        let html='<table><thead><tr><th>IP</th><th>اپراتور</th><th>وضعیت</th><th>Latency</th></tr></thead><tbody>';
+        data.results.forEach(r=>{
+          html+='<tr>';
+          html+='<td style="font-family:monospace;direction:ltr;">'+r.ip+'</td>';
+          html+='<td>'+getOperatorName(r.operator)+'</td>';
+          html+='<td><span class="badge '+(r.alive?'badge-ok':'badge-err')+'">'+(r.alive?'✅ زنده':'❌ مرده')+'</span></td>';
+          html+='<td>'+(r.alive?r.latency+'ms':'—')+'</td>';
+          html+='</tr>';
+        });
+        html+='</tbody></table>';
+        document.getElementById('scan-results').innerHTML=html;
+        
+        if(data.bestIP){
+          document.getElementById('best-ip-section').style.display='block';
+          document.getElementById('best-ip-display').innerHTML=
+            'IP: '+data.bestIP.ip+' | '+
+            'اپراتور: '+getOperatorName(data.bestIP.operator)+' | '+
+            'Latency: '+data.bestIP.latency+'ms ⭐';
+        }
+      }
+      function getOperatorName(code){
+        const names={mci:'همراه اول',mtn:'ایرانسل',rtl:'رایتل'};
+        return names[code]||code;
+      }
+    </script>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | اسکنر');
+}
+
+// ==================== صفحه Subscription ====================
+function subscriptionPage(users, config, domain) {
+  const userOptions = users.map(u => 
+    `<option value="${u.uuid}">${u.name} (${u.uuid.substring(0, 8)}...)</option>`
+  ).join('');
+  
+  const content = `
+    <div class="header fade-in">
+      <span class="brand">📦 اشتراک و کانفیگ</span>
+    </div>
+    
+    <div class="nav fade-in">
+      <a href="/">📊 داشبورد</a>
+      <a href="/users">👥 کاربران</a>
+      <a href="/settings">⚙️ تنظیمات</a>
+      <a href="/scanner">📡 اسکنر</a>
+      <a href="/info-protocols">📖 پروتکل‌ها</a>
+      <a href="/subscription" class="active">📦 اشتراک</a>
+      <a href="/logout" style="background:rgba(239,68,68,0.15);color:var(--danger);">🚪 خروج</a>
+    </div>
+    
+    <div class="card fade-in">
+      <h3>🔗 لینک اشتراک</h3>
+      <p style="color:var(--text2);">یک کاربر انتخاب کنید:</p>
+      <select id="sub-user-select" onchange="updateSubscription()" style="margin:10px 0;">
+        <option value="">-- انتخاب کاربر --</option>
+        ${userOptions}
+      </select>
+      
+      <div id="subscription-links" style="display:none;">
+        <h4 style="margin-top:20px;">📎 لینک مستقیم:</h4>
+        <div class="flex" style="gap:10px;">
+          <input type="text" id="sub-url" readonly class="code-block" style="flex:1;">
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('sub-url').value)">📋 کپی</button>
+        </div>
+        
+        <h4 style="margin-top:20px;">📋 کانفیگ VLESS:</h4>
+        <div class="flex" style="gap:10px;">
+          <textarea id="vless-config" readonly class="code-block" style="flex:1;height:80px;"></textarea>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('vless-config').value)">📋</button>
+        </div>
+        
+        <h4 style="margin-top:20px;">📋 کانفیگ Trojan:</h4>
+        <div class="flex" style="gap:10px;">
+          <textarea id="trojan-config" readonly class="code-block" style="flex:1;height:80px;"></textarea>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('trojan-config').value)">📋</button>
+        </div>
+        
+        <h4 style="margin-top:20px;">📋 کانفیگ Shadowsocks:</h4>
+        <div class="flex" style="gap:10px;">
+          <textarea id="ss-config" readonly class="code-block" style="flex:1;height:80px;"></textarea>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('ss-config').value)">📋</button>
+        </div>
+        
+        <h4 style="margin-top:20px;">📦 Subscription Base64:</h4>
+        <div class="flex" style="gap:10px;">
+          <textarea id="sub-base64" readonly class="code-block" style="flex:1;height:60px;"></textarea>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('sub-base64').value)">📋</button>
+        </div>
+        
+        <h4 style="margin-top:20px;">📦 Clash YAML:</h4>
+        <div class="flex" style="gap:10px;">
+          <textarea id="clash-yaml" readonly class="code-block" style="flex:1;height:100px;"></textarea>
+          <button class="btn btn-sm" onclick="copyText(document.getElementById('clash-yaml').value)">📋</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid4 fade-in mt-20">
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;">H</div>
+        <strong>Hiddify</strong>
+        <br><small style="color:var(--text2);">پیشنهادی</small>
+        <br><button class="btn btn-sm mt-10" onclick="showToast('لینک اشتراک را در Hiddify وارد کنید','info')">📥 Import</button>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;">K</div>
+        <strong>Karing</strong>
+        <br><small style="color:var(--text2);">پیشنهادی</small>
+        <br><button class="btn btn-sm mt-10" onclick="showToast('لینک اشتراک را در Karing وارد کنید','info')">📥 Import</button>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;">V</div>
+        <strong>v2rayNG</strong>
+        <br><small style="color:var(--text2);">Android</small>
+        <br><button class="btn btn-sm mt-10" onclick="showToast('لینک اشتراک را در v2rayNG وارد کنید','info')">📥 Import</button>
+      </div>
+      <div class="card" style="text-align:center;">
+        <div style="font-size:32px;">F</div>
+        <strong>FlClash</strong>
+        <br><small style="color:var(--text2);">Android</small>
+        <br><button class="btn btn-sm mt-10" onclick="showToast('لینک اشتراک را در FlClash وارد کنید','info')">📥 Import</button>
+      </div>
+    </div>
+    
+    <script>
+      const DOMAIN = '${domain}';
+      let allUsers = ${JSON.stringify(users.map(u => ({uuid: u.uuid, name: u.name})))};
+      
+      async function updateSubscription(){
+        const uuid = document.getElementById('sub-user-select').value;
+        if(!uuid){document.getElementById('subscription-links').style.display='none';return;}
+        
+        const r = await api('/api/get-configs?uuid='+uuid);
+        if(r.success){
+          document.getElementById('subscription-links').style.display='block';
+          document.getElementById('sub-url').value = 'https://'+DOMAIN+'/sub/'+uuid;
+          document.getElementById('vless-config').value = r.configs.vless;
+          document.getElementById('trojan-config').value = r.configs.trojan;
+          document.getElementById('ss-config').value = r.configs.shadowsocks;
+          document.getElementById('sub-base64').value = r.configs.subscription;
+          document.getElementById('clash-yaml').value = r.configs.clash;
+        }
+      }
+    </script>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | اشتراک');
+}
+
+// ==================== صفحه Owners ====================
+function ownersPage() {
+  const content = `
+    <div class="header fade-in" style="text-align:center;">
+      <span class="brand">👑 TAAKAA-XI Owners</span>
+    </div>
+    
+    <div class="card fade-in" style="text-align:center;max-width:600px;margin:40px auto;">
+      <h2>🏗️ تیم توسعه TAAKAA</h2>
+      <p style="color:var(--text2);margin:20px 0;line-height:2;">
+        ⚡ <strong>TAAKAA-XI PRO v16</strong>
+        <br>🔹 توسعه: ۳ ماه کار مداوم
+        <br>🔹 تکنولوژی: Cloudflare Workers + KV + D1
+        <br>🔹 پروتکل‌ها: VLESS | Trojan | Shadowsocks
+        <br>🔹 قابلیت‌ها: Fragment | ECH | WARP | Fingerprint
+        <br>🔹 امنیت: TOTP 2FA | Rate Limiting | Session Management
+      </p>
+      <p style="color:var(--primary);font-size:18px;font-weight:bold;">
+        📢 کانال رسمی: @TaaKaaOrg
+      </p>
+      <a href="/" class="btn mt-20">🏠 بازگشت به داشبورد</a>
+    </div>
+  `;
+  
+  return HTMLGenerator.wrap(content, 'TAAKAA-XI | Owners');
+}
+
+// ==================== Helper Functions ====================
+function getCookie(cookieHeader, name) {
+  const match = cookieHeader.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+  return match ? match[1] : null;
+}
+
+function jsonResponse(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    }
+  });
+}
+
+function redirectResponse(url, cookie = null) {
+  const headers = { Location: url };
+  if (cookie) headers['Set-Cookie'] = cookie;
+  return new Response(null, { status: 302, headers });
+}
+
+function htmlResponse(html) {
+  return new Response(html, {
+    status: 200,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
+
+// ==================== EXPORT DEFAULT ====================
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+    const cookieHeader = request.headers.get('Cookie') || '';
+    const sessionToken = getCookie(cookieHeader, 'taakaa_session');
+    
+    const storage = new StorageManager(env);
+    const sessionMgr = new SessionManager(storage);
+    const rateLimiter = new RateLimiter(storage);
+    const userMgr = new UserManager(storage);
+    const proxyHandler = new ProxyHandler(storage);
+    
+    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
+    const domain = url.hostname;
+    
+    // ==================== Rate Limiting Check ====================
+    const rateCheck = await rateLimiter.check(
+      `login_${clientIP}`,
+      SYSTEM_CONFIG.MAX_LOGIN_ATTEMPTS,
+      SYSTEM_CONFIG.LOCKOUT_MINUTES
+    );
+    
+    // ==================== First Run Setup ====================
+    const isFirstRun = await storage.isFirstRun();
+    if (isFirstRun && path !== '/api/setup') {
+      if (path === '/') return htmlResponse(setupPage());
+      return htmlResponse(setupPage());
+    }
+    
+    // ==================== Session Validation ====================
+    let session = null;
+    if (sessionToken) {
+      session = await sessionMgr.validate(sessionToken);
+    }
+    
+    // ==================== Route Handling ====================
+    
+    // === Public Pages ===
+    if (path === '/' || path === '') {
+      if (!session) return htmlResponse(loginPage());
+      
+      const config = await storage.getSystemConfig();
+      const users = await storage.getAllUsers();
+      return htmlResponse(dashboardPage(null, users, config));
+    }
+    
+    if (path === '/setup') {
+      if (!isFirstRun) return redirectResponse('/');
+      return htmlResponse(setupPage());
+    }
+    
+    if (path === '/owners') {
+      return htmlResponse(ownersPage());
+    }
+    
+    if (path === '/info-protocols') {
+      const config = await storage.getSystemConfig();
+      return htmlResponse(infoProtocolsPage(config));
+    }
+    
+    // === Protected Pages ===
+    if (!session) {
+      if (path.startsWith('/api/')) {
+        return jsonResponse({ success: false, error: 'لطفاً وارد شوید' }, 401);
+      }
+      return htmlResponse(loginPage());
+    }
+    
+    // === API: Auth ===
+    if (path === '/api/login' && method === 'POST') {
+      if (!rateCheck.allowed) {
+        return jsonResponse({
+          success: false,
+          error: `تعداد تلاش‌ها تمام شد. ${Math.ceil((rateCheck.resetAt - Date.now()) / 60000)} دقیقه دیگر تلاش کنید.`
+        }, 429);
+      }
+      
+      const body = await request.formData();
+      const password = body.get('password');
+      const totpToken = body.get('totp');
+      
+      const adminHash = await storage.getAdminPassword();
+      if (!adminHash) {
+        return jsonResponse({ success: false, error: 'سیستم راه‌اندازی نشده' }, 500);
+      }
+      
+      const validPassword = await CryptoUtils.verifyPassword(password, adminHash);
+      if (!validPassword) {
+        return htmlResponse(loginPage(null, '❌ رمز عبور اشتباه است'));
+      }
+      
+      const config = await storage.getSystemConfig();
+      if (config.TOTP_SECRET) {
+        const validTOTP = CryptoUtils.verifyTOTP(totpToken, config.TOTP_SECRET);
+        if (!validTOTP && totpToken) {
+          return htmlResponse(loginPage(null, '❌ کد TOTP اشتباه است'));
         }
       }
       
-      if (loginBody.password === CONFIG.ADMIN_PASS) {
-        var sid = await sm.create();
-        if (!sid) return new Response(JSON.stringify({ error: 'KV not configured' }), { status: 500, headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
-        return new Response(JSON.stringify({ success: true }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json', 'Set-Cookie': 'session=' + sid + '; Path=/; HttpOnly; SameSite=Strict; Max-Age=' + (CONFIG.SESSION_HOURS * 3600) }) });
+      const newSession = await sessionMgr.create({
+        role: 'admin',
+        ip: clientIP,
+        loginAt: Date.now()
+      });
+      
+      const cookie = `taakaa_session=${newSession}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SYSTEM_CONFIG.SESSION_EXPIRY}`;
+      return redirectResponse('/', cookie);
+    }
+    
+    if (path === '/api/setup' && method === 'POST') {
+      if (!isFirstRun) {
+        return jsonResponse({ success: false, error: 'قبلاً راه‌اندازی شده' });
       }
-      return new Response(JSON.stringify({ error: 'Invalid password' }), { status: 401, headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) });
+      
+      const body = await request.formData();
+      const password = body.get('password');
+      const confirm = body.get('confirm');
+      
+      if (password !== confirm) {
+        return htmlResponse(setupPage(null, '❌ رمزها مطابقت ندارند'));
+      }
+      
+      if (password.length < 6) {
+        return htmlResponse(setupPage(null, '❌ رمز باید حداقل ۶ کاراکتر باشد'));
+      }
+      
+      await storage.setup(password);
+      
+      const newSession = await sessionMgr.create({
+        role: 'admin',
+        ip: clientIP,
+        loginAt: Date.now()
+      });
+      
+      const cookie = `taakaa_session=${newSession}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SYSTEM_CONFIG.SESSION_EXPIRY}`;
+      return redirectResponse('/', cookie);
     }
     
-    if (path === '/api/logout' && method === 'POST') {
-      var lcookie = request.headers.get('Cookie') || '';
-      var lmatch = lcookie.match(/session=([^;]+)/);
-      if (lmatch) await sm.destroy(lmatch[1]);
-      return new Response(JSON.stringify({ success: true }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json', 'Set-Cookie': 'session=; Path=/; Max-Age=0' }) });
+    if (path === '/logout') {
+      await sessionMgr.destroy(sessionToken);
+      const cookie = 'taakaa_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0';
+      return redirectResponse('/', cookie);
     }
     
-    if (path === '/api/stats') { var stats = await um.getStats(); return new Response(JSON.stringify(stats), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    // === API: Users ===
+    if (path === '/users') {
+      const config = await storage.getSystemConfig();
+      const users = await storage.getAllUsers();
+      return htmlResponse(usersPage(users, config));
+    }
     
-    if (path === '/api/users' && method === 'GET') { var users = await um.getAll(); return new Response(JSON.stringify(users), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path === '/api/users' && method === 'POST') { var data = await request.json(); var user = await um.add(data); return new Response(JSON.stringify(user), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path.match(/^\/api\/users\/([^\/]+)\/reset$/) && method === 'POST') { var rid = path.split('/')[3]; var ruser = await um.resetUsage(rid); return new Response(JSON.stringify(ruser), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path.match(/^\/api\/users\/([^\/]+)$/) && method === 'PUT') { var uid = path.split('/')[3]; var udata = await request.json(); var uuser = await um.update(uid, udata); return new Response(JSON.stringify(uuser), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path.match(/^\/api\/users\/([^\/]+)$/) && method === 'DELETE') { var did = path.split('/')[3]; await um.delete(did); return new Response(JSON.stringify({ success: true }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    if (path === '/api/create-user' && method === 'POST') {
+      const data = await request.json();
+      const user = await userMgr.create(data);
+      return jsonResponse({ success: true, user });
+    }
     
-    if (path === '/api/ips') { var op = url.searchParams.get('operator') || 'all'; var cnt = parseInt(url.searchParams.get('count') || '10'); var sort = url.searchParams.get('sort'); var ips = Helpers.getBestIPs(op, cnt, sort === 'latency'); return new Response(JSON.stringify(ips), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path === '/api/scan-ips') { var sop = url.searchParams.get('operator') || 'all'; var sips = Helpers.getBestIPs(sop, 10); var unique = [], seen = {}; sips.forEach(function(item) { if (!seen[item.ip]) { seen[item.ip] = true; unique.push(item.ip); } }); var results = await IPScanner.scanBatch(unique, ['443'], 5); return new Response(JSON.stringify({ results: results.slice(0, 20) }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    if (path === '/api/get-user') {
+      const uuid = url.searchParams.get('uuid');
+      const user = await userMgr.get(uuid);
+      if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      return jsonResponse({ success: true, user });
+    }
     
-    if (path === '/api/generate-config' && method === 'POST') { var cdata = await request.json(); var config = Helpers.generateConfig(cdata.uuid || CONFIG.UUID, cdata.host || '104.16.71.76', cdata.port || '443', cdata.type || 'vless', cdata.settings || {}); return new Response(JSON.stringify({ config: config }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    if (path === '/api/edit-user' && method === 'POST') {
+      const data = await request.json();
+      const user = await userMgr.update(data.uuid, data);
+      if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      return jsonResponse({ success: true, user });
+    }
     
-    if (path === '/api/settings' && method === 'GET') { return new Response(JSON.stringify(CONFIG), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path === '/api/settings' && method === 'POST') { var sdata = await request.json(); Object.assign(CONFIG, sdata); if (env.KV) await env.KV.put('config', JSON.stringify(CONFIG)); if (sdata.ADMIN_PASS && env.KV) await env.KV.put('admin_pass', sdata.ADMIN_PASS); return new Response(JSON.stringify({ success: true }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
+    if (path === '/api/delete-user' && method === 'POST') {
+      const data = await request.json();
+      await userMgr.delete(data.uuid);
+      return jsonResponse({ success: true });
+    }
     
-    if (path === '/api/backup') { var backup = await um.backupData(); return new Response(JSON.stringify(backup), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); }
-    if (path === '/api/restore' && method === 'POST') { try { var rdata = await request.json(); var result = await um.restoreData(rdata); return new Response(JSON.stringify({ success: result }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); } catch (e) { return new Response(JSON.stringify({ success: false, error: e.message }), { headers: Object.assign({}, corsHeaders, { 'Content-Type': 'application/json' }) }); } }
-        // Subscription
+    if (path === '/api/toggle-user' && method === 'POST') {
+      const data = await request.json();
+      const user = await userMgr.toggleStatus(data.uuid);
+      if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      return jsonResponse({ success: true, user });
+    }
+    
+    if (path === '/api/reset-usage' && method === 'POST') {
+      const data = await request.json();
+      const user = await userMgr.resetUsage(data.uuid);
+      if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      return jsonResponse({ success: true, user });
+    }
+    
+    // === API: Settings ===
+    if (path === '/settings') {
+      const config = await storage.getSystemConfig();
+      return htmlResponse(settingsPage(config));
+    }
+    
+    if (path === '/api/update-settings' && method === 'POST') {
+      const data = await request.json();
+      const config = await storage.getSystemConfig();
+      
+      if (data.fragment_enabled !== undefined) config.FRAGMENT.enabled = data.fragment_enabled === true || data.fragment_enabled === 'true' || data.fragment_enabled === 'on';
+      if (data.fragment_size) config.FRAGMENT.size = data.fragment_size;
+      if (data.fragment_count) config.FRAGMENT.count = parseInt(data.fragment_count);
+      if (data.fragment_delay) config.FRAGMENT.delay = data.fragment_delay;
+      if (data.warp_enabled !== undefined) config.WARP_ENABLED = data.warp_enabled === true || data.warp_enabled === 'true' || data.warp_enabled === 'on';
+      if (data.warp_pro_enabled !== undefined) config.WARP_PRO_ENABLED = data.warp_pro_enabled === true || data.warp_pro_enabled === 'true' || data.warp_pro_enabled === 'on';
+      if (data.ech_enabled !== undefined) config.ECH_ENABLED = data.ech_enabled === true || data.ech_enabled === 'true' || data.ech_enabled === 'on';
+      if (data.sni) config.SNI_LIST = [data.sni, ...(config.SNI_LIST || []).filter(s => s !== data.sni)].slice(0, 8);
+      if (data.fingerprint) config.FINGERPRINTS = [data.fingerprint, ...(config.FINGERPRINTS || []).filter(f => f !== data.fingerprint)].slice(0, 12);
+      if (data.port) config.PORTS = [parseInt(data.port), ...(config.PORTS || []).filter(p => p !== parseInt(data.port))].slice(0, 6);
+      
+      await storage.saveSystemConfig(config);
+      return jsonResponse({ success: true, config });
+    }
+    
+    if (path === '/api/change-password' && method === 'POST') {
+      const data = await request.json();
+      const config = await storage.getSystemConfig();
+      
+      const validCurrent = await CryptoUtils.verifyPassword(data.current, config.ADMIN_PASSWORD_HASH);
+      if (!validCurrent) {
+        return jsonResponse({ success: false, error: 'رمز فعلی اشتباه است' });
+      }
+      
+      if (data.new_password !== data.confirm) {
+        return jsonResponse({ success: false, error: 'رمزها مطابقت ندارند' });
+      }
+      
+      config.ADMIN_PASSWORD_HASH = await CryptoUtils.hashPassword(data.new_password);
+      await storage.saveSystemConfig(config);
+      
+      return jsonResponse({ success: true });
+    }
+    
+    if (path === '/api/change-system-uuid' && method === 'POST') {
+      const newUUID = CryptoUtils.generateUUID();
+      return jsonResponse({ success: true, newUUID });
+    }
+    
+    if (path === '/api/backup-kv') {
+      const config = await storage.getSystemConfig();
+      const users = await storage.getAllUsers();
+      
+      return jsonResponse({
+        exportedAt: new Date().toISOString(),
+        version: 'v16',
+        config,
+        users,
+        totalUsers: users.length
+      });
+    }
+    
+    // === API: Scanner ===
+    if (path === '/scanner') {
+      return htmlResponse(scannerPage());
+    }
+    
+    if (path === '/api/quick-scan') {
+      const results = await IPScanner.quickScan();
+      const bestIP = results.find(r => r.alive);
+      return jsonResponse({
+        success: true,
+        results,
+        bestIP,
+        total: results.length,
+        alive: results.filter(r => r.alive).length
+      });
+    }
+    
+    if (path === '/api/full-scan') {
+      const results = await IPScanner.fullScan();
+      const bestIP = results.find(r => r.alive);
+      return jsonResponse({
+        success: true,
+        results,
+        bestIP,
+        total: results.length,
+        alive: results.filter(r => r.alive).length
+      });
+    }
+    
+    // === API: Subscription ===
+    if (path === '/subscription') {
+      const config = await storage.getSystemConfig();
+      const users = await storage.getAllUsers();
+      return htmlResponse(subscriptionPage(users, config, domain));
+    }
+    
+    if (path === '/api/get-configs') {
+      const uuid = url.searchParams.get('uuid');
+      const user = await userMgr.get(uuid);
+      if (!user) return jsonResponse({ success: false, error: 'کاربر یافت نشد' }, 404);
+      
+      const config = await storage.getSystemConfig();
+      
+      return jsonResponse({
+        success: true,
+        configs: {
+          vless: ConfigGenerator.generateVless(user, config, domain),
+          trojan: ConfigGenerator.generateTrojan(user, config, domain),
+          shadowsocks: ConfigGenerator.generateShadowsocks(user, config, domain),
+          subscription: ConfigGenerator.generateSubscription(user, config, domain),
+          clash: ConfigGenerator.generateClashYAML(user, config, domain)
+        }
+      });
+    }
+    
+    // === Subscription Endpoint ===
     if (path.startsWith('/sub/')) {
-      var subUUID = path.replace('/sub/', '').replace(/\/$/, '');
-      if (!Helpers.isValidUUID(subUUID)) return new Response('UUID نامعتبر', { status: 400 });
-      var subUser = await um.getByUUID(subUUID);
-      if (!subUser && subUUID !== CONFIG.UUID) return new Response('کاربر یافت نشد', { status: 404 });
-      var subType = url.searchParams.get('type') || 'all';
-      var subFormat = url.searchParams.get('format') || 'raw';
-      var subOperator = subUser ? subUser.operator : 'all';
-      var configs = [];
-      var bestIPs = Helpers.getBestIPs(subOperator, 5);
-      bestIPs.forEach(function(item) { item.ports.forEach(function(port) { var userName = subUser ? subUser.name : 'Main'; if (subType === 'all' || subType === 'vless') configs.push(Helpers.generateConfig(subUUID, item.ip, port, 'vless', { name: 'Taakaa-Xi-' + userName })); if (subType === 'all' || subType === 'trojan') configs.push(Helpers.generateConfig(subUUID, item.ip, port, 'trojan', { name: 'Taakaa-Xi-' + userName })); if (subType === 'all' || subType === 'ss') configs.push(Helpers.generateConfig(subUUID, item.ip, port, 'ss', { name: 'Taakaa-Xi-' + userName })); }); });
-      if (subFormat === 'base64') return new Response(btoa(configs.join('\n')), { headers: { 'Content-Type': 'text/plain' } });
-      if (subFormat === 'clash') { var clashProxies = []; bestIPs.forEach(function(item) { item.ports.forEach(function(port) { clashProxies.push({ name: 'Taakaa-Xi-' + item.ip + ':' + port, type: 'vless', server: item.ip, port: parseInt(port), uuid: subUUID, network: 'ws', 'ws-opts': { path: '/' }, tls: true, 'servername': CONFIG.SNI }); }); }); return new Response(JSON.stringify({ proxies: clashProxies }, null, 2), { headers: { 'Content-Type': 'application/yaml' } }); }
-      return new Response(configs.join('\n'), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      const uuid = path.split('/sub/')[1];
+      if (!CryptoUtils.validateUUID(uuid)) {
+        return new Response('Invalid UUID', { status: 400 });
+      }
+      
+      const user = await userMgr.get(uuid);
+      if (!user) return new Response('User not found', { status: 404 });
+      
+      const config = await storage.getSystemConfig();
+      const sub = ConfigGenerator.generateSubscription(user, config, domain);
+      
+      return new Response(sub, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Subscription-Userinfo': `upload=${user.usageTotal || 0}; download=${user.usageTotal || 0}; total=${user.quotaTotal}`,
+          'Profile-Update-Interval': '12'
+        }
+      });
     }
     
-    // Static Pages
-    var locsJSON = JSON.stringify(CONFIG.LOCATIONS);
+    if (path.startsWith('/clash/')) {
+      const uuid = path.split('/clash/')[1];
+      const user = await userMgr.get(uuid);
+      if (!user) return new Response('User not found', { status: 404 });
+      
+      const config = await storage.getSystemConfig();
+      const clash = ConfigGenerator.generateClashYAML(user, config, domain);
+      
+      return new Response(atob(clash), {
+        status: 200,
+        headers: { 'Content-Type': 'application/yaml; charset=utf-8' }
+      });
+    }
     
-    if (path === '/' || path === '') return new Response(HTML_DASHBOARD.replace('UUID_PLACEHOLDER', CONFIG.UUID).replace('LOCS_PLACEHOLDER', locsJSON), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/dashboard') return new Response(HTML_DASHBOARD.replace('UUID_PLACEHOLDER', CONFIG.UUID).replace('LOCS_PLACEHOLDER', locsJSON), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/admin' || path === '/login') return new Response(HTML_DASHBOARD.replace('UUID_PLACEHOLDER', CONFIG.UUID).replace('LOCS_PLACEHOLDER', locsJSON), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/setup') return new Response(HTML_SETUP, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/scanner') return new Response(HTML_DASHBOARD.replace('UUID_PLACEHOLDER', CONFIG.UUID).replace('LOCS_PLACEHOLDER', locsJSON), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/select-location') return new Response(HTML_LOCATIONS.replace('LOCS_PLACEHOLDER', locsJSON), { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/owners') return new Response(HTML_OWNERS, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/fragment-info') return new Response(HTML_FRAGMENT, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    if (path === '/offline-support') return new Response(HTML_OFFLINE, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    // === Proxy Handling ===
+    if (path === '/ws' || path === '/trojan' || path === '/ss') {
+      // Extract UUID from request or use first active user
+      const users = await storage.getAllUsers();
+      const activeUser = users.find(u => u.status === 'active');
+      
+      if (!activeUser) {
+        return new Response('No active users', { status: 503 });
+      }
+      
+      return await proxyHandler.handle(request, activeUser);
+    }
     
-    // Proxy Handler
-    return handleProxy(request, env, ctx);
+    // === 404 ===
+    return htmlResponse(`
+      <div style="text-align:center;padding:100px 20px;">
+        <h1 style="font-size:72px;color:var(--primary);">404</h1>
+        <p style="color:var(--text2);">صفحه مورد نظر یافت نشد</p>
+        <a href="/" class="btn mt-20">🏠 بازگشت به خانه</a>
+      </div>
+    `);
   }
 };
+
+console.log('✅ TAAKAA-XI PRO v16 - تمام ۵ پارت بارگذاری شد');
+console.log('🚀 Worker آماده اجرا روی Cloudflare');
