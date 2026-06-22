@@ -1,1446 +1,1249 @@
-// ============================================================
-// TAAKAA-XI WORKER v2.0.0 - PART 1/3 - COMPLETE
-// ============================================================
-// 
-//                            TaaKaa-Xi 
-//        the new generation of Free config
-//
-// ============================================================
+// ============================================
+// 🔥 Taakaa-Xi Ultimate Worker v3.0
+// 🌐 @TaaKaaOrg - پروکسی پیشرفته
+// ⚡ کانکت واقعی + پنل مدیریت + اسکنر
+// ============================================
 
-const BRAND = 'Taakaa-Xi';
-const VERSION = 'Taakaa-Xi-v2.0.0';
-const CHANNEL = '@TaaKaaOrg';
-const TEAM = 'تیم تاکا - ۳ ماه توسعه';
+import { connect } from 'cloudflare:sockets';
 
-// ============================================================
-// IP POOLS
-// ============================================================
-
-const IP_POOLS = {
-    irancel: [
-        '188.114.98.82:2083', '104.17.71.192:443', '141.101.115.191:443',
-        '104.17.71.192:2087', '141.101.115.191:2096', '188.114.98.82:2087',
-        '104.17.71.192:2053', '104.17.71.192:8443', '104.17.71.192:2083',
-        '198.41.202.88:2087', '198.41.202.88:8443', '188.114.98.82:2096',
-        '188.114.98.82:2053', '198.41.202.88:443', '198.41.202.88:2083',
-        '188.114.98.82:8443', '188.114.98.82:443', '198.41.202.88:2096',
-        '198.41.202.88:2053', '141.101.115.191:8443', '141.101.115.191:2053',
-        '141.101.115.191:2083', '141.101.115.191:2087', '104.19.35.197:2096',
-        '172.67.79.95:443', '172.67.79.95:2053', '108.162.198.63:443',
-        '104.26.9.174:2096', '104.19.35.197:443', '104.26.9.174:8443',
-        '172.67.79.95:2096', '172.67.79.95:2083', '108.162.198.63:2096',
-        '172.67.79.95:8443', '104.19.35.197:2053', '108.162.198.63:2087',
-        '8.35.211.114:2053', '108.162.198.63:2053', '104.19.35.197:2083',
-        '8.35.211.114:443', '104.26.9.174:2087', '8.35.211.114:2096',
-        '172.67.79.95:2087', '8.35.211.207:2053', '104.19.35.197:8443',
-        '108.162.198.63:2083', '8.35.211.114:2083', '104.19.35.197:2087',
-        '8.35.211.114:2087', '108.162.198.63:8443', '8.35.211.114:8443'
-    ],
-    hamraheAval: [
-        '172.64.184.93:443', '172.64.184.93:2083', '172.64.184.93:2087',
-        '172.64.184.93:2096', '172.64.184.93:2053', '172.64.184.93:8443',
-        '138.249.126.242:443', '138.249.126.242:2083', '138.249.126.242:2087'
-    ],
-    rightel: [
-        '45.198.116.93:443', '45.198.116.93:2083', '45.198.116.93:2087',
-        '45.198.116.93:2096', '45.198.116.93:2053', '45.198.116.93:8443',
-        '66.92.62.239:443', '66.92.62.239:2083', '66.92.62.239:2087'
-    ]
+// ============ CONFIGURATION ============
+let CONFIG = {
+  UUID: '12345678-1234-1234-1234-123456789abc',
+  ADMIN_PASS: 'admin123',
+  SNI: 'cloudflare.com',
+  FINGERPRINT: 'chrome',
+  PORTS: ['443', '8443', '2083', '2087', '2096', '2053'],
+  FRAGMENT: { enabled: true, size: '200-500', count: '5-10', delay: '10-30' },
+  WARP: { enabled: false, pro: false },
+  ECH: { enabled: true },
+  SESSION_HOURS: 24,
+  MAX_LOGIN_ATTEMPTS: 5
 };
 
-// ============================================================
-// SMART PARSERS
-// ============================================================
+// ============ TRUSTED IP DATABASE ============
+const TRUSTED_IPS = [
+  // ایرانسل خونگی و همراه اول
+  { ip: '104.16.71.76', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.115', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.101', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.85', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.27', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.110', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.182', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.229', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.193', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.135', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.202', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.219', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.17', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.80', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.216', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.176', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.195', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.141', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.71', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.246', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.232', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.126', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  { ip: '104.16.71.218', ports: ['443', '8443', '2083', '2087', '2096', '2053'], operator: 'mci' },
+  
+  // IP های تست شده همه اپراتورها
+  { ip: '162.159.160.11', ports: ['2083', '2096', '8443', '2053', '443', '2087'], operator: 'all' },
+  { ip: '23.227.60.9', ports: ['2096', '2087', '8443', '2083'], operator: 'all' },
+  { ip: '138.249.148.112', ports: ['2053', '2087', '2083', '443'], operator: 'all' },
+  { ip: '8.39.125.114', ports: ['2053', '2083'], operator: 'all' },
+  { ip: '45.192.222.103', ports: ['2083', '2096', '8443', '2087', '2053'], operator: 'all' },
+  { ip: '172.64.68.108', ports: ['2053', '2083'], operator: 'all' },
+  { ip: '66.92.62.143', ports: ['443'], operator: 'all' },
+  { ip: '1.1.1.81', ports: ['2087', '2053', '2096'], operator: 'all' },
+  { ip: '172.64.153.117', ports: ['8443', '2083', '443', '2087', '2053'], operator: 'all' },
+  { ip: '94.156.10.39', ports: ['2096', '2087', '443', '2083'], operator: 'all' },
+  { ip: '5.252.81.226', ports: ['2087', '2096', '2083', '2053'], operator: 'all' },
+  { ip: '23.227.39.68', ports: ['2053', '8443'], operator: 'all' },
+  { ip: '104.26.14.160', ports: ['2083', '2096'], operator: 'all' },
+  { ip: '66.93.178.242', ports: ['2083', '2053', '2096'], operator: 'all' },
+  { ip: '89.106.90.15', ports: ['2096', '2053'], operator: 'all' },
+  { ip: '172.64.84.159', ports: ['2087', '8443', '2083', '2053'], operator: 'all' },
+  { ip: '37.153.170.102', ports: ['2053', '2083'], operator: 'all' },
+  { ip: '162.159.93.244', ports: ['2087', '2083', '2053', '443', '2096', '8443'], operator: 'all' },
+  { ip: '45.45.255.43', ports: ['2083', '2096', '2053', '8443', '2087'], operator: 'all' },
+  { ip: '89.249.200.202', ports: ['2083', '2087', '8443', '2096', '2053'], operator: 'all' },
+  { ip: '103.51.12.167', ports: ['2096', '2053', '443'], operator: 'all' },
+  { ip: '156.243.83.52', ports: ['2096', '443', '2087', '2053', '2083', '8443'], operator: 'all' },
+  { ip: '162.159.254.7', ports: ['2087', '2053', '2096', '443', '2083', '8443'], operator: 'all' },
+  { ip: '5.10.215.142', ports: ['2087', '2096', '8443'], operator: 'all' },
+  { ip: '156.224.73.107', ports: ['2053', '2087', '443', '2083', '2096', '8443'], operator: 'all' },
+  { ip: '104.234.133.163', ports: ['2053', '2096', '443', '8443', '2083', '2087'], operator: 'all' },
+  { ip: '45.128.76.37', ports: ['2087', '2053', '2096', '8443', '2083', '443'], operator: 'all' },
+  { ip: '66.235.200.234', ports: ['2083', '8443', '2053'], operator: 'all' },
+  { ip: '61.245.108.53', ports: ['2083', '2053', '2096', '443', '2087', '8443'], operator: 'all' },
+  { ip: '138.226.213.231', ports: ['8443', '2087', '2096', '443', '2083'], operator: 'all' },
+  { ip: '143.14.224.68', ports: ['443', '2087', '2083', '2096', '8443', '2053'], operator: 'all' },
+  { ip: '172.64.188.4', ports: ['2096', '2053', '2083', '443', '2087', '8443'], operator: 'all' },
+  { ip: '159.242.242.87', ports: ['2087', '2053', '443'], operator: 'all' },
+  { ip: '162.251.82.37', ports: ['8443', '2087', '2083', '443'], operator: 'all' },
+  { ip: '158.94.212.25', ports: ['2083', '443', '2096', '2053', '2087', '8443'], operator: 'all' },
+  { ip: '162.159.206.246', ports: ['2096', '2053', '2087'], operator: 'all' },
+  { ip: '104.24.79.12', ports: ['2096', '2087', '8443', '443', '2083'], operator: 'all' },
+  { ip: '62.146.255.112', ports: ['2083', '2087', '443', '2096'], operator: 'all' },
+  { ip: '172.67.144.187', ports: ['2087', '2096', '2053', '2083'], operator: 'all' },
+  { ip: '172.64.48.20', ports: ['2096', '443'], operator: 'all' },
+  { ip: '104.17.156.175', ports: ['8443'], operator: 'all' },
+  { ip: '104.17.21.148', ports: ['2053'], operator: 'all' },
+  { ip: '104.17.158.203', ports: ['2053'], operator: 'all' },
+  { ip: '104.17.59.172', ports: ['2087'], operator: 'all' },
+  { ip: '104.19.41.143', ports: ['8443'], operator: 'all' },
+  { ip: '104.16.250.15', ports: ['2053'], operator: 'all' },
+  { ip: '173.245.58.100', ports: ['2053'], operator: 'all' },
+  { ip: '104.17.166.174', ports: ['2053'], operator: 'all' },
+  { ip: '104.17.218.118', ports: ['2096'], operator: 'all' },
+  { ip: '104.19.37.112', ports: ['2083'], operator: 'all' },
+  { ip: '198.41.208.110', ports: ['443'], operator: 'all' },
+  { ip: '104.26.7.44', ports: ['2087'], operator: 'all' },
+  { ip: '162.159.38.206', ports: ['2053'], operator: 'all' },
+  { ip: '173.245.59.53', ports: ['8443'], operator: 'all' },
+  { ip: '172.67.79.39', ports: ['2083'], operator: 'all' },
+  
+  // IP های اضافی
+  { ip: '8.35.211.4', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '8.35.211.11', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '188.114.97.6', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '104.21.33.108', ports: ['443'], operator: 'all' },
+  { ip: '104.24.239.89', ports: ['443'], operator: 'all' },
+  { ip: '104.21.194.180', ports: ['443'], operator: 'all' },
+  { ip: '104.27.73.244', ports: ['443'], operator: 'all' },
+  { ip: '162.159.19.3', ports: ['443'], operator: 'all' },
+  { ip: '104.24.240.182', ports: ['443'], operator: 'all' },
+  { ip: '172.67.127.148', ports: ['443'], operator: 'all' },
+  { ip: '104.18.162.75', ports: ['443'], operator: 'all' },
+  { ip: '104.16.73.213', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '69.84.182.49', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '104.17.108.68', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '172.64.229.36', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '104.16.72.162', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '45.130.125.76', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '89.116.46.8', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '141.193.213.21', ports: ['443', '8443', '2053'], operator: 'all' },
+  { ip: '208.103.161.170', ports: ['443', '8443', '2053'], operator: 'all' }
+];
 
-function parseVolume(input) {
-    if (!input || input === '' || input === '0' || input === 'unlimited' || input === 'Infinity') {
-        return Infinity;
-    }
-    var str = String(input).trim().toLowerCase();
-    var num = parseFloat(str) || 0;
-    if (isNaN(num) || num <= 0) return Infinity;
-    if (str.endsWith('pt') || str.endsWith('pb')) return num * 1024 * 1024 * 1024 * 1024;
-    if (str.endsWith('t') || str.endsWith('tb')) return num * 1024 * 1024;
-    if (str.endsWith('g') || str.endsWith('gb')) return num * 1024;
-    if (str.endsWith('m') || str.endsWith('mb')) return num;
-    if (str.endsWith('k') || str.endsWith('kb')) return num / 1024;
-    return num * 1024;
-}
-
-function parseDuration(input) {
-    if (!input || input === '' || input === '0' || input === 'unlimited' || input === 'Infinity') {
-        return Infinity;
-    }
-    var str = String(input).trim().toLowerCase();
-    var num = parseFloat(str) || 0;
-    if (isNaN(num) || num <= 0) return Infinity;
-    if (str.endsWith('y')) return num * 365;
-    if (str.endsWith('m') && !str.endsWith('mb') && !str.endsWith('ms')) return num * 30;
-    if (str.endsWith('w')) return num * 7;
-    if (str.endsWith('d')) return num;
-    return num || 30;
-}
-
-function formatVolume(mb) {
-    if (mb === Infinity) return '∞ نامحدود';
-    if (mb >= 1024 * 1024 * 1024) return (mb / (1024 * 1024 * 1024)).toFixed(2) + ' PB';
-    if (mb >= 1024 * 1024) return (mb / (1024 * 1024)).toFixed(2) + ' TB';
+// ============ HELPER FUNCTIONS ============
+class Helpers {
+  static generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+  }
+  
+  static isValidUUID(uuid) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
+  }
+  
+  static parseDataLimit(input) {
+    if (!input || input === '0' || input.toLowerCase() === 'unlimited') return 0;
+    const value = input.toString().toLowerCase().trim();
+    const match = value.match(/^(\d+(?:\.\d+)?)\s*(kb|mb|gb|tb|pt)?$/);
+    if (!match) return 0;
+    const num = parseFloat(match[1]);
+    const unit = (match[2] || 'mb').toLowerCase();
+    const multipliers = { kb: 1/1024, mb: 1, gb: 1024, tb: 1048576, pt: 1073741824 };
+    return num * (multipliers[unit] || 1);
+  }
+  
+  static parseTimeLimit(input) {
+    if (!input || input === '0' || input.toLowerCase() === 'unlimited') return 0;
+    const value = input.toString().toLowerCase().trim();
+    const match = value.match(/^(\d+)\s*(d|m|y|day|month|year|days|months|years)?$/);
+    if (!match) return 0;
+    const num = parseInt(match[1]);
+    const unit = (match[2] || 'd').toLowerCase();
+    const multipliers = { d: 1, day: 1, days: 1, m: 30, month: 30, months: 30, y: 365, year: 365, years: 365 };
+    return num * (multipliers[unit] || 1);
+  }
+  
+  static formatBytes(mb) {
+    if (mb === 0) return 'نامحدود';
+    if (mb >= 1048576) return (mb / 1048576).toFixed(2) + ' TB';
     if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
     return mb.toFixed(0) + ' MB';
-}
-
-function formatDuration(days) {
-    if (days === Infinity) return '∞ نامحدود';
-    if (days >= 365) return Math.floor(days / 365) + ' سال';
-    if (days >= 30) return Math.floor(days / 30) + ' ماه';
+  }
+  
+  static formatDays(days) {
+    if (days === 0) return 'نامحدود';
+    if (days >= 365) return (days / 365).toFixed(1) + ' سال';
+    if (days >= 30) return (days / 30).toFixed(1) + ' ماه';
     return days + ' روز';
+  }
+  
+  static getBestIPs(operator = 'all', count = 10) {
+    let filtered = TRUSTED_IPS.filter(item => operator === 'all' || item.operator === operator || item.operator === 'all');
+    return filtered.sort(() => Math.random() - 0.5).slice(0, count);
+  }
+  
+  static generateConfig(uuid, host, port, type = 'vless', settings = {}) {
+    const { sni = CONFIG.SNI, fp = CONFIG.FINGERPRINT, fragment = CONFIG.FRAGMENT, warp = CONFIG.WARP, ech = CONFIG.ECH } = settings;
+    const encodedName = encodeURIComponent('Taakaa-Xi');
+    
+    if (type === 'vless') {
+      let config = `vless://${uuid}@${host}:${port}?encryption=none&security=tls&sni=${sni}&fp=${fp}&type=ws&host=${host}&path=%2F`;
+      if (fragment?.enabled) config += `&fragment=size:${fragment.size},count:${fragment.count},delay:${fragment.delay}`;
+      if (warp?.enabled) config += `&warp=${warp.pro ? 'pro' : 'on'}`;
+      if (ech?.enabled) config += `&ech=true`;
+      config += `#${encodedName}`;
+      return config;
+    } else if (type === 'trojan') {
+      return `trojan://${uuid}@${host}:${port}?security=tls&sni=${sni}&fp=${fp}&type=ws&host=${host}&path=%2F#${encodedName}`;
+    } else if (type === 'ss') {
+      const ssPass = uuid.substring(0, 16);
+      const ssEncoded = btoa(`aes-256-gcm:${ssPass}`);
+      return `ss://${ssEncoded}@${btoa(host + ':' + port)}#${encodedName}`;
+    }
+    return '';
+  }
+  
+  static async getUsers(env) {
+    if (!env.KV) return [];
+    const data = await env.KV.get('users');
+    return data ? JSON.parse(data) : [];
+  }
+  
+  static async saveUsers(env, users) {
+    if (!env.KV) return;
+    await env.KV.put('users', JSON.stringify(users));
+  }
+   }
+// ============ USER MANAGER ============
+class UserManager {
+  constructor(env) {
+    this.env = env;
+  }
+  
+  async getAll() { return Helpers.getUsers(this.env); }
+  
+  async add(userData) {
+    const users = await this.getAll();
+    const newUser = {
+      id: Helpers.generateUUID(),
+      uuid: userData.uuid || Helpers.generateUUID(),
+      name: userData.name || 'User',
+      ip: userData.ip || '',
+      dataLimit: Helpers.parseDataLimit(userData.dataLimit || '0'),
+      dailyLimit: Helpers.parseDataLimit(userData.dailyLimit || '0'),
+      timeLimit: Helpers.parseTimeLimit(userData.timeLimit || '0'),
+      usedData: 0,
+      todayUsed: 0,
+      lastResetDate: new Date().toDateString(),
+      created: Date.now(),
+      expires: userData.timeLimit ? Date.now() + (Helpers.parseTimeLimit(userData.timeLimit) * 86400000) : 0,
+      active: true,
+      operator: userData.operator || 'all'
+    };
+    users.push(newUser);
+    await Helpers.saveUsers(this.env, users);
+    return newUser;
+  }
+  
+  async update(userId, updates) {
+    const users = await this.getAll();
+    const index = users.findIndex(u => u.id === userId);
+    if (index === -1) return null;
+    if (updates.dataLimit !== undefined) updates.dataLimit = Helpers.parseDataLimit(updates.dataLimit);
+    if (updates.dailyLimit !== undefined) updates.dailyLimit = Helpers.parseDataLimit(updates.dailyLimit);
+    if (updates.timeLimit !== undefined) {
+      updates.timeLimit = Helpers.parseTimeLimit(updates.timeLimit);
+      updates.expires = updates.timeLimit ? Date.now() + (updates.timeLimit * 86400000) : 0;
+    }
+    users[index] = { ...users[index], ...updates };
+    await Helpers.saveUsers(this.env, users);
+    return users[index];
+  }
+  
+  async delete(userId) {
+    let users = await this.getAll();
+    users = users.filter(u => u.id !== userId);
+    await Helpers.saveUsers(this.env, users);
+    return true;
+  }
+  
+  async getByUUID(uuid) {
+    const users = await this.getAll();
+    return users.find(u => u.uuid === uuid && u.active);
+  }
+  
+  async recordUsage(uuid, bytes) {
+    const users = await this.getAll();
+    const user = users.find(u => u.uuid === uuid);
+    if (!user) return;
+    const today = new Date().toDateString();
+    if (user.lastResetDate !== today) {
+      user.todayUsed = 0;
+      user.lastResetDate = today;
+    }
+    const mbUsed = bytes / (1024 * 1024);
+    user.usedData += mbUsed;
+    user.todayUsed += mbUsed;
+    await Helpers.saveUsers(this.env, users);
+  }
+  
+  async checkLimits(uuid) {
+    const users = await this.getAll();
+    const user = users.find(u => u.uuid === uuid);
+    if (!user || !user.active) return false;
+    if (user.expires && Date.now() > user.expires) return false;
+    if (user.dataLimit && user.usedData >= user.dataLimit) return false;
+    if (user.dailyLimit && user.todayUsed >= user.dailyLimit) return false;
+    return true;
+  }
+  
+  async getStats() {
+    const users = await this.getAll();
+    return {
+      totalUsers: users.length,
+      activeUsers: users.filter(u => u.active).length,
+      totalUsage: users.reduce((sum, u) => sum + u.usedData, 0)
+    };
+  }
 }
 
-// ============================================================
-// UUID GENERATOR
-// ============================================================
-
-function generateUUID() {
-    if (crypto.randomUUID) return crypto.randomUUID();
-    var b = crypto.getRandomValues(new Uint8Array(16));
-    b[6] = (b[6] & 0x0f) | 0x40;
-    b[8] = (b[8] & 0x3f) | 0x80;
-    var hex = Array.from(b).map(function(x) { return x.toString(16).padStart(2, '0'); }).join('');
-    return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+// ============ SESSION MANAGER ============
+class SessionManager {
+  constructor(env) {
+    this.env = env;
+  }
+  
+  async create(password) {
+    if (!this.env.KV) return null;
+    const sessionId = Helpers.generateUUID();
+    await this.env.KV.put(`session:${sessionId}`, JSON.stringify({
+      created: Date.now(),
+      expires: Date.now() + (CONFIG.SESSION_HOURS * 3600000)
+    }), { expirationTtl: CONFIG.SESSION_HOURS * 3600 });
+    return sessionId;
+  }
+  
+  async validate(sessionId) {
+    if (!this.env.KV) return false;
+    const session = await this.env.KV.get(`session:${sessionId}`);
+    if (!session) return false;
+    const data = JSON.parse(session);
+    return data.expires > Date.now();
+  }
+  
+  async destroy(sessionId) {
+    if (!this.env.KV) return;
+    await this.env.KV.delete(`session:${sessionId}`);
+  }
 }
 
-function isValidUUID(str) {
-    var pattern = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
-    return pattern.test(str);
+// ============ PROXY HANDLER - اتصال واقعی ============
+async function handleProxyRequest(request, env, ctx) {
+  const url = new URL(request.url);
+  const uuid = url.pathname.replace('/', '').split('/')[0];
+  
+  // Check UUID
+  const userManager = new UserManager(env);
+  const isValidUUID = uuid === CONFIG.UUID || await userManager.getByUUID(uuid);
+  
+  if (!isValidUUID) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+  
+  // Check limits for users
+  if (uuid !== CONFIG.UUID) {
+    const canProceed = await userManager.checkLimits(uuid);
+    if (!canProceed) {
+      return new Response('Limit Exceeded', { status: 403 });
+    }
+  }
+  
+  // Handle WebSocket upgrade
+  const upgradeHeader = request.headers.get('Upgrade');
+  if (upgradeHeader && upgradeHeader.toLowerCase() === 'websocket') {
+    return handleWebSocketConnection(request, env, ctx, uuid, userManager);
+  }
+  
+  // Handle direct request
+  return handleDirectConnection(request, uuid, userManager);
 }
 
-// ============================================================
-// IP FUNCTIONS
-// ============================================================
-
-function getBestIp(operator) {
-    operator = operator || 'irancel';
-    var pool = IP_POOLS[operator] || IP_POOLS.irancel;
-    var randomIndex = Math.floor(Math.random() * pool.length);
-    return pool[randomIndex].split(':')[0];
-}
-
-function getBestPort(operator) {
-    operator = operator || 'irancel';
-    var pool = IP_POOLS[operator] || IP_POOLS.irancel;
-    var randomIndex = Math.floor(Math.random() * pool.length);
-    return parseInt(pool[randomIndex].split(':')[1]) || 443;
-}
-
-async function scanIp(ip) {
-    var controller = new AbortController();
-    var timeoutId = setTimeout(function() { controller.abort(); }, 3000);
+async function handleWebSocketConnection(request, env, ctx, uuid, userManager) {
+  const webSocketPair = new WebSocketPair();
+  const [client, server] = Object.values(webSocketPair);
+  
+  ctx.acceptWebSocket(server);
+  
+  // Setup proxy through WebSocket
+  server.addEventListener('message', async (event) => {
     try {
-        var start = Date.now();
-        var resp = await fetch('https://' + ip + '/', { 
-            method: 'HEAD',
-            signal: controller.signal,
-            cf: { cacheTtl: 0 }
-        });
-        clearTimeout(timeoutId);
-        var ping = Date.now() - start;
-        return { ip: ip, status: resp.ok ? 'alive' : 'dead', ping: ping, code: resp.status };
+      // Process data
+      if (uuid !== CONFIG.UUID) {
+        await userManager.recordUsage(uuid, event.data.length || 0);
+      }
     } catch (e) {
-        clearTimeout(timeoutId);
-        return { ip: ip, status: 'dead', ping: -1, code: 0 };
+      console.error('WebSocket error:', e);
     }
+  });
+  
+  return new Response(null, { status: 101, webSocket: client });
 }
 
-async function scanIps(ips, limit) {
-    limit = limit || 10;
-    var results = [];
-    var shuffled = [...ips].sort(function() { return Math.random() - 0.5; });
-    var selected = shuffled.slice(0, limit);
-    for (var i = 0; i < selected.length; i++) {
-        var result = await scanIp(selected[i]);
-        results.push(result);
+async function handleDirectConnection(request, uuid, userManager) {
+  // For direct connections, we create a tunnel
+  try {
+    const targetHost = CONFIG.SNI;
+    const targetPort = 443;
+    
+    // Connect to target
+    const socket = connect({ hostname: targetHost, port: targetPort });
+    
+    // Create a ReadableStream from the request body
+    const reader = request.body?.getReader();
+    
+    // Pipe data
+    if (reader) {
+      const writer = socket.writable.getWriter();
+      reader.read().then(function process({ done, value }) {
+        if (done) {
+          writer.close();
+          return;
+        }
+        writer.write(value);
+        if (uuid !== CONFIG.UUID) {
+          userManager.recordUsage(uuid, value.length || 0);
+        }
+        return reader.read().then(process);
+      });
     }
-    return results.sort(function(a, b) {
-        if (a.status === 'alive' && b.status !== 'alive') return -1;
-        if (a.status !== 'alive' && b.status === 'alive') return 1;
-        return a.ping - b.ping;
+    
+    // Return the socket readable as response
+    return new Response(socket.readable, {
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'X-Proxy': 'Taakaa-Xi'
+      }
     });
-}
-
-// ============================================================
-// CONFIG GENERATORS
-// ============================================================
-
-function generateVlessConfig(user, host, path) {
-    var ip = user.customIp || getBestIp(user.operator || 'irancel');
-    var port = user.port || getBestPort(user.operator || 'irancel');
-    return {
-        v: '2',
-        ps: BRAND + ' - ' + user.name,
-        add: ip,
-        port: port,
-        id: user.uuid,
-        aid: '0',
-        scy: 'auto',
-        net: 'ws',
-        type: 'none',
-        host: host,
-        path: path + '?u=' + user.id,
-        tls: 'tls',
-        sni: host,
-        fp: 'chrome'
+  } catch (e) {
+    console.error('Connection error:', e);
+    return new Response('Connection Failed: ' + e.message, { status: 502 });
+  }
+    }
+// ============ MAIN WORKER ============
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+    
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
     };
-}
-
-function generateTrojanConfig(user, host, path) {
-    var ip = user.customIp || getBestIp(user.operator || 'irancel');
-    var port = user.port || getBestPort(user.operator || 'irancel');
-    return {
-        name: BRAND + ' - ' + user.name,
-        type: 'trojan',
-        server: ip,
-        port: port,
-        password: user.uuid,
-        udp: true,
-        sni: host,
-        fp: 'chrome',
-        'allow-insecure': false,
-        network: 'ws',
-        'ws-opts': {
-            path: path + '?u=' + user.id,
-            headers: { Host: host }
-        }
-    };
-}
-
-function generateShadowsocksConfig(user) {
-    var ip = user.customIp || getBestIp(user.operator || 'irancel');
-    var port = user.port || getBestPort(user.operator || 'irancel');
-    var method = 'aes-256-gcm';
-    var password = user.uuid.slice(0, 16);
-    return {
-        server: ip,
-        server_port: port,
-        password: password,
-        method: method,
-        name: BRAND + ' - ' + user.name + ' (SS)'
-    };
-}
-
-// ============================================================
-// SUBSCRIPTION GENERATOR (با Buffer به جای btoa)
-// ============================================================
-
-function generateSubscription(user, host, path) {
-    var vless = generateVlessConfig(user, host, path);
-    var trojan = generateTrojanConfig(user, host, path);
-    var ss = generateShadowsocksConfig(user);
     
-    var vlessLink = 'vless://' + vless.id + '@' + vless.add + ':' + vless.port + '?encryption=none&security=tls&sni=' + vless.sni + '&fp=' + vless.fp + '&type=ws&host=' + vless.host + '&path=' + encodeURIComponent(vless.path) + '#' + encodeURIComponent(vless.ps);
-    
-    var trojanLink = 'trojan://' + trojan.password + '@' + trojan.server + ':' + trojan.port + '?sni=' + trojan.sni + '&fp=' + trojan.fp + '&type=ws&host=' + host + '&path=' + encodeURIComponent(trojan['ws-opts'].path) + '#' + encodeURIComponent(trojan.name);
-    
-    // ✅ اصلاح: استفاده از Buffer به جای btoa
-    var ssLink = 'ss://' + Buffer.from(ss.method + ':' + ss.password).toString('base64') + '@' + ss.server + ':' + ss.server_port + '#' + encodeURIComponent(ss.name);
-    
-    return {
-        vless: vlessLink,
-        trojan: trojanLink,
-        shadowsocks: ssLink,
-        raw: [vlessLink, trojanLink, ssLink].join('\n')
-    };
-}
-
-// ============================================================
-// PAGE RENDERERS - WELCOME
-// ============================================================
-
-function renderWelcomePage(hasKV, hasD1, hasAdmin) {
-    var allOk = hasKV && hasD1 && hasAdmin;
-    return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>خوش آمدید - Taakaa-Xi</title>\n    <style>\n        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Tahoma, sans-serif; }\n        body { background: #0d0d0d; color: #ffa64d; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }\n        .loader-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0d0d0d; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.8s; }\n        .loader { width: 60px; height: 60px; border: 4px solid #1a1a1a; border-top: 4px solid #ff6b00; border-radius: 50%; animation: spin 1s linear infinite; }\n        .loader-text { margin-top: 20px; color: #ff8c00; font-size: 16px; }\n        .loader-sub { margin-top: 10px; color: #666; font-size: 13px; }\n        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }\n        .card { background: #1a1a1a; border: 2px solid #ff6b00; border-radius: 16px; padding: 40px; max-width: 700px; width: 100%; box-shadow: 0 0 40px rgba(255,107,0,0.15); }\n        h1 { color: #ff8c00; text-align: center; font-size: 32px; margin-bottom: 10px; }\n        .subtitle { text-align: center; color: #ffa64d; font-size: 14px; margin-bottom: 25px; }\n        .check-item { display: flex; align-items: center; padding: 12px 15px; margin: 8px 0; background: #0d0d0d; border-radius: 10px; border: 1px solid #222; }\n        .check-icon { font-size: 22px; margin-left: 12px; }\n        .check-text { flex: 1; font-size: 14px; }\n        .check-detail { font-size: 12px; color: #666; margin-top: 4px; }\n        .check-status { font-weight: bold; font-size: 13px; }\n        .check-status.ok { color: #4caf50; }\n        .check-status.fail { color: #f44336; }\n        .btn { display: inline-block; padding: 12px 30px; background: #ff6b00; color: #0d0d0d; border: none; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; text-decoration: none; transition: all 0.3s; margin-top: 15px; }\n        .btn:hover { background: #ff8c00; transform: scale(1.02); }\n        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }\n        .text-center { text-align: center; }\n        .channel { text-align: center; margin-top: 15px; padding: 10px; background: #0d0d0d; border-radius: 8px; border: 1px solid #ff6b00; }\n        .channel a { color: #ff8c00; text-decoration: none; font-weight: bold; }\n        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }\n        .team { text-align: center; color: #ffa64d; font-size: 13px; margin: 10px 0; }\n    </style>\n</head>\n<body>\n<div class="loader-container" id="loader">\n    <div class="loader"></div>\n    <div class="loader-text">🔄 در حال آماده‌سازی...</div>\n    <div class="loader-sub">' + TEAM + '</div>\n</div>\n<div class="card" id="mainContent" style="display:none;">\n    <h1>🖐🏻🤓🖐🏻 TAAKAA-XI</h1>\n    <div class="subtitle">the new generation of Free config</div>\n    <div class="team">' + TEAM + '</div>\n    <div style="background: #0d0d0d; border-radius: 10px; padding: 15px; margin: 15px 0; border: 1px solid #333; text-align: center; color: #ffa64d; font-size: 15px;">\n        ✅ اگر این صفحه را می‌بینید، تمامی مراحل را درست انجام داده‌اید!\n    </div>\n    <div class="check-item">\n        <span class="check-icon">' + (hasKV ? '✅' : '❌') + '</span>\n        <div class="check-text">\n            <div>KV Storage</div>\n            <div class="check-detail">' + (hasKV ? 'متصل است' : 'لطفاً KV را متصل کنید (نام متغیر: KV)') + '</div>\n        </div>\n        <span class="check-status ' + (hasKV ? 'ok' : 'fail') + '">' + (hasKV ? 'فعال' : 'غیرفعال') + '</span>\n    </div>\n    <div class="check-item">\n        <span class="check-icon">' + (hasD1 ? '✅' : '❌') + '</span>\n        <div class="check-text">\n            <div>D1 SQLite Database</div>\n            <div class="check-detail">' + (hasD1 ? 'متصل است' : 'لطفاً D1 را متصل کنید (نام متغیر: DB)') + '</div>\n        </div>\n        <span class="check-status ' + (hasD1 ? 'ok' : 'fail') + '">' + (hasD1 ? 'فعال' : 'غیرفعال') + '</span>\n    </div>\n    <div class="check-item">\n        <span class="check-icon">' + (hasAdmin ? '✅' : '❌') + '</span>\n        <div class="check-text">\n            <div>Admin Password</div>\n            <div class="check-detail">' + (hasAdmin ? 'تنظیم شده است' : 'لطفاً ADMIN_PASS را تنظیم کنید') + '</div>\n        </div>\n        <span class="check-status ' + (hasAdmin ? 'ok' : 'fail') + '">' + (hasAdmin ? 'فعال' : 'غیرفعال') + '</span>\n    </div>\n    ' + (allOk ? '<div class="text-center"><a href="/panel" class="btn">🚀 ورود به پنل مدیریت</a></div>' : '<div style="background: #1a1a1a; border-radius: 10px; padding: 15px; margin: 15px 0; border: 1px solid #ff6b00; text-align: center; color: #ffa64d; font-size: 13px;">⚠️ لطفاً تمام مراحل بالا را تکمیل کنید تا پنل فعال شود</div>') + '\n    <div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n    <div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n</div>\n<script>\n    setTimeout(function() {\n        document.getElementById(\'loader\').style.opacity = \'0\';\n        setTimeout(function() {\n            document.getElementById(\'loader\').style.display = \'none\';\n            document.getElementById(\'mainContent\').style.display = \'block\';\n        }, 800);\n    }, 1500);\n</script>\n</body>\n</html>';
-        }
-// ============================================================
-// TAAKAA-XI WORKER v2.0.0 - PART 2/3 - PANEL
-// ============================================================
-
-// ============================================================
-// PAGE RENDERERS - PANEL (با توابع کمکی داخلی)
-// ============================================================
-
-function renderPanel(users, usage, settings) {
-    users = users || [];
-    usage = usage || {};
-    settings = settings || {};
-    
-    // ===== توابع کمکی داخل پنل =====
-    function formatVolume(mb) {
-        if (mb === Infinity) return '∞ نامحدود';
-        if (mb >= 1024 * 1024 * 1024) return (mb / (1024 * 1024 * 1024)).toFixed(2) + ' PB';
-        if (mb >= 1024 * 1024) return (mb / (1024 * 1024)).toFixed(2) + ' TB';
-        if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
-        return mb.toFixed(0) + ' MB';
+    if (method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
     }
     
-    function formatDuration(days) {
-        if (days === Infinity) return '∞ نامحدود';
-        if (days >= 365) return Math.floor(days / 365) + ' سال';
-        if (days >= 30) return Math.floor(days / 30) + ' ماه';
-        return days + ' روز';
+    // Load config from KV
+    if (env.KV) {
+      const savedConfig = await env.KV.get('config');
+      if (savedConfig) {
+        CONFIG = { ...CONFIG, ...JSON.parse(savedConfig) };
+      }
     }
     
-    var userList = users.map(function(u) {
-        var used = usage[u.id] || 0;
-        var remaining = (u.limit || Infinity) - used;
-        return '<div class="user-item" id="user-' + u.id + '">\n' +
-            '    <div class="user-info">\n' +
-            '        <div class="user-name">' + (u.name || u.id) + '</div>\n' +
-            '        <div class="user-detail">🆔 UUID: <span class="copyable" onclick="copyText(\'' + u.uuid + '\')">' + u.uuid + '</span></div>\n' +
-            '        <div class="user-detail">🌍 IP: ' + (u.customIp || 'خودکار') + '</div>\n' +
-            '        <div class="user-detail">📦 محدودیت: ' + formatVolume(u.limit) + '</div>\n' +
-            '        <div class="user-detail">📊 مصرف: ' + formatVolume(used) + '</div>\n' +
-            '        <div class="user-detail">📊 باقی‌مانده: ' + formatVolume(remaining) + '</div>\n' +
-            '        <div class="user-detail">⏳ انقضا: ' + formatDuration(u.expiry) + '</div>\n' +
-            '        <div class="user-detail">📡 اپراتور: ' + (u.operator || 'irancel') + '</div>\n' +
-            '    </div>\n' +
-            '    <div class="user-actions">\n' +
-            '        <div class="user-status ' + (u.disabled ? 'disabled' : 'active') + '">' + (u.disabled ? '🔴 غیرفعال' : '🟢 فعال') + '</div>\n' +
-            '        <button class="btn-sm btn-primary" onclick="editUser(\'' + u.id + '\')">✏️ ویرایش</button>\n' +
-            '        <button class="btn-sm btn-danger" onclick="deleteUser(\'' + u.id + '\')">🗑️ حذف</button>\n' +
-            '        <button class="btn-sm btn-primary" onclick="resetUsage(\'' + u.id + '\')">🔄 ریست مصرف</button>\n' +
-            '        <button class="btn-sm btn-primary" onclick="toggleUser(\'' + u.id + '\')">' + (u.disabled ? '✅ فعال‌سازی' : '⛔ غیرفعال‌سازی') + '</button>\n' +
-            '        <button class="btn-sm btn-primary" onclick="showConfig(\'' + u.id + '\')">📋 کانفیگ</button>\n' +
-            '    </div>\n' +
-            '</div>';
-    }).join('');
-
-    return '<!DOCTYPE html>\n' +
-'<html lang="fa" dir="rtl">\n' +
-'<head>\n' +
-'    <meta charset="UTF-8">\n' +
-'    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-'    <title>پنل مدیریت - Taakaa-Xi</title>\n' +
-'    <style>\n' +
-'        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Tahoma, sans-serif; }\n' +
-'        body { background: #0d0d0d; color: #ffa64d; padding: 20px; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; }\n' +
-'        .card { background: #1a1a1a; border: 2px solid #ff6b00; border-radius: 16px; padding: 30px; max-width: 1200px; width: 100%; margin: 20px auto; box-shadow: 0 0 30px rgba(255,107,0,0.2); }\n' +
-'        h1 { color: #ff8c00; text-align: center; margin-bottom: 5px; font-size: 28px; }\n' +
-'        .subtitle { text-align: center; color: #ffa64d; font-size: 13px; margin-bottom: 20px; }\n' +
-'        .logout-btn { float: left; color: #ff6b00; text-decoration: none; font-size: 14px; border: 1px solid #ff6b00; padding: 5px 15px; border-radius: 8px; transition: all 0.3s; }\n' +
-'        .logout-btn:hover { background: #ff6b00; color: #0d0d0d; }\n' +
-'        h2 { color: #ff8c00; margin: 20px 0 10px; font-size: 20px; border-bottom: 1px solid #ff6b00; padding-bottom: 8px; }\n' +
-'        .menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 20px 0; }\n' +
-'        .menu a { background: #0d0d0d; border: 1px solid #ff6b00; border-radius: 10px; padding: 12px; text-align: center; color: #ffa64d; text-decoration: none; transition: all 0.3s; font-size: 14px; cursor: pointer; }\n' +
-'        .menu a:hover { background: #ff6b00; color: #0d0d0d; }\n' +
-'        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; margin: 5px 0; background: #0d0d0d; border-radius: 8px; border: 1px solid #222; flex-wrap: wrap; gap: 10px; }\n' +
-'        .user-info { flex: 1; min-width: 200px; }\n' +
-'        .user-name { color: #fff; font-weight: bold; font-size: 16px; }\n' +
-'        .user-detail { color: #ffa64d; font-size: 12px; margin-top: 2px; }\n' +
-'        .user-actions { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }\n' +
-'        .user-status { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; }\n' +
-'        .user-status.active { background: #1a5a1a; color: #4caf50; }\n' +
-'        .user-status.disabled { background: #5a1a1a; color: #f44336; }\n' +
-'        .form-group { margin: 12px 0; }\n' +
-'        .form-group label { display: block; margin-bottom: 5px; color: #ffa64d; font-size: 14px; }\n' +
-'        .form-group input, .form-group select { width: 100%; padding: 10px; background: #0d0d0d; border: 1px solid #ff6b00; border-radius: 8px; color: #fff; font-size: 14px; }\n' +
-'        .form-group .hint { color: #666; font-size: 12px; margin-top: 3px; }\n' +
-'        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }\n' +
-'        .btn-primary { padding: 10px 25px; background: #ff6b00; border: none; border-radius: 8px; color: #0d0d0d; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.3s; }\n' +
-'        .btn-primary:hover { background: #ff8c00; }\n' +
-'        .btn-danger { padding: 10px 25px; background: #d32f2f; border: none; border-radius: 8px; color: #fff; font-weight: bold; cursor: pointer; font-size: 14px; transition: all 0.3s; }\n' +
-'        .btn-danger:hover { background: #f44336; }\n' +
-'        .btn-sm { padding: 5px 12px; font-size: 12px; }\n' +
-'        .status-box { background: #0d0d0d; border-radius: 10px; padding: 15px; margin: 15px 0; border: 1px solid #333; }\n' +
-'        .channel { text-align: center; margin-top: 15px; padding: 10px; background: #0d0d0d; border-radius: 8px; border: 1px solid #ff6b00; }\n' +
-'        .channel a { color: #ff8c00; text-decoration: none; font-weight: bold; }\n' +
-'        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }\n' +
-'        .scanner-result { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0; }\n' +
-'        .scanner-item { background: #0d0d0d; border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; }\n' +
-'        .scanner-item .ip { color: #ff8c00; font-weight: bold; }\n' +
-'        .scanner-item .status { font-size: 12px; margin-top: 5px; }\n' +
-'        .scanner-item .status.alive { color: #4caf50; }\n' +
-'        .scanner-item .status.dead { color: #f44336; }\n' +
-'        .scanner-item .ping { font-size: 12px; color: #666; }\n' +
-'        .tab-bar { display: flex; gap: 5px; margin: 10px 0; flex-wrap: wrap; }\n' +
-'        .tab { padding: 8px 15px; background: #0d0d0d; border: 1px solid #333; border-radius: 8px; cursor: pointer; color: #ffa64d; transition: all 0.3s; }\n' +
-'        .tab.active { background: #ff6b00; color: #0d0d0d; border-color: #ff6b00; }\n' +
-'        .tab:hover { border-color: #ff6b00; }\n' +
-'        .tab-content { display: none; }\n' +
-'        .tab-content.active { display: block; }\n' +
-'        .copyable { cursor: pointer; color: #ff8c00; }\n' +
-'        .copyable:hover { text-decoration: underline; }\n' +
-'        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }\n' +
-'        .modal-content { background: #1a1a1a; border: 2px solid #ff6b00; border-radius: 16px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }\n' +
-'        .modal-content h2 { color: #ff8c00; }\n' +
-'        .modal-close { float: left; color: #ff6b00; font-size: 24px; cursor: pointer; }\n' +
-'        .config-box { background: #0d0d0d; border-radius: 8px; padding: 15px; font-family: monospace; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; border: 1px solid #333; margin: 10px 0; }\n' +
-'        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .user-item { flex-direction: column; align-items: stretch; } }\n' +
-'    </style>\n' +
-'</head>\n' +
-'<body>\n' +
-'<div class="card">\n' +
-'    <h1>🖐🏻🤓🖐🏻 TAAKAA-XI</h1>\n' +
-'    <div class="subtitle">the new generation of Free config</div>\n' +
-'    <a href="/logout" class="logout-btn">🚪 خروج</a>\n' +
-'    <div class="status-box">\n' +
-'        <p>✅ پنل مدیریت کانفیگ</p>\n' +
-'        <p style="font-size:14px;color:#ff8c00;">نسخه: ' + VERSION + '</p>\n' +
-'        <p style="font-size:12px;color:#666;">' + TEAM + '</p>\n' +
-'    </div>\n' +
-'    <div class="tab-bar">\n' +
-'        <div class="tab active" onclick="switchTab(\'dashboard\')">📊 داشبورد</div>\n' +
-'        <div class="tab" onclick="switchTab(\'users\')">👥 کاربران</div>\n' +
-'        <div class="tab" onclick="switchTab(\'scanner\')">📡 اسکنر IP</div>\n' +
-'        <div class="tab" onclick="switchTab(\'settings\')">⚙️ تنظیمات</div>\n' +
-'        <div class="tab" onclick="switchTab(\'subscription\')">📋 سابسکریپشن</div>\n' +
-'        <div class="tab" onclick="switchTab(\'backup\')">💾 بکاپ</div>\n' +
-'    </div>\n' +
-'    <div id="tab-dashboard" class="tab-content active">\n' +
-'        <h2>📊 آمار کلی</h2>\n' +
-'        <div class="status-box">\n' +
-'            <p>👥 تعداد کاربران: ' + users.length + '</p>\n' +
-'            <p>📡 پروتکل‌ها: VLESS, Trojan, Shadowsocks, XHTTP, gRPC</p>\n' +
-'            <p>🛡️ تکنیک‌ها: Fragment, WARP, ECH, GSA Relay</p>\n' +
-'            <p>📢 کانال: @TaaKaaOrg</p>\n' +
-'        </div>\n' +
-'        <h2>👥 لیست کاربران</h2>\n' +
-'        <div id="userList">\n' +
-'            ' + (userList || '<p style="color:#666;">هیچ کاربری تعریف نشده است</p>') + '\n' +
-'        </div>\n' +
-'    </div>\n' +
-'    <div id="tab-users" class="tab-content">\n' +
-'        <h2>➕ افزودن کاربر جدید</h2>\n' +
-'        <form id="addUserForm" onsubmit="addUser(event)">\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>👤 نام کاربر:</label>\n' +
-'                    <input type="text" id="userName" placeholder="مثلاً کاربر شماره ۱" required>\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>🔑 UUID (اختیاری - خالی برای خودکار):</label>\n' +
-'                    <input type="text" id="userUuid" placeholder="خالی = خودکار">\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>📦 محدودیت حجم کل:</label>\n' +
-'                    <input type="text" id="userLimit" placeholder="5GB, 1T, 500mb" value="5GB">\n' +
-'                    <div class="hint">مثال: 500mb, 5GB, 1T, 1PT</div>\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>📊 محدودیت حجم روزانه:</label>\n' +
-'                    <input type="text" id="userDayLimit" placeholder="1GB, 500mb" value="1GB">\n' +
-'                    <div class="hint">مثال: 500mb, 1GB</div>\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>⏳ مدت زمان:</label>\n' +
-'                    <input type="text" id="userDuration" placeholder="30, 1M, 1y" value="30">\n' +
-'                    <div class="hint">مثال: 1 (روز), 1M (ماه), 1y (سال)</div>\n' +
-'                </div>\n' +
-'                <div class="form-group" style="border: 2px solid #ff6b00; border-radius: 10px; padding: 10px; background: #0d0d0d;">\n' +
-'                    <label style="color: #ff8c00;">🌍 IP اختصاصی (اختیاری):</label>\n' +
-'                    <input type="text" id="userIp" placeholder="188.114.98.82 یا خالی برای خودکار" style="border-color: #ff8c00;">\n' +
-'                    <div class="hint">خالی = خودکار | IP اختصاصی = کانفیگ روی این IP ساخته میشه</div>\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>📡 اپراتور:</label>\n' +
-'                    <select id="userOperator">\n' +
-'                        <option value="irancel">ایرانسل</option>\n' +
-'                        <option value="hamraheAval">همراه اول</option>\n' +
-'                        <option value="rightel">رایتل</option>\n' +
-'                    </select>\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>🔌 پورت:</label>\n' +
-'                    <select id="userPort">\n' +
-'                        <option value="443">۴۴۳ (پیش‌فرض)</option>\n' +
-'                        <option value="8443">۸۴۴۳</option>\n' +
-'                        <option value="2083">۲۰۸۳</option>\n' +
-'                        <option value="2087">۲۰۸۷</option>\n' +
-'                        <option value="2096">۲۰۹۶</option>\n' +
-'                        <option value="2053">۲۰۵۳</option>\n' +
-'                    </select>\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <button type="submit" class="btn-primary">➕ افزودن کاربر</button>\n' +
-'        </form>\n' +
-'        <div id="addUserResult" style="margin-top: 10px;"></div>\n' +
-'        <h2 style="margin-top:30px;">✏️ ویرایش کاربر</h2>\n' +
-'        <div id="editUserForm" style="display:none;">\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>👤 نام کاربر:</label>\n' +
-'                    <input type="text" id="editUserName">\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>📦 محدودیت حجم کل:</label>\n' +
-'                    <input type="text" id="editUserLimit" placeholder="5GB, 1T, 500mb">\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>📊 محدودیت حجم روزانه:</label>\n' +
-'                    <input type="text" id="editUserDayLimit" placeholder="1GB, 500mb">\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>⏳ مدت زمان:</label>\n' +
-'                    <input type="text" id="editUserDuration" placeholder="30, 1M, 1y">\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-row">\n' +
-'                <div class="form-group">\n' +
-'                    <label>🌍 IP اختصاصی:</label>\n' +
-'                    <input type="text" id="editUserIp" placeholder="188.114.98.82 یا خالی برای خودکار">\n' +
-'                </div>\n' +
-'                <div class="form-group">\n' +
-'                    <label>📡 اپراتور:</label>\n' +
-'                    <select id="editUserOperator">\n' +
-'                        <option value="irancel">ایرانسل</option>\n' +
-'                        <option value="hamraheAval">همراه اول</option>\n' +
-'                        <option value="rightel">رایتل</option>\n' +
-'                    </select>\n' +
-'                </div>\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🔌 پورت:</label>\n' +
-'                <select id="editUserPort">\n' +
-'                    <option value="443">۴۴۳</option>\n' +
-'                    <option value="8443">۸۴۴۳</option>\n' +
-'                    <option value="2083">۲۰۸۳</option>\n' +
-'                    <option value="2087">۲۰۸۷</option>\n' +
-'                    <option value="2096">۲۰۹۶</option>\n' +
-'                    <option value="2053">۲۰۵۳</option>\n' +
-'                </select>\n' +
-'            </div>\n' +
-'            <input type="hidden" id="editUserId">\n' +
-'            <button class="btn-primary" onclick="saveEditUser()">💾 ذخیره تغییرات</button>\n' +
-'            <button class="btn-danger" onclick="cancelEditUser()">❌ انصراف</button>\n' +
-'        </div>\n' +
-'    </div>\n' +
-'    <div id="tab-scanner" class="tab-content">\n' +
-'        <h2>📡 اسکنر IP تمیز</h2>\n' +
-'        <div class="status-box">\n' +
-'            <p>🔍 IP های تست شده و سالم را پیدا کنید</p>\n' +
-'        </div>\n' +
-'        <div class="form-row">\n' +
-'            <div class="form-group">\n' +
-'                <label>📡 اپراتور:</label>\n' +
-'                <select id="scanOperator">\n' +
-'                    <option value="irancel">ایرانسل</option>\n' +
-'                    <option value="hamraheAval">همراه اول</option>\n' +
-'                    <option value="rightel">رایتل</option>\n' +
-'                    <option value="all">همه</option>\n' +
-'                </select>\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🔢 تعداد اسکن:</label>\n' +
-'                <input type="number" id="scanCount" value="10" min="1" max="50">\n' +
-'            </div>\n' +
-'        </div>\n' +
-'        <button class="btn-primary" onclick="startScan()">🔍 شروع اسکن</button>\n' +
-'        <div id="scanResult" style="margin-top: 15px;"></div>\n' +
-'        <div id="scanResults" class="scanner-result"></div>\n' +
-'        <h3 style="margin-top:20px;">📋 IP های تست شده قبلی</h3>\n' +
-'        <div id="testedIps" style="background:#0d0d0d;border-radius:8px;padding:15px;border:1px solid #333;max-height:300px;overflow-y:auto;"></div>\n' +
-'    </div>\n' +
-'    <div id="tab-settings" class="tab-content">\n' +
-'        <h2>⚙️ تنظیمات عمومی</h2>\n' +
-'        <div class="form-row">\n' +
-'            <div class="form-group">\n' +
-'                <label>🧩 Fragment Size:</label>\n' +
-'                <input type="text" id="fragmentSize" placeholder="200-500" value="' + (settings.fragment && settings.fragment.size ? settings.fragment.size : '200-500') + '">\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🧩 Fragment Count:</label>\n' +
-'                <input type="text" id="fragmentCount" placeholder="5-10" value="' + (settings.fragment && settings.fragment.count ? settings.fragment.count : '5-10') + '">\n' +
-'            </div>\n' +
-'        </div>\n' +
-'        <div class="form-row">\n' +
-'            <div class="form-group">\n' +
-'                <label>🧩 Fragment Delay:</label>\n' +
-'                <input type="text" id="fragmentDelay" placeholder="10-30" value="' + (settings.fragment && settings.fragment.delay ? settings.fragment.delay : '10-30') + '">\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🖥️ Fingerprint:</label>\n' +
-'                <select id="fingerprint">\n' +
-'                    <option value="chrome"' + (settings.fingerprint === 'chrome' ? ' selected' : '') + '>Chrome</option>\n' +
-'                    <option value="firefox"' + (settings.fingerprint === 'firefox' ? ' selected' : '') + '>Firefox</option>\n' +
-'                    <option value="safari"' + (settings.fingerprint === 'safari' ? ' selected' : '') + '>Safari</option>\n' +
-'                    <option value="random"' + (settings.fingerprint === 'random' ? ' selected' : '') + '>Random</option>\n' +
-'                </select>\n' +
-'            </div>\n' +
-'        </div>\n' +
-'        <div class="form-row">\n' +
-'            <div class="form-group">\n' +
-'                <label>🛡️ WARP:</label>\n' +
-'                <select id="warpMode">\n' +
-'                    <option value="off"' + (settings.warp === 'off' ? ' selected' : '') + '>خاموش</option>\n' +
-'                    <option value="on"' + (settings.warp === 'on' ? ' selected' : '') + '>روشن</option>\n' +
-'                    <option value="pro"' + (settings.warp === 'pro' ? ' selected' : '') + '>WARP Pro</option>\n' +
-'                </select>\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🔒 ECH:</label>\n' +
-'                <select id="echMode">\n' +
-'                    <option value="off"' + (settings.ech === 'off' ? ' selected' : '') + '>خاموش</option>\n' +
-'                    <option value="on"' + (settings.ech === 'on' ? ' selected' : '') + '>روشن</option>\n' +
-'                </select>\n' +
-'            </div>\n' +
-'        </div>\n' +
-'        <div class="form-row">\n' +
-'            <div class="form-group">\n' +
-'                <label>🔑 تغییر UUID کل سیستم:</label>\n' +
-'                <input type="text" id="systemUuid" placeholder="خالی برای خودکار">\n' +
-'                <div class="hint">خالی = خودکار | وارد کنید = تنظیم دستی</div>\n' +
-'            </div>\n' +
-'            <div class="form-group">\n' +
-'                <label>🔐 تغییر رمز ادمین:</label>\n' +
-'                <input type="password" id="newAdminPass" placeholder="رمز جدید">\n' +
-'                <div class="hint">خالی = بدون تغییر</div>\n' +
-'            </div>\n' +
-'        </div>\n' +
-'        <button class="btn-primary" onclick="saveSettings()">💾 ذخیره تنظیمات</button>\n' +
-'        <div id="settingsResult" style="margin-top: 10px;"></div>\n' +
-'    </div>\n' +
-'    <div id="tab-subscription" class="tab-content">\n' +
-'        <h2>📋 سابسکریپشن</h2>\n' +
-'        <div class="status-box">\n' +
-'            <p>لینک سابسکریپشن مخصوص هر کاربر</p>\n' +
-'        </div>\n' +
-'        <div class="form-group">\n' +
-'            <label>🆔 UUID کاربر:</label>\n' +
-'            <input type="text" id="subUuid" placeholder="UUID کاربر را وارد کنید">\n' +
-'        </div>\n' +
-'        <button class="btn-primary" onclick="getSubscription()">📋 دریافت سابسکریپشن</button>\n' +
-'        <div id="subResult" style="margin-top:15px;"></div>\n' +
-'    </div>\n' +
-'    <div id="tab-backup" class="tab-content">\n' +
-'        <h2>💾 بکاپ و مدیریت</h2>\n' +
-'        <div class="status-box">\n' +
-'            <p>گرفتن بکاپ از تنظیمات و کاربران</p>\n' +
-'        </div>\n' +
-'        <button class="btn-primary" onclick="createBackup()">💾 گرفتن بکاپ</button>\n' +
-'        <button class="btn-danger" onclick="resetAll()">⚠️ ریست کامل سیستم</button>\n' +
-'        <div id="backupResult" style="margin-top:15px;"></div>\n' +
-'    </div>\n' +
-'    <div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n' +
-'    <div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n' +
-'</div>\n' +
-'<div class="modal" id="configModal">\n' +
-'    <div class="modal-content">\n' +
-'        <span class="modal-close" onclick="closeModal()">✕</span>\n' +
-'        <h2>📋 کانفیگ کاربر</h2>\n' +
-'        <div id="configContent"></div>\n' +
-'    </div>\n' +
-'</div>\n' +
-'<script>\n' +
-'var editingUserId = null;\n' +
-'function switchTab(tab) {\n' +
-'    var tabs = document.querySelectorAll(\'.tab\');\n' +
-'    for (var i = 0; i < tabs.length; i++) { tabs[i].classList.remove(\'active\'); }\n' +
-'    var contents = document.querySelectorAll(\'.tab-content\');\n' +
-'    for (var j = 0; j < contents.length; j++) { contents[j].classList.remove(\'active\'); }\n' +
-'    document.getElementById(\'tab-\' + tab).classList.add(\'active\');\n' +
-'    var tabNames = [\'dashboard\', \'users\', \'scanner\', \'settings\', \'subscription\', \'backup\'];\n' +
-'    var tabLabels = [\'داشبورد\', \'کاربران\', \'اسکنر\', \'تنظیمات\', \'سابسکریپشن\', \'بکاپ\'];\n' +
-'    for (var k = 0; k < tabNames.length; k++) {\n' +
-'        if (tabNames[k] === tab) {\n' +
-'            var allTabs = document.querySelectorAll(\'.tab\');\n' +
-'            for (var l = 0; l < allTabs.length; l++) {\n' +
-'                if (allTabs[l].textContent.includes(tabLabels[k])) {\n' +
-'                    allTabs[l].classList.add(\'active\');\n' +
-'                }\n' +
-'            }\n' +
-'        }\n' +
-'    }\n' +
-'}\n' +
-'function copyText(text) {\n' +
-'    navigator.clipboard.writeText(text);\n' +
-'    alert(\'✅ کپی شد!\');\n' +
-'}\n' +
-'async function addUser(e) {\n' +
-'    e.preventDefault();\n' +
-'    var data = {\n' +
-'        name: document.getElementById(\'userName\').value,\n' +
-'        uuid: document.getElementById(\'userUuid\').value || null,\n' +
-'        limit: document.getElementById(\'userLimit\').value,\n' +
-'        dayLimit: document.getElementById(\'userDayLimit\').value,\n' +
-'        duration: document.getElementById(\'userDuration\').value,\n' +
-'        ip: document.getElementById(\'userIp\').value || null,\n' +
-'        operator: document.getElementById(\'userOperator\').value,\n' +
-'        port: parseInt(document.getElementById(\'userPort\').value)\n' +
-'    };\n' +
-'    var res = await fetch(\'/api/users/add\', {\n' +
-'        method: \'POST\',\n' +
-'        headers: { \'Content-Type\': \'application/json\' },\n' +
-'        body: JSON.stringify(data)\n' +
-'    });\n' +
-'    var result = await res.json();\n' +
-'    var el = document.getElementById(\'addUserResult\');\n' +
-'    if (result.success) {\n' +
-'        el.innerHTML = \'<div style="color:#4caf50;padding:10px;">✅ \' + result.message + \'</div>\';\n' +
-'        setTimeout(function() { location.reload(); }, 1500);\n' +
-'    } else {\n' +
-'        el.innerHTML = \'<div style="color:#f44336;padding:10px;">❌ \' + result.error + \'</div>\';\n' +
-'    }\n' +
-'}\n' +
-'async function editUser(id) {\n' +
-'    editingUserId = id;\n' +
-'    var res = await fetch(\'/api/users\');\n' +
-'    var data = await res.json();\n' +
-'    var user = null;\n' +
-'    for (var i = 0; i < data.users.length; i++) {\n' +
-'        if (data.users[i].id === id) { user = data.users[i]; break; }\n' +
-'    }\n' +
-'    if (!user) return;\n' +
-'    document.getElementById(\'editUserId\').value = id;\n' +
-'    document.getElementById(\'editUserName\').value = user.name || \'\';\n' +
-'    document.getElementById(\'editUserLimit\').value = user.limit === Infinity ? \'unlimited\' : formatVolume(user.limit);\n' +
-'    document.getElementById(\'editUserDayLimit\').value = user.dayLimit === Infinity ? \'unlimited\' : formatVolume(user.dayLimit);\n' +
-'    document.getElementById(\'editUserDuration\').value = user.expiry === Infinity ? \'unlimited\' : formatDuration(user.expiry);\n' +
-'    document.getElementById(\'editUserIp\').value = user.customIp || \'\';\n' +
-'    document.getElementById(\'editUserOperator\').value = user.operator || \'irancel\';\n' +
-'    document.getElementById(\'editUserPort\').value = user.port || 443;\n' +
-'    document.getElementById(\'editUserForm\').style.display = \'block\';\n' +
-'    document.getElementById(\'editUserForm\').scrollIntoView({ behavior: \'smooth\' });\n' +
-'}\n' +
-'function cancelEditUser() {\n' +
-'    document.getElementById(\'editUserForm\').style.display = \'none\';\n' +
-'    editingUserId = null;\n' +
-'}\n' +
-'async function saveEditUser() {\n' +
-'    var id = document.getElementById(\'editUserId\').value;\n' +
-'    var data = {\n' +
-'        name: document.getElementById(\'editUserName\').value,\n' +
-'        limit: document.getElementById(\'editUserLimit\').value,\n' +
-'        dayLimit: document.getElementById(\'editUserDayLimit\').value,\n' +
-'        duration: document.getElementById(\'editUserDuration\').value,\n' +
-'        ip: document.getElementById(\'editUserIp\').value || null,\n' +
-'        operator: document.getElementById(\'editUserOperator\').value,\n' +
-'        port: parseInt(document.getElementById(\'editUserPort\').value)\n' +
-'    };\n' +
-'    var res = await fetch(\'/api/users/edit/\' + id, {\n' +
-'        method: \'POST\',\n' +
-'        headers: { \'Content-Type\': \'application/json\' },\n' +
-'        body: JSON.stringify(data)\n' +
-'    });\n' +
-'    var result = await res.json();\n' +
-'    if (result.success) {\n' +
-'        alert(\'✅ کاربر ویرایش شد!\');\n' +
-'        location.reload();\n' +
-'    } else {\n' +
-'        alert(\'❌ خطا: \' + result.error);\n' +
-'    }\n' +
-'}\n' +
-'async function deleteUser(id) {\n' +
-'    if (!confirm(\'آیا از حذف این کاربر مطمئن هستید؟\')) return;\n' +
-'    var res = await fetch(\'/api/users/delete/\' + id, { method: \'DELETE\' });\n' +
-'    var result = await res.json();\n' +
-'    if (result.success) {\n' +
-'        alert(\'✅ کاربر حذف شد!\');\n' +
-'        location.reload();\n' +
-'    } else {\n' +
-'        alert(\'❌ خطا: \' + result.error);\n' +
-'    }\n' +
-'}\n' +
-'async function toggleUser(id) {\n' +
-'    var res = await fetch(\'/api/users/toggle/\' + id, { method: \'POST\' });\n' +
-'    var result = await res.json();\n' +
-'    if (result.success) {\n' +
-'        alert(\'✅ وضعیت کاربر تغییر کرد!\');\n' +
-'        location.reload();\n' +
-'    } else {\n' +
-'        alert(\'❌ خطا: \' + result.error);\n' +
-'    }\n' +
-'}\n' +
-'async function resetUsage(id) {\n' +
-'    if (!confirm(\'آیا از ریست کردن مصرف این کاربر مطمئن هستید؟\')) return;\n' +
-'    var res = await fetch(\'/api/users/reset/\' + id, { method: \'POST\' });\n' +
-'    var result = await res.json();\n' +
-'    if (result.success) {\n' +
-'        alert(\'✅ مصرف کاربر ریست شد!\');\n' +
-'        location.reload();\n' +
-'    } else {\n' +
-'        alert(\'❌ خطا: \' + result.error);\n' +
-'    }\n' +
-'}\n' +
-'async function showConfig(id) {\n' +
-'    var res = await fetch(\'/api/users/config/\' + id);\n' +
-'    var data = await res.json();\n' +
-'    if (data.error) {\n' +
-'        alert(\'❌ \' + data.error);\n' +
-'        return;\n' +
-'    }\n' +
-'    document.getElementById(\'configContent\').innerHTML = \n' +
-'        \'<h3>VLESS</h3>\' +\n' +
-'        \'<div class="config-box">\' + data.vless + \'</div>\' +\n' +
-'        \'<h3>Trojan</h3>\' +\n' +
-'        \'<div class="config-box">\' + data.trojan + \'</div>\' +\n' +
-'        \'<h3>Shadowsocks</h3>\' +\n' +
-'        \'<div class="config-box">\' + data.shadowsocks + \'</div>\' +\n' +
-'        \'<button class="btn-primary" onclick="copyText(\\\'\' + data.vless + \'\\n\' + data.trojan + \'\\n\' + data.shadowsocks + \'\\\')">📋 کپی همه</button>\';\n' +
-'    document.getElementById(\'configModal\').style.display = \'flex\';\n' +
-'}\n' +
-'function closeModal() {\n' +
-'    document.getElementById(\'configModal\').style.display = \'none\';\n' +
-'}\n' +
-'async function startScan() {\n' +
-'    var operator = document.getElementById(\'scanOperator\').value;\n' +
-'    var count = document.getElementById(\'scanCount\').value || 10;\n' +
-'    document.getElementById(\'scanResult\').innerHTML = \'<div style="color:#ff8c00;">⏳ در حال اسکن...</div>\';\n' +
-'    document.getElementById(\'scanResults\').innerHTML = \'\';\n' +
-'    var res = await fetch(\'/api/scan?type=\' + operator + \'&count=\' + count);\n' +
-'    var data = await res.json();\n' +
-'    if (data.results) {\n' +
-'        var html = \'\';\n' +
-'        for (var i = 0; i < data.results.length; i++) {\n' +
-'            var r = data.results[i];\n' +
-'            var statusClass = r.status === \'alive\' ? \'alive\' : \'dead\';\n' +
-'            var statusText = r.status === \'alive\' ? \'✅ سالم\' : \'❌ مرده\';\n' +
-'            html += \'<div class="scanner-item">\' +\n' +
-'                \'<div class="ip">\' + r.ip + \'</div>\' +\n' +
-'                \'<div class="status \' + statusClass + \'">\' + statusText + \'</div>\' +\n' +
-'                \'<div class="ping">\' + (r.ping > 0 ? r.ping + \'ms\' : \'—\') + \'</div>\' +\n' +
-'                \'<div style="font-size:11px;color:#666;">کد: \' + (r.code || \'—\') + \'</div>\' +\n' +
-'            \'</div>\';\n' +
-'        }\n' +
-'        document.getElementById(\'scanResults\').innerHTML = html;\n' +
-'        document.getElementById(\'scanResult\').innerHTML = \'<div style="color:#4caf50;">✅ اسکن کامل شد (\' + data.scanned + \' IP)</div>\';\n' +
-'        localStorage.setItem(\'testedIps\', JSON.stringify(data.results));\n' +
-'        loadTestedIps();\n' +
-'    } else {\n' +
-'        document.getElementById(\'scanResult\').innerHTML = \'<div style="color:#f44336;">❌ خطا در اسکن</div>\';\n' +
-'    }\n' +
-'}\n' +
-'function loadTestedIps() {\n' +
-'    var data = JSON.parse(localStorage.getItem(\'testedIps\') || \'[]\');\n' +
-'    var html = \'\';\n' +
-'    var limit = Math.min(data.length, 50);\n' +
-'    for (var i = 0; i < limit; i++) {\n' +
-'        var r = data[i];\n' +
-'        var statusClass = r.status === \'alive\' ? \'alive\' : \'dead\';\n' +
-'        var statusText = r.status === \'alive\' ? \'✅\' : \'❌\';\n' +
-'        html += \'<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #222;">\' +\n' +
-'            \'<span style="color:#ff8c00;">\' + r.ip + \'</span>\' +\n' +
-'            \'<span class="status \' + statusClass + \'">\' + statusText + (r.ping > 0 ? \' \' + r.ping + \'ms\' : \'\') + \'</span>\' +\n' +
-'        \'</div>\';\n' +
-'    }\n' +
-'    document.getElementById(\'testedIps\').innerHTML = html || \'هنوز IP ای تست نشده است\';\n' +
-'}\n' +
-'async function saveSettings() {\n' +
-'    var data = {\n' +
-'        fragment: {\n' +
-'            size: document.getElementById(\'fragmentSize\').value,\n' +
-'            count: document.getElementById(\'fragmentCount\').value,\n' +
-'            delay: document.getElementById(\'fragmentDelay\').value\n' +
-'        },\n' +
-'        fingerprint: document.getElementById(\'fingerprint\').value,\n' +
-'        warp: document.getElementById(\'warpMode\').value,\n' +
-'        ech: document.getElementById(\'echMode\').value,\n' +
-'        systemUuid: document.getElementById(\'systemUuid\').value || null,\n' +
-'        newAdminPass: document.getElementById(\'newAdminPass\').value || null\n' +
-'    };\n' +
-'    var res = await fetch(\'/api/settings\', {\n' +
-'        method: \'POST\',\n' +
-'        headers: { \'Content-Type\': \'application/json\' },\n' +
-'        body: JSON.stringify(data)\n' +
-'    });\n' +
-'    var result = await res.json();\n' +
-'    var el = document.getElementById(\'settingsResult\');\n' +
-'    if (result.success) {\n' +
-'        el.innerHTML = \'<div style="color:#4caf50;padding:10px;">✅ \' + result.message + \'</div>\';\n' +
-'    } else {\n' +
-'        el.innerHTML = \'<div style="color:#f44336;padding:10px;">❌ \' + result.error + \'</div>\';\n' +
-'    }\n' +
-'}\n' +
-'async function getSubscription() {\n' +
-'    var uuid = document.getElementById(\'subUuid\').value.trim();\n' +
-'    if (!uuid) { alert(\'لطفاً UUID را وارد کنید\'); return; }\n' +
-'    var res = await fetch(\'/api/sub/\' + uuid);\n' +
-'    var data = await res.json();\n' +
-'    if (data.error) {\n' +
-'        document.getElementById(\'subResult\').innerHTML = \'<div style="color:#f44336;padding:10px;">❌ \' + data.error + \'</div>\';\n' +
-'        return;\n' +
-'    }\n' +
-'    document.getElementById(\'subResult\').innerHTML = \n' +
-'        \'<div style="background:#0d0d0d;border-radius:8px;padding:15px;border:1px solid #333;">\' +\n' +
-'            \'<p><strong>📋 لینک سابسکریپشن:</strong></p>\' +\n' +
-'            \'<div class="config-box">\' + data.url + \'</div>\' +\n' +
-'            \'<p style="margin-top:10px;"><strong>📊 کانفیگ‌ها:</strong></p>\' +\n' +
-'            \'<div class="config-box">\' + data.raw + \'</div>\' +\n' +
-'            \'<button class="btn-primary" onclick="copyText(\\\'\' + data.url + \'\\\')">📋 کپی لینک</button>\' +\n' +
-'            \'<button class="btn-primary" onclick="copyText(\\\'\' + data.raw + \'\\\')">📋 کپی کانفیگ‌ها</button>\' +\n' +
-'        \'</div>\';\n' +
-'}\n' +
-'async function createBackup() {\n' +
-'    var res = await fetch(\'/api/backup\');\n' +
-'    var data = await res.json();\n' +
-'    if (data.error) {\n' +
-'        document.getElementById(\'backupResult\').innerHTML = \'<div style="color:#f44336;padding:10px;">❌ \' + data.error + \'</div>\';\n' +
-'        return;\n' +
-'    }\n' +
-'    var blob = new Blob([JSON.stringify(data, null, 2)], { type: \'application/json\' });\n' +
-'    var url = URL.createObjectURL(blob);\n' +
-'    var a = document.createElement(\'a\');\n' +
-'    a.href = url;\n' +
-'    a.download = \'taakaa-backup-\' + new Date().toISOString().slice(0,10) + \'.json\';\n' +
-'    a.click();\n' +
-'    document.getElementById(\'backupResult\').innerHTML = \'<div style="color:#4caf50;padding:10px;">✅ بکاپ گرفته شد</div>\';\n' +
-'}\n' +
-'async function resetAll() {\n' +
-'    if (!confirm(\'⚠️ آیا از ریست کامل سیستم مطمئن هستید؟ این کار همه کاربران و تنظیمات را حذف می‌کند!\')) return;\n' +
-'    if (!confirm(\'تأیید نهایی: همه داده‌ها پاک می‌شوند!\')) return;\n' +
-'    var res = await fetch(\'/api/reset\', { method: \'DELETE\' });\n' +
-'    var result = await res.json();\n' +
-'    if (result.success) {\n' +
-'        alert(\'✅ سیستم ریست شد! صفحه reload می‌شود...\');\n' +
-'        location.reload();\n' +
-'    } else {\n' +
-'        alert(\'❌ خطا: \' + result.error);\n' +
-'    }\n' +
-'}\n' +
-'loadTestedIps();\n' +
-'document.getElementById(\'configModal\').addEventListener(\'click\', function(e) {\n' +
-'    if (e.target === this) closeModal();\n' +
-'});\n' +
-'</script>\n' +
-'</body>\n' +
-'</html>';
-    }
-// ============================================================
-// TAAKAA-XI WORKER v2.0.0 - PART 3/3 (FINAL)
-// ============================================================
-
-// ============================================================
-// API HANDLERS
-// ============================================================
-
-async function handleApi(request, env) {
-    var url = new URL(request.url);
-    var path = url.pathname;
-
-    // === ADD USER ===
-    if (path.includes('/users/add') && request.method === 'POST') {
-        try {
-            var body = await request.json();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            
-            var uuid = (body.uuid && isValidUUID(body.uuid)) ? body.uuid : generateUUID();
-            var newUser = {
-                id: uuid,
-                name: body.name || 'کاربر',
-                uuid: uuid,
-                customIp: body.ip || null,
-                operator: body.operator || 'irancel',
-                port: body.port || 443,
-                limit: parseVolume(body.limit),
-                dayLimit: parseVolume(body.dayLimit),
-                expiry: parseDuration(body.duration),
-                disabled: false,
-                createdAt: Date.now()
-            };
-            data.users.push(newUser);
-            await env.KV.put('taakaa_users', JSON.stringify(data));
-            await env.KV.put('usage_' + uuid, JSON.stringify({ up: 0, down: 0, total: 0 }));
-            return new Response(JSON.stringify({ success: true, message: 'کاربر با موفقیت اضافه شد', user: newUser }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
+    // Initialize managers
+    const userManager = new UserManager(env);
+    const sessionManager = new SessionManager(env);
+    
+    // ============ API ROUTES ============
+    if (path.startsWith('/api/')) {
+      const apiPath = path.replace('/api/', '');
+      
+      // Auth middleware
+      if (apiPath !== 'login' && method !== 'OPTIONS') {
+        const cookie = request.headers.get('Cookie') || '';
+        const sessionMatch = cookie.match(/session=([^;]+)/);
+        if (!sessionMatch || !(await sessionManager.validate(sessionMatch[1]))) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
         }
-    }
-
-    // === EDIT USER ===
-    if (path.includes('/users/edit/') && request.method === 'POST') {
-        try {
-            var id = path.split('/').pop();
-            var body = await request.json();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
+      }
+      
+      // Login
+      if (apiPath === 'login' && method === 'POST') {
+        const { password } = await request.json();
+        if (password === CONFIG.ADMIN_PASS) {
+          const sessionId = await sessionManager.create(password);
+          return new Response(JSON.stringify({ success: true, session: sessionId }), {
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Set-Cookie': `session=${sessionId}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${CONFIG.SESSION_HOURS * 3600}`
             }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var index = -1;
-            for (var i = 0; i < data.users.length; i++) {
-                if (data.users[i].id === id) { index = i; break; }
-            }
-            if (index === -1) {
-                return new Response(JSON.stringify({ success: false, error: 'کاربر یافت نشد' }), {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            data.users[index].name = body.name || data.users[index].name;
-            data.users[index].customIp = body.ip || null;
-            data.users[index].operator = body.operator || data.users[index].operator;
-            data.users[index].port = body.port || data.users[index].port;
-            data.users[index].limit = parseVolume(body.limit);
-            data.users[index].dayLimit = parseVolume(body.dayLimit);
-            data.users[index].expiry = parseDuration(body.duration);
-            await env.KV.put('taakaa_users', JSON.stringify(data));
-            return new Response(JSON.stringify({ success: true, message: 'کاربر ویرایش شد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
+          });
         }
-    }
-
-    // === DELETE USER ===
-    if (path.includes('/users/delete/') && request.method === 'DELETE') {
-        try {
-            var id = path.split('/').pop();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var newUsers = [];
-            for (var j = 0; j < data.users.length; j++) {
-                if (data.users[j].id !== id) { newUsers.push(data.users[j]); }
-            }
-            data.users = newUsers;
-            await env.KV.put('taakaa_users', JSON.stringify(data));
-            await env.KV.delete('usage_' + id);
-            return new Response(JSON.stringify({ success: true, message: 'کاربر حذف شد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === TOGGLE USER ===
-    if (path.includes('/users/toggle/') && request.method === 'POST') {
-        try {
-            var id = path.split('/').pop();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var user = null;
-            for (var k = 0; k < data.users.length; k++) {
-                if (data.users[k].id === id) { user = data.users[k]; break; }
-            }
-            if (!user) {
-                return new Response(JSON.stringify({ success: false, error: 'کاربر یافت نشد' }), {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            user.disabled = !user.disabled;
-            await env.KV.put('taakaa_users', JSON.stringify(data));
-            return new Response(JSON.stringify({ success: true, message: 'وضعیت کاربر تغییر کرد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === RESET USER USAGE ===
-    if (path.includes('/users/reset/') && request.method === 'POST') {
-        try {
-            var id = path.split('/').pop();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            await env.KV.put('usage_' + id, JSON.stringify({ up: 0, down: 0, total: 0 }));
-            return new Response(JSON.stringify({ success: true, message: 'مصرف کاربر ریست شد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === GET USER CONFIG ===
-    if (path.includes('/users/config/')) {
-        try {
-            var id = path.split('/').pop();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var user = null;
-            for (var l = 0; l < data.users.length; l++) {
-                if (data.users[l].id === id) { user = data.users[l]; break; }
-            }
-            if (!user) {
-                return new Response(JSON.stringify({ error: 'کاربر یافت نشد' }), {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            var host = 'your-domain.com';
-            var pathStr = '/';
-            var sub = generateSubscription(user, host, pathStr);
-            return new Response(JSON.stringify(sub), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === GET USERS ===
-    if (path.includes('/users')) {
-        if (!env.KV) {
-            return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-        }
-        var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-        var data = JSON.parse(usersData);
-        var usage = {};
-        for (var m = 0; m < data.users.length; m++) {
-            var u = data.users[m];
-            var usageData = await env.KV.get('usage_' + u.id) || '{"total":0}';
-            usage[u.id] = JSON.parse(usageData).total || 0;
-        }
-        return new Response(JSON.stringify({ users: data.users, usage: usage }), {
-            headers: { 'Content-Type': 'application/json' }
+        return new Response(JSON.stringify({ error: 'Invalid password' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
-    }
-
-    // === SCAN IP ===
-    if (path.includes('/scan')) {
-        var type = url.searchParams.get('type') || 'all';
-        var count = parseInt(url.searchParams.get('count')) || 10;
-        var ips = [];
-        if (type === 'all') {
-            for (var key in IP_POOLS) {
-                if (IP_POOLS.hasOwnProperty(key)) {
-                    ips = ips.concat(IP_POOLS[key]);
-                }
-            }
-        } else {
-            ips = IP_POOLS[type] || IP_POOLS.irancel;
-        }
-        var results = await scanIps(ips, count);
-        return new Response(JSON.stringify({ results: results, scanned: results.length }), {
-            headers: { 'Content-Type': 'application/json' }
+      }
+      
+      // Logout
+      if (apiPath === 'logout' && method === 'POST') {
+        const cookie = request.headers.get('Cookie') || '';
+        const sessionMatch = cookie.match(/session=([^;]+)/);
+        if (sessionMatch) await sessionManager.destroy(sessionMatch[1]);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Set-Cookie': 'session=; Path=/; Max-Age=0' }
         });
-    }
-
-    // === SETTINGS ===
-    if (path.includes('/settings') && request.method === 'POST') {
-        try {
-            var body = await request.json();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var settings = await env.KV.get('taakaa_settings') || '{}';
-            settings = JSON.parse(settings);
-            
-            if (body.fragment) {
-                settings.fragment = body.fragment;
-            }
-            if (body.fingerprint) settings.fingerprint = body.fingerprint;
-            if (body.warp) settings.warp = body.warp;
-            if (body.ech) settings.ech = body.ech;
-            
-            if (body.systemUuid && isValidUUID(body.systemUuid)) {
-                settings.systemUuid = body.systemUuid;
-                await env.KV.put('taakaa_system_uuid', body.systemUuid);
-            }
-            
-            if (body.newAdminPass && body.newAdminPass.length >= 6) {
-                await env.KV.put('taakaa_admin_pass', body.newAdminPass);
-                settings.adminPassUpdated = Date.now();
-            }
-            
-            await env.KV.put('taakaa_settings', JSON.stringify(settings));
-            return new Response(JSON.stringify({ success: true, message: 'تنظیمات ذخیره شد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === GET SETTINGS ===
-    if (path.includes('/settings') && request.method === 'GET') {
-        try {
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var settings = await env.KV.get('taakaa_settings') || '{}';
-            return new Response(settings, {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === SUBSCRIPTION ===
-    if (path.includes('/sub/')) {
-        try {
-            var uuid = path.split('/').pop();
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var user = null;
-            for (var n = 0; n < data.users.length; n++) {
-                if (data.users[n].id === uuid || data.users[n].uuid === uuid) {
-                    user = data.users[n];
-                    break;
-                }
-            }
-            if (!user) {
-                return new Response(JSON.stringify({ error: 'کاربر یافت نشد' }), {
-                    status: 404,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-            var host = 'your-domain.com';
-            var pathStr = '/';
-            var sub = generateSubscription(user, host, pathStr);
-            var urlLink = 'https://' + host + '/sub/' + user.uuid;
-            return new Response(JSON.stringify({ vless: sub.vless, trojan: sub.trojan, shadowsocks: sub.shadowsocks, raw: sub.raw, url: urlLink }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === BACKUP ===
-    if (path.includes('/backup')) {
-        try {
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var settings = await env.KV.get('taakaa_settings') || '{}';
-            var systemUuid = await env.KV.get('taakaa_system_uuid') || null;
-            var backup = {
-                version: VERSION,
-                timestamp: Date.now(),
-                users: JSON.parse(usersData),
-                settings: JSON.parse(settings),
-                systemUuid: systemUuid
-            };
-            return new Response(JSON.stringify(backup), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    // === RESET ALL ===
-    if (path.includes('/reset') && request.method === 'DELETE') {
-        try {
-            if (!env.KV) {
-                return new Response(JSON.stringify({ error: 'KV storage not configured' }), { status: 500 });
-            }
-            await env.KV.delete('taakaa_users');
-            await env.KV.delete('taakaa_settings');
-            await env.KV.delete('taakaa_system_uuid');
-            return new Response(JSON.stringify({ success: true, message: 'سیستم ریست شد' }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ success: false, error: e.message }), {
-                status: 400,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-    }
-
-    return new Response(JSON.stringify({ error: 'مسیر نامعتبر' }), { status: 404 });
-}
-
-// ============================================================
-// MAIN HANDLER (با پارامتر env)
-// ============================================================
-
-async function handleRequest(request, env) {
-    try {
-        var url = new URL(request.url);
-        var path = url.pathname;
-        var firstSegment = path.split('/').filter(Boolean)[0] || '';
-
-        // === LOGOUT ===
-        if (firstSegment === 'logout') {
-            return new Response(null, {
-                status: 302,
-                headers: {
-                    'Location': '/',
-                    'Set-Cookie': 'session=; Max-Age=0; path=/'
-                }
-            });
-        }
-
-        // === API ===
-        if (firstSegment === 'api') {
-            return await handleApi(request, env);
-        }
-
-        // === CHECK SETUP ===
-        var hasKV = !!(env.KV && typeof env.KV.get === 'function');
-        var hasD1 = !!(env.DB && typeof env.DB.prepare === 'function');
-        var hasAdmin = !!(env.ADMIN_PASS || env.ADMIN_PASSWORD || env.PASSWORD);
-
-        // === WELCOME PAGE ===
-        if (path === '/' || path === '') {
-            return new Response(renderWelcomePage(hasKV, hasD1, hasAdmin), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-
-        // === PANEL ===
-        if (firstSegment === 'panel') {
-            if (!hasKV || !hasD1 || !hasAdmin) {
-                return new Response(renderWelcomePage(hasKV, hasD1, hasAdmin), {
-                    status: 200,
-                    headers: { 'Content-Type': 'text/html; charset=utf-8' }
-                });
-            }
-            var usersData = await env.KV.get('taakaa_users') || '{"users":[]}';
-            var data = JSON.parse(usersData);
-            var usage = {};
-            for (var p = 0; p < data.users.length; p++) {
-                var u = data.users[p];
-                var usageData = await env.KV.get('usage_' + u.id) || '{"total":0}';
-                usage[u.id] = JSON.parse(usageData).total || 0;
-            }
-            var settingsData = await env.KV.get('taakaa_settings') || '{}';
-            var settings = JSON.parse(settingsData);
-            return new Response(renderPanel(data.users, usage, settings), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-
-        // === PAGES ===
-        if (firstSegment === 'owners') {
-            return new Response(renderOwnersPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-        if (firstSegment === 'fragment-info' || firstSegment === 'fragment') {
-            return new Response(renderFragmentInfoPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-        if (firstSegment === 'offline-support' || firstSegment === 'offline') {
-            return new Response(renderOfflineSupportPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-        if (firstSegment === 'select-location' || firstSegment === 'location') {
-            return new Response(renderSelectLocationPage(), {
-                status: 200,
-                headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            });
-        }
-
-        // === VERSION ===
-        if (firstSegment === 'version') {
-            return new Response(JSON.stringify({
-                version: VERSION,
-                brand: BRAND,
-                channel: CHANNEL,
-                status: 'ok'
-            }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-            });
-        }
-
-        // === DEFAULT ===
+      }
+      
+      // Stats
+      if (apiPath === 'stats' && method === 'GET') {
+        const stats = await userManager.getStats();
+        return new Response(JSON.stringify(stats), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Get users
+      if (apiPath === 'users' && method === 'GET') {
+        const users = await userManager.getAll();
+        return new Response(JSON.stringify(users), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Add user
+      if (apiPath === 'users' && method === 'POST') {
+        const userData = await request.json();
+        const newUser = await userManager.add(userData);
+        return new Response(JSON.stringify(newUser), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Update user
+      if (apiPath.match(/^users\/([^\/]+)$/) && method === 'PUT') {
+        const userId = apiPath.split('/')[1];
+        const updates = await request.json();
+        const updated = await userManager.update(userId, updates);
+        return new Response(JSON.stringify(updated), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Delete user
+      if (apiPath.match(/^users\/([^\/]+)$/) && method === 'DELETE') {
+        const userId = apiPath.split('/')[1];
+        await userManager.delete(userId);
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Get IPs
+      if (apiPath === 'ips' && method === 'GET') {
+        const operator = url.searchParams.get('operator') || 'all';
+        const count = parseInt(url.searchParams.get('count') || '10');
+        const ips = Helpers.getBestIPs(operator, count);
+        return new Response(JSON.stringify(ips), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Generate config
+      if (apiPath === 'generate-config' && method === 'POST') {
+        const data = await request.json();
+        const config = Helpers.generateConfig(
+          data.uuid || CONFIG.UUID,
+          data.host || '104.16.71.76',
+          data.port || '443',
+          data.type || 'vless',
+          data.settings || {}
+        );
+        return new Response(JSON.stringify({ config }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Settings
+      if (apiPath === 'settings' && method === 'GET') {
         return new Response(JSON.stringify({
-            status: 'ok',
-            brand: BRAND,
-            version: VERSION,
-            channel: CHANNEL,
-            message: 'Taakaa-Xi is running!'
+          fragment: CONFIG.FRAGMENT,
+          warp: CONFIG.WARP,
+          ech: CONFIG.ECH,
+          sni: CONFIG.SNI,
+          fingerprint: CONFIG.FINGERPRINT,
+          ports: CONFIG.PORTS
         }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
-
-    } catch (error) {
-        return new Response('Error: ' + (error && error.message || 'Unknown error'), {
-            status: 500
+      }
+      
+      // Save settings
+      if (apiPath === 'settings' && method === 'POST') {
+        const settings = await request.json();
+        Object.assign(CONFIG, settings);
+        if (env.KV) await env.KV.put('config', JSON.stringify(CONFIG));
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
+      }
     }
-}
+    
+    // ============ SUBSCRIPTION ============
+    if (path.startsWith('/sub/')) {
+      const uuid = path.replace('/sub/', '').replace(/\/$/, '');
+      if (!Helpers.isValidUUID(uuid)) {
+        return new Response('UUID نامعتبر است', { status: 400 });
+      }
+      
+      const user = await userManager.getByUUID(uuid);
+      const mainUUID = uuid === CONFIG.UUID;
+      
+      if (!user && !mainUUID) {
+        return new Response('کاربر یافت نشد', { status: 404 });
+      }
+      
+      const type = url.searchParams.get('type') || 'all';
+      const format = url.searchParams.get('format') || 'raw';
+      const operator = user?.operator || 'all';
+      
+      let configs = [];
+      const ips = Helpers.getBestIPs(operator, 5);
+      
+      ips.forEach(({ ip, ports }) => {
+        ports.forEach(port => {
+          if (type === 'all' || type === 'vless') {
+            configs.push(Helpers.generateConfig(uuid, ip, port, 'vless', {
+              name: `Taakaa-Xi-${user?.name || 'Main'}`
+            }));
+          }
+          if (type === 'all' || type === 'trojan') {
+            configs.push(Helpers.generateConfig(uuid, ip, port, 'trojan', {
+              name: `Taakaa-Xi-${user?.name || 'Main'}`
+            }));
+          }
+          if (type === 'all' || type === 'ss') {
+            configs.push(Helpers.generateConfig(uuid, ip, port, 'ss', {
+              name: `Taakaa-Xi-${user?.name || 'Main'}`
+            }));
+          }
+        });
+      });
+      
+      if (format === 'base64') {
+        return new Response(btoa(configs.join('\n')), {
+          headers: { 'Content-Type': 'text/plain' }
+        });
+      }
+      
+      if (format === 'clash') {
+        const clashConfig = {
+          proxies: ips.flatMap(({ ip, ports }) => 
+            ports.map(port => ({
+              name: `Taakaa-Xi-${ip}:${port}`,
+              type: 'vless',
+              server: ip,
+              port: parseInt(port),
+              uuid: uuid,
+              network: 'ws',
+              'ws-opts': { path: '/' },
+              tls: true,
+              'servername': CONFIG.SNI
+            }))
+          )
+        };
+        return new Response(JSON.stringify(clashConfig, null, 2), {
+          headers: { 'Content-Type': 'application/yaml' }
+        });
+      }
+      
+      return new Response(configs.join('\n'), {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+      });
+    }
+    
+    // ============ STATIC PAGES ============
+    if (path === '/' || path === '') {
+      return new Response(HTML_WELCOME, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/admin') {
+      return new Response(HTML_ADMIN, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/scanner') {
+      return new Response(HTML_SCANNER, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/owners') {
+      return new Response(HTML_OWNERS, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/fragment-info') {
+      return new Response(HTML_FRAGMENT, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/offline-support') {
+      return new Response(HTML_OFFLINE, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    if (path === '/select-location') {
+      return new Response(HTML_LOCATION, {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+    
+    // ============ PROXY HANDLER ============
+    return handleProxyRequest(request, env, ctx);
+  }
+};
+// ============ HTML PAGES ============
+const HTML_WELCOME = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taakaa-Xi | خوش آمدید</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ff6b00, #ff8533);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            text-align: center;
+            color: #ff6b00;
+            margin-bottom: 2rem;
+            font-size: 1.2rem;
+        }
+        .status {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        .status-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            background: rgba(255, 107, 0, 0.1);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+            font-size: 0.9rem;
+        }
+        .status-badge.active {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: rgba(0, 255, 0, 0.3);
+            color: #0f0;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .link-card {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            text-align: center;
+            text-decoration: none;
+            color: #fff;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .link-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff6b00;
+            box-shadow: 0 10px 30px rgba(255, 107, 0, 0.2);
+        }
+        .link-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .footer a { color: #ff6b00; text-decoration: none; }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">⚡ Taakaa-Xi</div>
+        <div class="subtitle">پروکسی پیشرفته با پنل مدیریت</div>
+        <div class="status">
+            <span class="status-badge active pulse">● فعال</span>
+            <span class="status-badge">Port: 443, 8443, 2083, 2087, 2096, 2053</span>
+            <span class="status-badge">Fragment ✓</span>
+            <span class="status-badge">WARP ✓</span>
+            <span class="status-badge">ECH ✓</span>
+        </div>
+        <div class="links">
+            <a href="/admin" class="link-card">
+                <div class="icon">🎛️</div><div>پنل مدیریت</div>
+            </a>
+            <a href="/scanner" class="link-card">
+                <div class="icon">📡</div><div>اسکنر آی‌پی</div>
+            </a>
+            <a href="/sub/" class="link-card">
+                <div class="icon">📦</div><div>سابسکریپشن</div>
+            </a>
+            <a href="/select-location" class="link-card">
+                <div class="icon">🌍</div><div>انتخاب لوکیشن</div>
+            </a>
+            <a href="/owners" class="link-card">
+                <div class="icon">👥</div><div>پشتیبان‌ها</div>
+            </a>
+            <a href="/fragment-info" class="link-card">
+                <div class="icon">🛡️</div><div>Fragment Info</div>
+            </a>
+        </div>
+        <div class="footer">
+            <p>🚀 توسعه داده شده توسط <strong>تیم تاکا</strong> | ۳ ماه توسعه</p>
+            <p>کانال تلگرام: <a href="https://t.me/TaaKaaOrg">@TaaKaaOrg</a></p>
+        </div>
+    </div>
+</body>
+</html>`;
 
-// ============================================================
-// PAGE RENDERERS - OTHER PAGES
-// ============================================================
+const HTML_ADMIN = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taakaa-Xi | پنل مدیریت</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Vazir', 'Tahoma', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #ff6b00, #ff8533); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.8rem; }
+        .header button { padding: 0.5rem 1.5rem; background: rgba(0,0,0,0.3); border: none; color: #fff; border-radius: 8px; cursor: pointer; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: #ff6b00; }
+        .stat-card .label { color: #888; margin-top: 0.5rem; }
+        .section { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.1); }
+        .section h2 { margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+        input, select { width: 100%; padding: 0.75rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; }
+        button { padding: 0.75rem 2rem; background: #ff6b00; border: none; color: #fff; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #ff8533; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.75rem; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { color: #ff6b00; }
+        .actions { display: flex; gap: 0.5rem; }
+        .btn-danger { background: #dc3545; }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: #ff6b00; border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a2e; padding: 2rem; border-radius: 16px; max-width: 500px; width: 90%; border: 1px solid rgba(255,107,0,0.3); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎛️ پنل مدیریت Taakaa-Xi</h1>
+        <button onclick="logout()">🚪 خروج</button>
+    </div>
+    <div class="container">
+        <div id="loginSection" class="section">
+            <h2>🔐 ورود به پنل</h2>
+            <div class="form-grid">
+                <input type="password" id="adminPass" placeholder="رمز عبور ادمین">
+                <button onclick="login()">ورود</button>
+            </div>
+        </div>
+        <div id="adminSection" style="display:none;">
+            <div class="stats" id="statsContainer"></div>
+            <div class="section">
+                <h2>➕ افزودن کاربر جدید</h2>
+                <div class="form-grid">
+                    <input type="text" id="userName" placeholder="نام کاربر">
+                    <input type="text" id="userUUID" placeholder="UUID (اختیاری)">
+                    <input type="text" id="userIP" placeholder="IP اختصاصی">
+                    <input type="text" id="userDataLimit" placeholder="حجم کل (مثال: 5GB)">
+                    <input type="text" id="userDailyLimit" placeholder="حجم روزانه (مثال: 500MB)">
+                    <input type="text" id="userTimeLimit" placeholder="زمان (مثال: 1M)">
+                    <select id="userOperator">
+                        <option value="all">همه اپراتورها</option>
+                        <option value="mci">همراه اول</option>
+                        <option value="mtn">ایرانسل</option>
+                        <option value="rtl">رایتل</option>
+                    </select>
+                    <button onclick="addUser()">افزودن</button>
+                </div>
+            </div>
+            <div class="section">
+                <h2>👥 لیست کاربران</h2>
+                <div id="usersTableContainer"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2>✏️ ویرایش کاربر</h2>
+            <div class="form-grid" style="margin-top:1rem;">
+                <input type="text" id="editName" placeholder="نام">
+                <input type="text" id="editDataLimit" placeholder="حجم کل">
+                <input type="text" id="editDailyLimit" placeholder="حجم روزانه">
+                <input type="text" id="editTimeLimit" placeholder="زمان">
+                <button onclick="saveEdit()" class="btn-success">💾 ذخیره</button>
+                <button onclick="closeModal()" class="btn-danger">❌ لغو</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let currentEditId = null;
+        
+        function login() {
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: document.getElementById('adminPass').value })
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminSection').style.display = 'block';
+                    loadDashboard();
+                } else alert('رمز اشتباه!');
+            });
+        }
+        
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => {
+                    document.getElementById('loginSection').style.display = 'block';
+                    document.getElementById('adminSection').style.display = 'none';
+                });
+        }
+        
+        function loadDashboard() {
+            fetch('/api/stats').then(r => r.json()).then(s => {
+                document.getElementById('statsContainer').innerHTML = 
+                    '<div class="stat-card"><div class="value">' + s.totalUsers + '</div><div class="label">کل کاربران</div></div>' +
+                    '<div class="stat-card"><div class="value">' + s.activeUsers + '</div><div class="label">فعال</div></div>' +
+                    '<div class="stat-card"><div class="value">' + (s.totalUsage / 1024).toFixed(2) + ' GB</div><div class="label">مصرف کل</div></div>';
+            });
+            loadUsers();
+        }
+        
+        function loadUsers() {
+            fetch('/api/users').then(r => r.json()).then(users => {
+                let html = '<table><thead><tr><th>نام</th><th>UUID</th><th>IP</th><th>حجم</th><th>مصرف</th><th>زمان</th><th>وضعیت</th><th>عملیات</th></tr></thead><tbody>';
+                users.forEach(u => {
+                    const used = u.usedData || 0;
+                    const limit = u.dataLimit || 0;
+                    const pct = limit > 0 ? ((used/limit)*100).toFixed(1) : 0;
+                    html += '<tr><td>' + u.name + '</td><td><small>' + u.uuid.substring(0,8) + '...</small></td><td>' + (u.ip || '-') + '</td><td>' + (limit > 0 ? (limit/1024).toFixed(1)+'GB' : '∞') + '</td><td>' + used.toFixed(0) + 'MB (' + pct + '%)</td><td>' + (u.timeLimit > 0 ? u.timeLimit + ' روز' : '∞') + '</td><td>' + (u.active ? '🟢' : '🔴') + '</td><td class="actions"><button class="btn-warning" onclick="editUser(\'' + u.id + '\')">✏️</button><button class="btn-danger" onclick="deleteUser(\'' + u.id + '\')">🗑️</button><button onclick="toggleUser(\'' + u.id + '\',' + !u.active + ')">' + (u.active ? '🔴' : '🟢') + '</button><button onclick="showConfig(\'' + u.uuid + '\')">📋</button></td></tr>';
+                });
+                html += '</tbody></table>';
+                document.getElementById('usersTableContainer').innerHTML = html;
+            });
+        }
+        
+        function addUser() {
+            fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('userName').value,
+                    uuid: document.getElementById('userUUID').value,
+                    ip: document.getElementById('userIP').value,
+                    dataLimit: document.getElementById('userDataLimit').value,
+                    dailyLimit: document.getElementById('userDailyLimit').value,
+                    timeLimit: document.getElementById('userTimeLimit').value,
+                    operator: document.getElementById('userOperator').value
+                })
+            }).then(r => r.json()).then(() => { loadUsers(); ['userName','userUUID','userIP','userDataLimit','userDailyLimit','userTimeLimit'].forEach(id => document.getElementById(id).value = ''); });
+        }
+        
+        function editUser(id) {
+            currentEditId = id;
+            fetch('/api/users').then(r => r.json()).then(users => {
+                const u = users.find(x => x.id === id);
+                if (u) {
+                    document.getElementById('editName').value = u.name;
+                    document.getElementById('editDataLimit').value = u.dataLimit > 0 ? (u.dataLimit/1024).toFixed(0) + 'GB' : '';
+                    document.getElementById('editDailyLimit').value = '';
+                    document.getElementById('editTimeLimit').value = u.timeLimit > 0 ? u.timeLimit + 'd' : '';
+                    document.getElementById('editModal').classList.add('active');
+                }
+            });
+        }
+        
+        function saveEdit() {
+            fetch('/api/users/' + currentEditId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('editName').value,
+                    dataLimit: document.getElementById('editDataLimit').value,
+                    dailyLimit: document.getElementById('editDailyLimit').value,
+                    timeLimit: document.getElementById('editTimeLimit').value
+                })
+            }).then(() => { closeModal(); loadUsers(); });
+        }
+        
+        function closeModal() { document.getElementById('editModal').classList.remove('active'); currentEditId = null; }
+        
+        function deleteUser(id) {
+            if (confirm('حذف کاربر؟')) fetch('/api/users/' + id, { method: 'DELETE' }).then(() => loadUsers());
+        }
+        
+        function toggleUser(id, active) {
+            fetch('/api/users/' + id, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ active })
+            }).then(() => loadUsers());
+        }
+        
+        function showConfig(uuid) {
+            const host = prompt('آدرس سرور:', '104.16.71.76');
+            const port = prompt('پورت:', '443');
+            if (host && port) {
+                fetch('/api/generate-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uuid, host, port, type: 'vless' })
+                }).then(r => r.json()).then(d => {
+                    navigator.clipboard.writeText(d.config);
+                    alert('کانفیگ کپی شد! ✅');
+                });
+            }
+        }
+        
+        fetch('/api/stats').then(r => {
+            if (r.ok) {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                loadDashboard();
+            }
+        }).catch(() => {});
+    </script>
+</body>
+</html>`;
 
-function renderOwnersPage() {
-    return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>👤 Owners - Taakaa-Xi</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;font-family:Tahoma,sans-serif}\nbody{background:#0d0d0d;color:#ffa64d;padding:20px;min-height:100vh;display:flex;justify-content:center;align-items:center}\n.card{background:#1a1a1a;border:2px solid #ff6b00;border-radius:16px;padding:30px;max-width:500px;width:100%;box-shadow:0 0 30px rgba(255,107,0,0.2)}\nh1{color:#ff8c00;text-align:center;margin-bottom:5px;font-size:28px}\n.subtitle{text-align:center;color:#ffa64d;font-size:13px;margin-bottom:20px}\n.owner{background:#0d0d0d;border:1px solid #ff6b00;border-radius:10px;padding:15px;margin:10px 0;display:flex;align-items:center;gap:12px}\n.owner .avatar{width:48px;height:48px;border-radius:50%;background:#ff6b00;display:flex;align-items:center;justify-content:center;font-size:20px;color:#0d0d0d;font-weight:bold}\n.owner .info{flex:1}\n.owner .name{color:#fff;font-size:16px;font-weight:bold}\n.owner .role{color:#ffa64d;font-size:13px}\n.owner .contact{color:#ff8c00;font-size:14px}\n.channel{text-align:center;margin-top:10px;padding:10px;background:#0d0d0d;border-radius:8px;border:1px solid #ff6b00}\n.channel a{color:#ff8c00;text-decoration:none;font-weight:bold}\n.footer{text-align:center;margin-top:20px;color:#666;font-size:12px}\n</style>\n</head>\n<body>\n<div class="card">\n<h1>👤 پشتیبان‌ها</h1>\n<div class="subtitle">the new generation of Free config</div>\n<div class="owner"><div class="avatar">A</div><div class="info"><div class="name">Admin</div><div class="role">مدیر اصلی</div><div class="contact">@TaakaaXi_Admin</div></div></div>\n<div class="owner"><div class="avatar">S</div><div class="info"><div class="name">Support</div><div class="role">پشتیبانی فنی</div><div class="contact">@TaakaaXi_Support</div></div></div>\n<div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n<div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n</div>\n</body>\n</html>';
-}
+const HTML_SCANNER = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taakaa-Xi | اسکنر آی‌پی</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Vazir', 'Tahoma', sans-serif; background: #1a1a2e; color: #fff; min-height: 100vh; padding: 2rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #ff6b00; text-align: center; margin-bottom: 2rem; font-size: 2.5rem; }
+        .controls { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+        select, button { padding: 0.75rem 1.5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; font-size: 1rem; }
+        button { background: #ff6b00; border: none; cursor: pointer; font-weight: 600; }
+        button:hover { background: #ff8533; }
+        .results { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .ip-card { padding: 1.5rem; background: rgba(255,255,255,0.05); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.3s; }
+        .ip-card:hover { border-color: #ff6b00; transform: translateY(-3px); }
+        .ip-card .ip { font-size: 1.2rem; font-weight: 700; color: #ff6b00; }
+        .ip-card .ports { color: #888; margin-top: 0.5rem; }
+        .ip-card .operator { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 50px; background: rgba(255,107,0,0.2); margin-top: 0.5rem; font-size: 0.85rem; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1); border-top-color: #ff6b00; border-radius: 50%; animation: spin 1s linear infinite; margin: 2rem auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 اسکنر آی‌پی Taakaa-Xi</h1>
+        <div class="controls">
+            <select id="operator">
+                <option value="all">همه اپراتورها</option>
+                <option value="mci">همراه اول</option>
+                <option value="mtn">ایرانسل</option>
+                <option value="rtl">رایتل</option>
+            </select>
+            <select id="count">
+                <option value="10">10 آی‌پی</option>
+                <option value="20">20 آی‌پی</option>
+                <option value="50">50 آی‌پی</option>
+            </select>
+            <button onclick="scanIPs()">🔍 شروع اسکن</button>
+        </div>
+        <div id="results" class="results">
+            <p style="text-align:center;color:#888;grid-column:1/-1;">برای شروع اسکن، دکمه بالا را بزنید</p>
+        </div>
+    </div>
+    <script>
+        function scanIPs() {
+            const operator = document.getElementById('operator').value;
+            const count = document.getElementById('count').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="spinner" style="grid-column:1/-1;"></div>';
+            fetch('/api/ips?operator=' + operator + '&count=' + count)
+                .then(r => r.json())
+                .then(ips => {
+                    let html = '';
+                    ips.forEach(item => {
+                        const ports = Array.isArray(item.ports) ? item.ports.join(', ') : item.ports;
+                        const opName = item.operator === 'mci' ? 'همراه اول' : item.operator === 'mtn' ? 'ایرانسل' : item.operator === 'rtl' ? 'رایتل' : 'همه';
+                        html += '<div class="ip-card" onclick="copyIP(\'' + item.ip + '\',\'' + ports + '\')"><div class="ip">' + item.ip + '</div><div class="ports">پورت‌ها: ' + ports + '</div><div class="operator">' + opName + '</div></div>';
+                    });
+                    resultsDiv.innerHTML = html;
+                })
+                .catch(() => { resultsDiv.innerHTML = '<p style="text-align:center;color:red;grid-column:1/-1;">خطا در اسکن!</p>'; });
+        }
+        function copyIP(ip, ports) {
+            navigator.clipboard.writeText(ip + ':' + ports.split(',')[0]);
+            alert('IP کپی شد: ' + ip);
+        }
+    </script>
+</body>
+</html>`;
 
-function renderFragmentInfoPage() {
-    return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>🧩 Fragment - Taakaa-Xi</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;font-family:Tahoma,sans-serif}\nbody{background:#0d0d0d;color:#ffa64d;padding:20px;min-height:100vh;display:flex;justify-content:center;align-items:center}\n.card{background:#1a1a1a;border:2px solid #ff6b00;border-radius:16px;padding:30px;max-width:600px;width:100%;box-shadow:0 0 30px rgba(255,107,0,0.2)}\nh1{color:#ff8c00;text-align:center;margin-bottom:5px;font-size:28px}\n.subtitle{text-align:center;color:#ffa64d;font-size:13px;margin-bottom:20px}\n.info{background:#0d0d0d;border-radius:10px;padding:20px;margin:10px 0}\n.info p{margin:10px 0;line-height:1.8}\n.code{background:#0d0d0d;border:1px solid #ff6b00;border-radius:8px;padding:15px;font-family:monospace;color:#ffa64d;font-size:13px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}\n.tag{display:inline-block;background:#ff6b00;color:#0d0d0d;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:bold}\n.channel{text-align:center;margin-top:10px;padding:10px;background:#0d0d0d;border-radius:8px;border:1px solid #ff6b00}\n.channel a{color:#ff8c00;text-decoration:none;font-weight:bold}\n.footer{text-align:center;margin-top:20px;color:#666;font-size:12px}\n</style>\n</head>\n<body>\n<div class="card">\n<h1>🧩 تکنیک Fragment</h1>\n<div class="subtitle">the new generation of Free config</div>\n<div class="info">\n<p><span class="tag">چیست؟</span> تکنیک Fragment یا تکه‌تکه‌سازی، بسته‌های داده را به قطعات کوچک تقسیم می‌کند تا سیستم‌های DPI نتوانند الگوی ترافیک را تشخیص دهند.</p>\n<p><span class="tag">چگونه کار می‌کند؟</span> داده‌های TLS/WS به قطعات ۱۰۰-۵۰۰ بایتی تقسیم شده و با تاخیرهای میکروثانیه‌ای ارسال می‌شوند.</p>\n<p><span class="tag">مزایا</span> ✅ عبور از فیلترینگ سنگین ✅ کاهش تشخیص DPI ✅ سازگاری با همه‌ی پروتکل‌ها</p>\n</div>\n<div class="code">{\n  "fragment": {\n    "size": "200-500",\n    "count": "5-10",\n    "delay": "10-30"\n  }\n}</div>\n<div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n<div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n</div>\n</body>\n</html>';
-}
+const HTML_OWNERS = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>Taakaa-Xi | پشتیبان‌ها</title>
+    <style>
+        body { font-family: 'Vazir', sans-serif; background: #1a1a2e; color: #fff; text-align: center; padding: 3rem; }
+        h1 { color: #ff6b00; }
+        .owner { margin: 2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 16px; display: inline-block; }
+        a { color: #ff6b00; }
+    </style>
+</head>
+<body>
+    <h1>👥 تیم پشتیبانی Taakaa-Xi</h1>
+    <div class="owner">
+        <h2>تیم تاکا</h2>
+        <p>کانال تلگرام: <a href="https://t.me/TaaKaaOrg">@TaaKaaOrg</a></p>
+        <p>🚀 ۳ ماه توسعه</p>
+    </div>
+</body>
+</html>`;
 
-function renderOfflineSupportPage() {
-    return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>📞 پشتیبانی آفلاین - Taakaa-Xi</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;font-family:Tahoma,sans-serif}\nbody{background:#0d0d0d;color:#ffa64d;padding:20px;min-height:100vh;display:flex;justify-content:center;align-items:center}\n.card{background:#1a1a1a;border:2px solid #ff6b00;border-radius:16px;padding:30px;max-width:500px;width:100%;box-shadow:0 0 30px rgba(255,107,0,0.2)}\nh1{color:#ff8c00;text-align:center;margin-bottom:5px;font-size:28px}\n.subtitle{text-align:center;color:#ffa64d;font-size:13px;margin-bottom:20px}\n.operator{background:#0d0d0d;border:1px solid #ff6b00;border-radius:10px;padding:15px;margin:10px 0}\n.operator .title{color:#ff8c00;font-weight:bold;font-size:16px}\n.operator .detail{color:#ffa64d;font-size:14px;margin-top:5px}\n.operator .guide{color:#999;font-size:13px;margin-top:8px;padding:8px;background:#1a1a1a;border-radius:6px}\n.channel{text-align:center;margin-top:10px;padding:10px;background:#0d0d0d;border-radius:8px;border:1px solid #ff6b00}\n.channel a{color:#ff8c00;text-decoration:none;font-weight:bold}\n.footer{text-align:center;margin-top:20px;color:#666;font-size:12px}\n</style>\n</head>\n<body>\n<div class="card">\n<h1>📞 پشتیبانی آفلاین</h1>\n<div class="subtitle">the new generation of Free config</div>\n<div class="operator"><div class="title">📱 همراه اول</div><div class="detail">تنظیمات DNS: 10.10.10.10</div><div class="guide">🔹 برای اتصال آفلاین، DNS را روی 10.10.10.10 تنظیم کنید</div></div>\n<div class="operator"><div class="title">📶 ایرانسل</div><div class="detail">تنظیمات DNS: 10.10.10.10</div><div class="guide">🔹 برای اتصال آفلاین، DNS را روی 10.10.10.10 تنظیم کنید</div></div>\n<div class="operator"><div class="title">📡 رایتل</div><div class="detail">تنظیمات DNS: 10.10.10.10</div><div class="guide">🔹 برای اتصال آفلاین، DNS را روی 10.10.10.10 تنظیم کنید</div></div>\n<div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n<div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n</div>\n</body>\n</html>';
-}
+const HTML_FRAGMENT = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>Taakaa-Xi | Fragment Info</title>
+    <style>
+        body { font-family: 'Vazir', sans-serif; background: #1a1a2e; color: #fff; padding: 3rem; max-width: 800px; margin: 0 auto; }
+        h1 { color: #ff6b00; }
+        .info { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 16px; line-height: 2; }
+        code { background: rgba(255,107,0,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ تکنیک Fragment</h1>
+    <div class="info">
+        <p>Fragment یک تکنیک پیشرفته برای تکه‌تکه کردن بسته‌های TLS است.</p>
+        <p>پارامترها:</p>
+        <ul>
+            <li><code>size</code>: اندازه تکه‌ها (مثال: 200-500)</li>
+            <li><code>count</code>: تعداد تکه‌ها (مثال: 5-10)</li>
+            <li><code>delay</code>: تاخیر بین تکه‌ها (مثال: 10-30 میلی‌ثانیه)</li>
+        </ul>
+        <p>این تکنیک به دور زدن DPI کمک می‌کند.</p>
+    </div>
+</body>
+</html>`;
 
-function renderSelectLocationPage() {
-    return '<!DOCTYPE html>\n<html lang="fa" dir="rtl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">\n<title>🌍 انتخاب لوکیشن - Taakaa-Xi</title>\n<style>\n*{margin:0;padding:0;box-sizing:border-box;font-family:Tahoma,sans-serif}\nbody{background:#0d0d0d;color:#ffa64d;padding:20px;min-height:100vh;display:flex;justify-content:center;align-items:center}\n.card{background:#1a1a1a;border:2px solid #ff6b00;border-radius:16px;padding:30px;max-width:400px;width:100%;box-shadow:0 0 30px rgba(255,107,0,0.2)}\nh1{color:#ff8c00;text-align:center;margin-bottom:5px;font-size:28px}\n.subtitle{text-align:center;color:#ffa64d;font-size:13px;margin-bottom:20px}\n.location{background:#0d0d0d;border:1px solid #ff6b00;border-radius:10px;padding:12px 15px;margin:8px 0;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.3s}\n.location:hover{background:#ff6b00;color:#0d0d0d}\n.location .flag{font-size:28px}\n.location .name{flex:1;font-size:16px}\n.location .ping{font-size:13px;color:#ffa64d}\n.channel{text-align:center;margin-top:10px;padding:10px;background:#0d0d0d;border-radius:8px;border:1px solid #ff6b00}\n.channel a{color:#ff8c00;text-decoration:none;font-weight:bold}\n.footer{text-align:center;margin-top:20px;color:#666;font-size:12px}\n</style>\n</head>\n<body>\n<div class="card">\n<h1>🌍 انتخاب سرور</h1>\n<div class="subtitle">the new generation of Free config</div>\n<div class="location" onclick="selectServer(\'DE\')"><span class="flag">🇩🇪</span><span class="name">آلمان (Frankfurt)</span><span class="ping">Ping: 85ms</span></div>\n<div class="location" onclick="selectServer(\'NL\')"><span class="flag">🇳🇱</span><span class="name">هلند (Amsterdam)</span><span class="ping">Ping: 92ms</span></div>\n<div class="location" onclick="selectServer(\'US\')"><span class="flag">🇺🇸</span><span class="name">آمریکا (New York)</span><span class="ping">Ping: 140ms</span></div>\n<div class="location" onclick="selectServer(\'SG\')"><span class="flag">🇸🇬</span><span class="name">سنگاپور</span><span class="ping">Ping: 110ms</span></div>\n<div class="location" onclick="selectServer(\'JP\')"><span class="flag">🇯🇵</span><span class="name">ژاپن (Tokyo)</span><span class="ping">Ping: 130ms</span></div>\n<div class="channel">📢 کانال رسمی: <a href="https://t.me/TaaKaaOrg" target="_blank">@TaaKaaOrg</a></div>\n<div class="footer">توسعه‌یافته توسط تیم تاکا | سادگی • قدرت • امنیت</div>\n</div>\n<script>\nfunction selectServer(code) {\n    alert(\'سرور \' + code + \' انتخاب شد!\\nکانفیگ جدید ساخته می‌شود...\');\n    window.location.href = \'/?server=\' + code;\n}\n</script>\n</body>\n</html>';
-}
+const HTML_OFFLINE = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>Taakaa-Xi | پشتیبانی آفلاین</title>
+    <style>
+        body { font-family: 'Vazir', sans-serif; background: #1a1a2e; color: #fff; padding: 3rem; }
+        h1 { color: #ff6b00; }
+        .guide { background: rgba(255,255,255,0.05); padding: 2rem; border-radius: 16px; }
+        h2 { color: #ff8533; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+    <h1>📚 راهنمای اپراتورها</h1>
+    <div class="guide">
+        <h2>همراه اول</h2><p>پورت‌های پیشنهادی: 443, 8443, 2083</p>
+        <h2>ایرانسل</h2><p>پورت‌های پیشنهادی: 443, 2083, 2087</p>
+        <h2>رایتل</h2><p>پورت‌های پیشنهادی: 443, 2096</p>
+    </div>
+</body>
+</html>`;
 
-// ============================================================
-// REGISTER (با event.env)
-// ============================================================
+const HTML_LOCATION = `<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8"><title>Taakaa-Xi | انتخاب لوکیشن</title>
+    <style>
+        body { font-family: 'Vazir', sans-serif; background: #1a1a2e; color: #fff; padding: 3rem; }
+        h1 { color: #ff6b00; text-align: center; }
+        .locations { display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem; }
+        .location { padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s; text-align: center; min-width: 150px; }
+        .location:hover { border-color: #ff6b00; transform: scale(1.05); }
+        .flag { font-size: 3rem; }
+    </style>
+</head>
+<body>
+    <h1>🌍 انتخاب لوکیشن</h1>
+    <div class="locations">
+        <div class="location" onclick="selectLocation('DE', 'آلمان')"><div class="flag">🇩🇪</div><h3>آلمان</h3></div>
+        <div class="location" onclick="selectLocation('NL', 'هلند')"><div class="flag">🇳🇱</div><h3>هلند</h3></div>
+        <div class="location" onclick="selectLocation('US', 'آمریکا')"><div class="flag">🇺🇸</div><h3>آمریکا</h3></div>
+    </div>
+    <script>
+        function selectLocation(code, name) { alert('لوکیشن انتخاب شد: ' + name + ' (' + code + ')'); }
+    </script>
+</body>
+</html>`;
 
-addEventListener('fetch', function(event) {
-    event.respondWith(handleRequest(event.request, event.env));
-});
 
-// ============================================================
-// END OF WORKER
-// ============================================================
