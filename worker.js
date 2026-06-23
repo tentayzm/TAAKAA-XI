@@ -2175,3 +2175,123 @@ async function serveMaintenancePage(request, url) {
         return await fetch(new Request(targetUrl.toString(), fetchInit));
     } catch (e) { return new Response("Not Found", { status: 404 }); }
 }
+// ============================================================
+// PART 16: EXPORT DEFAULT - ES MODULE FORMAT
+// ============================================================
+
+export default {
+    async fetch(request, env, ctx) {
+        try {
+            const url = new URL(request.url);
+            const path = url.pathname;
+            const hostName = url.hostname;
+            
+            // 1. Initialize D1
+            await d1Init(env);
+            
+            // 2. Load config
+            await loadSysConfig(env);
+            
+            // 3. Route requests
+            // WebSocket
+            if (request.headers.get('Upgrade') === 'websocket') {
+                return await processTelemetryStream(env, ctx);
+            }
+            
+            // API Routes
+            if (path.includes('/api/users')) {
+                return await handleUsersApi(request, env, ctx);
+            }
+            if (path.includes('/api/stats')) {
+                return await handleStatsApi(request, env);
+            }
+            if (path.includes('/api/update')) {
+                return await handleUpdateApi(request, env, ctx);
+            }
+            if (path.includes('/api/auth')) {
+                return await handleAuth(request, hostName, ctx, env);
+            }
+            if (path.includes('/api/sync')) {
+                return await handleConfigSync(request, env, ctx);
+            }
+            if (path.includes('/sync_panel')) {
+                return await handleSyncPanel(request, env, ctx);
+            }
+            
+            // Logs
+            if (path.includes('/api/logs')) {
+                return await handleLogs(request, env);
+            }
+            
+            // Telegram Webhook
+            if (path.includes('/tg')) {
+                return await handleTelegramWebhook(request, env, hostName, ctx);
+            }
+            
+            // Subscription
+            if (url.searchParams.has('sub')) {
+                const targetSub = url.searchParams.get('sub');
+                const format = url.searchParams.get('format') || 'uri';
+                
+                if (format === 'clash') {
+                    const config = await buildClashJsonProfile(hostName, targetSub);
+                    return new Response(JSON.stringify(config), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                if (format === 'singbox') {
+                    const config = await buildSingBoxJsonProfile(hostName, targetSub);
+                    return new Response(JSON.stringify(config), {
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+                if (format === 'yaml') {
+                    const config = await buildYamlProfile(hostName, targetSub);
+                    return new Response(config, {
+                        headers: { 'Content-Type': 'text/yaml' }
+                    });
+                }
+                // Default: URI
+                const config = await buildUriProfile(hostName, targetSub);
+                return new Response(config, {
+                    headers: { 'Content-Type': 'text/plain' }
+                });
+            }
+            
+            // Pages
+            if (path.includes('/scanner')) {
+                return serveScannerPage();
+            }
+            if (path.includes('/subscribe')) {
+                return serveSubscribePage();
+            }
+            if (path.includes('/protocols')) {
+                return serveProtocolsPage();
+            }
+            if (path.includes('/owners')) {
+                return serveOwnersPage();
+            }
+            
+            // Maintenance
+            if (sysConfig.isPaused) {
+                return await serveMaintenancePage(request, url);
+            }
+            
+            // Default: 404
+            return serveNginx404();
+            
+        } catch (error) {
+            console.error('Error:', error);
+            return new Response(
+                JSON.stringify({ 
+                    success: false, 
+                    error: error.message 
+                }),
+                { 
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
+        }
+    }
+};
