@@ -1,29 +1,17 @@
-name = "taakaa-xi"
-main = "worker.js"
-compatibility_date = "2025-01-01"
+name = "taakaa-worker"
+main = "worker (56).js"
+compatibility_date = "2024-03-01"
 
-[[kv_namespaces]]
-binding = "KV"
-id = "YOUR_KV_NAMESPACE_ID"
-
+# D1 Database Binding
 [[d1_databases]]
-binding = "DB"
-database_name = "taakaa-xi-db"
-database_id = "YOUR_D1_DATABASE_ID"
+binding = "TAAKAA_DB"
+database_name = "taakaa-db"
+database_id = "your-database-id-here"
 
+# Environment Variables (اختیاری)
 [vars]
-UUID = "90cd4a77-141a-43c9-991b-08263cfe9c10"
-TR_PASS = "TaakaaSecure2026"
-PROXYIP = "cdn.taakaa.ir"
-ADMIN_PASS = "Tentacion@2026"
-DEFAULT_EXPIRY_DAYS = "30"
-DEFAULT_TRAFFIC_LIMIT = "10"
-RATE_PER_GB = "2500"
-ENABLE_VLESS = "true"
-ENABLE_TROJAN = "true"
-ENABLE_VMESS = "true"
-ENABLE_SHADOWSOCKS = "false"
-ENABLE_FRAGMENT = "true"
-ENABLE_ECH = "true"
-ENABLE_WARP = "true"
-ENABLE_WARP_PRO = "false"
+RELAY_IP = ""
+
+# برای دیباگ (اختیاری)
+[env.production]
+vars = { RELAY_IP = "" }
