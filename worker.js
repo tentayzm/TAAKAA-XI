@@ -1,5 +1,5 @@
 // ============================================================
-// PART 1/12: IMPORTS + CONSTANTS
+// PART 1/15: IMPORTS + CONSTANTS
 // ============================================================
 
 import { connect } from "cloudflare:sockets";
@@ -8,7 +8,6 @@ const CURRENT_VERSION = "2.5.7";
 const APP_NAME = "TaaKaa-Xi PRO";
 const SESSION_NAME = "taakaa_session";
 const DB_NAME = "TAAKAA_DB";
-const CACHE_NAME = "taakaa_offline_cache";
 const DEFAULT_PASSWORD = "taakaa";
 const SALT = "taakaa-salt-v16-pro-2024";
 
@@ -16,7 +15,7 @@ const getAlpha = () => String.fromCharCode(118, 108, 101, 115, 115);
 const getBeta = () => String.fromCharCode(116, 114, 111, 106, 97, 110);
 const getGamma = () => String.fromCharCode(99, 108, 97, 115, 104);
 // ============================================================
-// PART 2/12: UTILITY FUNCTIONS
+// PART 2/15: UTILITY FUNCTIONS
 // ============================================================
 
 const safeBtoa = (str) => {
@@ -32,40 +31,32 @@ const safeBtoa = (str) => {
     }
 };
 
-const offlineCache = {
-    get: (key) => {
-        try {
-            const data = JSON.parse(localStorage.getItem(CACHE_NAME) || "{}");
-            return data[key] || null;
-        } catch { return null; }
-    },
-    set: (key, value) => {
-        try {
-            const data = JSON.parse(localStorage.getItem(CACHE_NAME) || "{}");
-            data[key] = value;
-            localStorage.setItem(CACHE_NAME, JSON.stringify(data));
-        } catch {}
-    },
-    remove: (key) => {
-        try {
-            const data = JSON.parse(localStorage.getItem(CACHE_NAME) || "{}");
-            delete data[key];
-            localStorage.setItem(CACHE_NAME, JSON.stringify(data));
-        } catch {}
-    },
-    clear: () => {
-        try {
-            localStorage.removeItem(CACHE_NAME);
-        } catch {}
-    }
-};
-
 function generateHardwareId(seed) {
-    const h20 = Array.from(new TextEncoder().encode(seed)).map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 20).padEnd(20, "0");
+    const h20 = Array.from(new TextEncoder().encode(seed))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("")
+        .slice(0, 20)
+        .padEnd(20, "0");
     return `${h20.slice(0, 8)}-0000-4000-8000-${h20.slice(-12)}`;
 }
+
+function cmpVersions(a, b) {
+    const strip = v => String(v).replace(/^v/, '').trim();
+    const pa = strip(a).split('.').map(Number);
+    const pb = strip(b).split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        let na = pa[i] || 0, nb = pb[i] || 0;
+        if (na > nb) return 1;
+        if (nb > na) return -1;
+    }
+    return 0;
+}
+
+function getTransportParams(port) {
+    return ["80", "8080", "8880", "2052", "2082", "2086", "2095"].includes(port.toString()) ? "none" : "tls";
+}
 // ============================================================
-// PART 3/12: SYSTEM_DEFAULTS + GLOBAL VARIABLES
+// PART 3/15: SYSTEM_DEFAULTS + GLOBAL VARIABLES
 // ============================================================
 
 const SYSTEM_DEFAULTS = {
@@ -125,38 +116,8 @@ let sysUsageCacheTime = 0;
 let backupIpCache = null;
 let backupIpCacheTime = 0;
 // ============================================================
-// PART 4/12: D1 + DEPLOY FUNCTIONS
+// PART 4/15: D1 FUNCTIONS
 // ============================================================
-
-async function deployWorkerToCloudflare(accountId, apiToken, workerName, code) {
-    let currentBindings = [];
-    try {
-        const settingsRes = await fetch(
-            `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${encodeURIComponent(workerName)}/settings`,
-            { headers: { "Authorization": `Bearer ${apiToken}` } }
-        );
-        const settingsJson = await settingsRes.json();
-        if (settingsJson.success && settingsJson.result?.bindings) {
-            currentBindings = settingsJson.result.bindings;
-        }
-    } catch(e) {}
-
-    const metadata = {
-        main_module: "_worker.js",
-        compatibility_date: "2024-03-01",
-        compatibility_flags: [ "allow_eval_during_startup" ],
-        bindings: currentBindings
-    };
-
-    const form = new FormData();
-    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-    form.append("_worker.js", new Blob([code], { type: "application/javascript+module" }), "_worker.js");
-
-    return await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${encodeURIComponent(workerName)}`,
-        { method: "PUT", headers: { "Authorization": `Bearer ${apiToken}` }, body: form }
-    );
-}
 
 async function d1Init(env) {
     if(env.TAAKAA_DB && !env.TAAKAA_DB_INITIALIZED) {
@@ -194,7 +155,40 @@ async function cachedD1Put(env, key, value) {
     else if (key === "backup_ip") backupIpCacheTime = 0;
 }
 // ============================================================
-// PART 5/12: SHA224 + TROJAN HASH
+// PART 5/15: DEPLOY WORKER TO CLOUDFLARE
+// ============================================================
+
+async function deployWorkerToCloudflare(accountId, apiToken, workerName, code) {
+    let currentBindings = [];
+    try {
+        const settingsRes = await fetch(
+            `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${encodeURIComponent(workerName)}/settings`,
+            { headers: { "Authorization": `Bearer ${apiToken}` } }
+        );
+        const settingsJson = await settingsRes.json();
+        if (settingsJson.success && settingsJson.result?.bindings) {
+            currentBindings = settingsJson.result.bindings;
+        }
+    } catch(e) {}
+
+    const metadata = {
+        main_module: "_worker.js",
+        compatibility_date: "2024-03-01",
+        compatibility_flags: [ "allow_eval_during_startup" ],
+        bindings: currentBindings
+    };
+
+    const form = new FormData();
+    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+    form.append("_worker.js", new Blob([code], { type: "application/javascript+module" }), "_worker.js");
+
+    return await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${encodeURIComponent(workerName)}`,
+        { method: "PUT", headers: { "Authorization": `Bearer ${apiToken}` }, body: form }
+    );
+}
+// ============================================================
+// PART 6/15: SHA224 + TROJAN HASH
 // ============================================================
 
 function sha224Hex(m) {
@@ -237,7 +231,7 @@ function getTrojanHash(uuid) {
     return hash;
 }
 // ============================================================
-// PART 6/12: TRACK USAGE + LOAD CONFIG
+// PART 7/15: TRACK USAGE + LOAD CONFIG
 // ============================================================
 
 function trackUsage(uuid, bytes, env, ctx) {
@@ -354,7 +348,7 @@ async function loadSysConfig(env) {
     sysConfig.customRelay = backupIpCache ?? env.RELAY_IP ?? defaultRelay;
 }
 // ============================================================
-// PART 7/12: CLOUDFLARE + TELEGRAM + LOG
+// PART 8/15: CLOUDFLARE USAGE + TELEGRAM + LOG
 // ============================================================
 
 async function fetchCloudflareUsage(accountId, apiToken) {
@@ -434,7 +428,7 @@ async function logActivity(env, type, detail) {
     } catch (e) {}
 }
 // ============================================================
-// PART 8/12: HANDLERS (LOGS + USERS + STATS + UPDATE)
+// PART 9/15: HANDLERS (LOGS + USERS + STATS + UPDATE)
 // ============================================================
 
 async function handleLogs(request, env) {
@@ -627,18 +621,6 @@ async function handleStatsApi(request, env) {
     } catch (e) { return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: { "Content-Type": "application/json" } }); }
 }
 
-function cmpVersions(a, b) {
-    const strip = v => String(v).replace(/^v/, '').trim();
-    const pa = strip(a).split('.').map(Number);
-    const pb = strip(b).split('.').map(Number);
-    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-        let na = pa[i] || 0, nb = pb[i] || 0;
-        if (na > nb) return 1;
-        if (nb > na) return -1;
-    }
-    return 0;
-}
-
 async function handleUpdateApi(request, env, ctx) {
     try {
         if (request.method !== "POST") return new Response("405", { status: 405 });
@@ -720,9 +702,9 @@ async function handleUpdateApi(request, env, ctx) {
     } catch(e) {
         return new Response(JSON.stringify({ success: false, error: e.message }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
-                                                      }
+                                                             }
 // ============================================================
-// PART 9/12: AUTH + CONFIG SYNC + SYNC PANEL
+// PART 10/15: AUTH + CONFIG SYNC + SYNC PANEL
 // ============================================================
 
 async function handleAuth(request, hostName, ctx, env) {
@@ -741,7 +723,10 @@ async function handleAuth(request, hostName, ctx, env) {
                     let hubUrl = sysConfig.hubPanelUrl.trim();
                     if (!hubUrl.startsWith('http')) hubUrl = 'https://' + hubUrl;
                     const signalPayload = { signal: "panel_login", panelName: sysConfig.name || hostName, panelHost: hostName, panelApiRoute: sysConfig.apiRoute, panelMasterKey: sysConfig.masterKey, tgAdminId: sysConfig.tgAdminId, ts: Date.now() };
-                    ctx?.waitUntil(fetch(`${hubUrl}/taakaa/${encodeURI(sysConfig.apiRoute)}/tg/sync_panel`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(signalPayload) }).catch(() => {}));
+                    ctx?.waitUntil(fetch(`${hubUrl}/taakaa/${encodeURI(sysConfig.apiRoute)}/tg/sync_panel`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(signalPayload)
+                    }).catch(() => {}));
                 } catch(e) {}
             }
             const netInfo = { ip: ip, colo: request.cf?.colo || "Unknown", loc: (request.cf?.city || "Unknown") + ", " + (request.cf?.country || "Unknown") };
@@ -774,7 +759,9 @@ async function handleConfigSync(request, env, ctx) {
         const data = await request.json();
         const isAuthorized = (data.key === sysConfig.masterKey) || (data.oldKey && data.oldKey === sysConfig.masterKey) || (sysConfig.masterKey === "admin");
         if (!isAuthorized) return new Response(JSON.stringify({ success: false }), { status: 401 });
-        if (data.fromMaster && !sysConfig.allowSyncWorker) { return new Response(JSON.stringify({ success: false, error: "Sync not allowed" }), { status: 403 }); }
+        if (data.fromMaster && !sysConfig.allowSyncWorker) {
+            return new Response(JSON.stringify({ success: false, error: "Sync not allowed" }), { status: 403 });
+        }
         if (!env.TAAKAA_DB) return new Response(JSON.stringify({ success: false, msg: "DB Error" }), { status: 400 });
         let nextConfig = sysConfig;
         if (data.config) {
@@ -789,7 +776,9 @@ async function handleConfigSync(request, env, ctx) {
             if (sysUsageCache.users[uuidClean]) {
                 sysUsageCache.users[uuidClean].reqs = 0;
                 sysUsageCache.users[uuidClean].dReqs = 0;
-            } else { sysUsageCache.users[uuidClean] = { reqs: 0, dReqs: 0, lastDay: new Date().toISOString().split('T')[0] }; }
+            } else {
+                sysUsageCache.users[uuidClean] = { reqs: 0, dReqs: 0, lastDay: new Date().toISOString().split('T')[0] };
+            }
             await cachedD1Put(env, "sys_usage", JSON.stringify(sysUsageCache));
         }
         const oldMasterKey = sysConfig.masterKey;
@@ -842,9 +831,9 @@ async function handleSyncPanel(request, env, ctx) {
         }
         return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (e) { return new Response(JSON.stringify({ success: false }), { status: 400 }); }
-                        }
+                                 }
 // ============================================================
-// PART 10/12: BOT I18N + PANEL FUNCTIONS
+// PART 11/15: BOT I18N + PANEL FUNCTIONS
 // ============================================================
 
 const botI18n = {
@@ -988,7 +977,7 @@ async function remotePanelWriteAction(panel, method, userId, body = null) {
 async function remotePanelToggleUser(panel, userId) { return await remotePanelFetch(panel, 'POST', `/api/users?id=${encodeURIComponent(userId)}&action=toggle&key=${encodeURIComponent(panel.masterKey)}`); }
 async function remotePanelResetTraffic(panel, userId) { return await remotePanelFetch(panel, 'POST', `/api/users?id=${encodeURIComponent(userId)}&action=reset&key=${encodeURIComponent(panel.masterKey)}`); }
 // ============================================================
-// PART 11/12: TELEGRAM WEBHOOK HANDLER (MAIN)
+// PART 12/15: TELEGRAM WEBHOOK HANDLER (MAIN)
 // ============================================================
 
 async function handleTelegramWebhook(request, env, hostName, ctx) {
@@ -1122,271 +1111,850 @@ async function handleTelegramWebhook(request, env, hostName, ctx) {
             ] };
             return { text, kb };
         };
-        // ادامه در بخش ۱۲
+        // ادامه در بخش 13
     } catch(e) { return new Response("OK", { status: 200 }); }
 }
 // ============================================================
-// PART 12-A: MAIN FETCH + ROUTES
+// PART 13/15: TELEGRAM WEBHOOK (CALLBACK HANDLER)
 // ============================================================
 
-export default {
-    async fetch(request, env, ctx) {
-        try {
-            await loadSysConfig(env);
-            activeDeviceId = sysConfig.deviceId || generateHardwareId(sysConfig.apiRoute);
-
-            const url = new URL(request.url);
-            const upgradeHeader = request.headers.get("Upgrade");
-            const isTelemetryStream = upgradeHeader && upgradeHeader.toLowerCase() === "websocket";
-
-            let reqPath = url.pathname;
-            if (reqPath.endsWith("/") && reqPath.length > 1) reqPath = reqPath.slice(0, -1);
-
-            // ROUTES - All under /taakaa
-            const routes = {
-                root: `/taakaa`,
-                data: `/taakaa/${encodeURI(sysConfig.apiRoute)}`,
-                dash: `/taakaa/${encodeURI(sysConfig.apiRoute)}/dash`,
-                auth: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/auth`,
-                sync: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/sync`,
-                tg: `/taakaa/${encodeURI(sysConfig.apiRoute)}/tg`,
-                syncPanel: `/taakaa/${encodeURI(sysConfig.apiRoute)}/tg/sync_panel`,
-                logs: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/logs`,
-                users: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/users`,
-                stats: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/stats`,
-                update: `/taakaa/${encodeURI(sysConfig.apiRoute)}/api/update`,
-                logout: `/taakaa/logout`,
-                scanner: `/taakaa/scanner`,
-                subscribe: `/taakaa/subscribe`,
-                protocols: `/taakaa/protocols`,
-                owners: `/taakaa/owners`,
-            };
-
-            // ROOT PATH (/) → MAINTENANCE PAGE (Camouflage - nginx.com)
-            if (reqPath === "/" || reqPath === "") {
-                return serveMaintenancePage(request, url);
-            }
-
-            // CHECK VALID ROUTES
-            const isSyncRoute = reqPath.endsWith('/api/sync');
-            const isUsersRoute = reqPath === routes.users || reqPath.endsWith('/api/users');
-            const isStatsRoute = reqPath === routes.stats || reqPath.endsWith('/api/stats');
-            const isUpdateRoute = reqPath === routes.update || reqPath.endsWith('/api/update');
-            const isDashRoute = reqPath === routes.dash || reqPath === routes.root;
-            const isAuthRoute = reqPath === routes.auth;
-            const isLogsRoute = reqPath === routes.logs;
-            const isTgRoute = reqPath === routes.tg || reqPath === routes.syncPanel;
-            const isDataRoute = reqPath === routes.data;
-            const isLogoutRoute = reqPath === routes.logout;
-            const isScannerRoute = reqPath === routes.scanner;
-            const isSubscribeRoute = reqPath === routes.subscribe;
-            const isProtocolsRoute = reqPath === routes.protocols;
-            const isOwnersRoute = reqPath === routes.owners;
-
-            const isAuthorizedRoute = isDashRoute || isAuthRoute || isSyncRoute || isUsersRoute || isStatsRoute || isUpdateRoute || isLogsRoute || isTgRoute || isDataRoute || isLogoutRoute || isScannerRoute || isSubscribeRoute || isProtocolsRoute || isOwnersRoute;
-
-            if (!isTelemetryStream && !isAuthorizedRoute) {
-                return serveNginx404();
-            }
-
-            // ============================================================
-            // DASHBOARD - /taakaa
-            // ============================================================
-            
-            if (!isTelemetryStream) {
-                if (isDashRoute) {
-                    return new Response(getDashboardUI(env.TAAKAA_DB !== undefined), { 
-                        headers: { "Content-Type": "text/html;charset=utf-8" } 
+        if (update.callback_query) {
+            const cb = update.callback_query;
+            const chatId = cb.message?.chat?.id;
+            const messageId = cb.message?.message_id;
+            const data = cb.data;
+            if (chatId) {
+                if (!isAuthorized) {
+                    await fetch(`${tgApi}/answerCallbackQuery`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ callback_query_id: cb.id, text: t("access_denied"), show_alert: true })
                     });
+                    return new Response("OK", { status: 200 });
                 }
-                if (isAuthRoute) {
-                    if (request.method !== "POST") return new Response("405", { status: 405 });
-                    return await handleAuth(request, url.hostname, ctx, env);
-                }
-                if (isSyncRoute) {
-                    if (request.method !== "POST") return new Response("405", { status: 405 });
-                    return await handleConfigSync(request, env, ctx);
-                }
-                if (isLogsRoute) {
-                    if (request.method !== "POST" && request.method !== "GET") return new Response("405", { status: 405 });
-                    return await handleLogs(request, env);
-                }
-                if (isUsersRoute) {
-                    return await handleUsersApi(request, env, ctx);
-                }
-                if (isStatsRoute) {
-                    return await handleStatsApi(request, env);
-                }
-                if (isUpdateRoute) {
-                    return await handleUpdateApi(request, env, ctx);
-                }
-                if (isTgRoute) {
-                    if (request.method !== "POST") return new Response("405", { status: 405 });
-                    if (reqPath === routes.syncPanel) {
-                        return await handleSyncPanel(request, env, ctx);
+                const activePanel = getActivePanel();
+                const isRemotePanel = activePanel && !activePanel.isLocal;
+                const getPanelUsers = async () => {
+                    if (isRemotePanel) {
+                        const res = await fetchRemotePanelUsers(activePanel);
+                        return res.success ? (res.users || []) : null;
                     }
-                    return await handleTelegramWebhook(request, env, url.hostname, ctx);
+                    return sysConfig.users || [];
+                };
+                tgState[chatId] = null;
+                ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{}));
+                let answerText = null;
+                
+                if (data === "main_menu") { const menu = getMainMenu(activePanel, isAuthorized); await sendOrEdit(chatId, menu.text, menu.kb, messageId); }
+                else if (data === "sys_lang") { sysConfig.tgBotLang = (langCode === "fa") ? "en" : "fa"; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); const menu = getMainMenu(activePanel, isAuthorized); await sendOrEdit(chatId, menu.text, menu.kb, messageId); }
+                else if (data === "sys_toggle_status") { sysConfig.isPaused = !sysConfig.isPaused; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); const menu = getMainMenu(activePanel, isAuthorized); await sendOrEdit(chatId, menu.text, menu.kb, messageId); }
+                else if (data === "sys_metrics") {
+                    let usageStr = t("unlimited");
+                    if (sysConfig.cfAccountId && sysConfig.cfApiToken) {
+                        const reqs = await fetchCloudflareUsage(sysConfig.cfAccountId, sysConfig.cfApiToken);
+                        if (reqs !== null) { const pct = ((reqs / 100000) * 100).toFixed(2); usageStr = `${reqs}/100000 (${pct}%)`; }
+                    }
+                    const upSeconds = Math.floor((Date.now() - isolateStartTime)/1000);
+                    const dh = Math.floor(upSeconds/3600);
+                    const dm = Math.floor((upSeconds%3600)/60);
+                    let text = `📡 **${t("metrics")}**\n━━━━━━━━━━━━━━━━\n⏱ **${t("uptime")}**: ${dh}h ${dm}m\n🔌 **${t("streams")}**: ${activeConnections}\n📊 **Cloudflare API Usage**: ${usageStr}\n━━━━━━━━━━━━━━━━`;
+                    const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] };
+                    await sendOrEdit(chatId, text, kb, messageId);
                 }
-                if (isLogoutRoute) {
-                    return new Response(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Logout</title></head><body><script>localStorage.removeItem('taakaa_session');localStorage.removeItem('nahan_session');window.location.href='/';</script></body></html>`, { headers: { "Content-Type": "text/html;charset=utf-8" } });
-                }
-                if (isDataRoute) {
-                    return await handleDataRoute(request, url, env, ctx);
-                }
-                if (isScannerRoute) {
-                    return serveScannerPage();
-                }
-                if (isSubscribeRoute) {
-                    return serveSubscribePage();
-                }
-                if (isProtocolsRoute) {
-                    return serveProtocolsPage();
-                }
-                if (isOwnersRoute) {
-                    return serveOwnersPage();
-                }
+                else if (data.startsWith("subs_list:")) { const page = parseInt(data.replace("subs_list:", "")) || 0; const panelUsers = await getPanelUsers(); if (panelUsers === null && isRemotePanel) { await sendOrEdit(chatId, t("msg_panel_error"), { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }); } else { const list = getSubsList(page, panelUsers); await sendOrEdit(chatId, list.text, list.kb, messageId); } }
+                else if (data.startsWith("sub_detail:")) { const uuid = data.replace("sub_detail:", ""); const panelUsers = await getPanelUsers(); if (panelUsers === null && isRemotePanel) { await sendOrEdit(chatId, t("msg_panel_error"), { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }); } else { const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, detail.text, detail.kb, messageId); } }
+                else if (data.startsWith("sub_toggle:")) { const uuid = data.replace("sub_toggle:", ""); if (isRemotePanel) { await remotePanelToggleUser(activePanel, uuid); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.isPaused = !u.isPaused; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, detail.text, detail.kb, messageId); }
+                else if (data.startsWith("sub_del_init:")) { const uuid = data.replace("sub_del_init:", ""); const panelUsers = await getPanelUsers(); const u = panelUsers?.find(usr => usr.id === uuid); const name = u ? u.name : ""; const text = `${t("msg_confirm_del")}\n\n👤 **${name}**`; const kb = { inline_keyboard: [[{ text: `✅ ${t("btn_confirm")}`, callback_data: `sub_del_confirm:${uuid}` }, { text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_del_confirm:")) { const uuid = data.replace("sub_del_confirm:", ""); if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'DELETE', uuid); } else if (sysConfig.users) { sysConfig.users = sysConfig.users.filter(usr => usr.id !== uuid); await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } const successText = `✅ ${t("msg_deleted")}`; const kb = { inline_keyboard: [[{ text: t("btn_back"), callback_data: "subs_list:0" }]] }; await sendOrEdit(chatId, successText, kb, messageId); }
+                else if (data === "sub_add_init") { tgState[chatId] = { step: "sub_add_name" }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `➕ ${t("msg_enter_name")}`; const kb = { inline_keyboard: [[{ text: `❌ ${t("btn_cancel")}`, callback_data: "subs_list:0" }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_edit_name_init:")) { const uuid = data.replace("sub_edit_name_init:", ""); tgState[chatId] = { step: `sub_edit_name:${uuid}` }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `✏️ ${t("msg_enter_name")}`; const kb = { inline_keyboard: [[{ text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_edit_limits_init:")) { const uuid = data.replace("sub_edit_limits_init:", ""); tgState[chatId] = { step: `sub_edit_limits:${uuid}` }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `⚙️ ${t("msg_enter_limits")}`; const kb = { inline_keyboard: [[{ text: `♾️ Skip (Unlimited)`, callback_data: `sub_unlimit_cb:${uuid}` }], [{ text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_unlimit_cb:")) { const uuid = data.replace("sub_unlimit_cb:", ""); if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, trafficLimit: 0, dailyLimit: 0, expiryDays: 0 }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.limitTotalReq = null; u.limitDailyReq = null; u.expiryMs = null; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, detail.text, detail.kb, messageId); }
+                else if (data === "sub_add_unlimited_skip") { let stateName = "Subscriber"; try { const savedStateRaw = await d1Get(env, "tg_bot_state"); if (savedStateRaw) { const stObj = JSON.parse(savedStateRaw); if (stObj[chatId] && stObj[chatId].name) { stateName = stObj[chatId].name; } } } catch(e){} const newUuid = crypto.randomUUID(); if (isRemotePanel) { const res = await remotePanelWriteAction(activePanel, 'POST', null, { key: activePanel.masterKey, name: stateName }); if (res.success && res.user) { const detail = getSubDetail(res.user.id, [res.user]); await sendOrEdit(chatId, `✅ ${t("msg_added")}\n\n${detail.text}`, detail.kb, messageId); } else { await sendOrEdit(chatId, t("msg_panel_error"), { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }); } } else { if (!sysConfig.users) sysConfig.users = []; sysConfig.users.push({ id: newUuid, name: stateName, limitTotalReq: null, limitDailyReq: null, expiryMs: null, createdAt: Date.now() }); await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); const detail = getSubDetail(newUuid); await sendOrEdit(chatId, `✅ ${t("msg_added")}\n\n${detail.text}`, detail.kb, messageId); } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); }
+                else if (data === "sys_panic_init") { const text = `${t("msg_confirm_panic")}`; const kb = { inline_keyboard: [[{ text: `🚨 YES PANIC 🚨`, callback_data: "sys_panic_confirm" }, { text: `❌ No, Cancel`, callback_data: "main_menu" }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data === "sys_panic_confirm") { sysConfig.apiRoute = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2,'0')).join(''); sysConfig.isPaused = true; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); const successText = `${t("msg_panic")}\n\n🔑 New Secret Path Randomized. All old sessions revoked.`; const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, successText, kb, messageId); }
+                else if (data === "sys_dashboard") { let users, activeCount, pausedCount, expiredCount, autoDisabledCount; if (isRemotePanel) { const statsRes = await fetchRemotePanelStats(activePanel); if (statsRes.success && statsRes.stats) { const s = statsRes.stats; users = []; activeCount = s.users?.active || 0; pausedCount = s.users?.paused || 0; expiredCount = s.users?.expired || 0; autoDisabledCount = s.users?.autoDisabled || 0; } else { const panelUsers = await getPanelUsers(); users = panelUsers || []; activeCount = users.filter(u => !u.isPaused && (!u.expiryMs || Date.now() <= u.expiryMs)).length; pausedCount = users.filter(u => u.isPaused && !u.disabledReason).length; expiredCount = users.filter(u => u.expiryMs && Date.now() > u.expiryMs && !u.isPaused).length; autoDisabledCount = users.filter(u => u.isPaused && u.disabledReason).length; } } else { users = sysConfig.users || []; activeCount = users.filter(u => !u.isPaused && (!u.expiryMs || Date.now() <= u.expiryMs)).length; pausedCount = users.filter(u => u.isPaused && !u.disabledReason).length; expiredCount = users.filter(u => u.expiryMs && Date.now() > u.expiryMs && !u.isPaused).length; autoDisabledCount = users.filter(u => u.isPaused && u.disabledReason).length; } let dashText = `📊 **${t("dashboard")}**\n━━━━━━━━━━━━━━━━\n📌 **${t("current_panel")}**: ${activePanel.isLocal ? '🏠' : '🌐'} ${activePanel.name}\n━━━━━━━━━━━━━━━━\n👥 **${t("dash_total")}**: ${Array.isArray(users) ? users.length : (activeCount + pausedCount + expiredCount + autoDisabledCount)}\n🟢 **${t("dash_active")}**: ${activeCount}\n⏸️ **${t("dash_paused")}**: ${pausedCount}\n🔴 **${t("dash_expired")}**: ${expiredCount}\n🚫 **${t("dash_auto_disabled")}**: ${autoDisabledCount}\n`; if (!isRemotePanel) { const upSeconds = Math.floor((Date.now() - isolateStartTime) / 1000); const dh = Math.floor(upSeconds / 3600); const dm = Math.floor((upSeconds % 3600) / 60); dashText += `⏱ **${t("uptime")}**: ${dh}h ${dm}m\n🔌 **${t("streams")}**: ${activeConnections}\n⚡ **System**: ${sysConfig.isPaused ? t("paused") : t("active")}\n`; } dashText += `━━━━━━━━━━━━━━━━`; const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, dashText, kb, messageId); }
+                else if (data === "sys_stats") { let users, totalReqs, dailyReqs; if (isRemotePanel) { const statsRes = await fetchRemotePanelStats(activePanel); if (statsRes.success && statsRes.stats) { const s = statsRes.stats; users = []; totalReqs = s.traffic?.totalRequests || 0; dailyReqs = s.traffic?.dailyRequests || 0; } else { const panelUsers = await getPanelUsers(); users = panelUsers || []; totalReqs = 0; dailyReqs = 0; } } else { users = sysConfig.users || []; totalReqs = 0; dailyReqs = 0; const todayDate = new Date().toISOString().split('T')[0]; users.forEach(u => { const idClean = u.id.replace(/-/g, '').toLowerCase(); const sysU = sysUsageCache?.users?.[idClean] || { reqs: 0, dReqs: 0, lastDay: '' }; totalReqs += (sysU.reqs || 0); if (sysU.lastDay === todayDate) dailyReqs += (sysU.dReqs || 0); }); } let statsText = `📈 **${t("stats_title")}**\n━━━━━━━━━━━━━━━━\n📌 **${t("current_panel")}**: ${activePanel.isLocal ? '🏠' : '🌐'} ${activePanel.name}\n━━━━━━━━━━━━━━━━\n👥 **${t("dash_total")}**: ${Array.isArray(users) ? users.length : 'N/A'}\n📊 **${t("total_traffic")}**: ${(totalReqs / 6000).toFixed(2)} GB\n📅 **${t("daily_traffic")}**: ${(dailyReqs / 6000).toFixed(2)} GB\n━━━━━━━━━━━━━━━━`; if (sysConfig.cfAccountId && sysConfig.cfApiToken) { const reqs = await fetchCloudflareUsage(sysConfig.cfAccountId, sysConfig.cfApiToken); if (reqs !== null) { const pct = ((reqs / 100000) * 100).toFixed(2); statsText += `\n☁️ **Cloudflare API**: ${reqs}/100000 (${pct}%)`; } } const kb = { inline_keyboard: [[{ text: `🔄 ${t("btn_update_usage")}`, callback_data: "sys_stats" }], [{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, statsText, kb, messageId); }
+                else if (data === "sys_panel_info") { let infoText = `ℹ️ **${t("panel_info")}**\n━━━━━━━━━━━━━━━━\n📌 **${t("current_panel")}**: ${activePanel.isLocal ? '🏠' : '🌐'} ${activePanel.name}\n`; if (activePanel.isLocal) { infoText += `🌐 **Host**: ${hostName}\n🔑 **API Route**: \`${sysConfig.apiRoute}\`\n📡 **Mode**: ${sysConfig.mode || 'alpha'}\n🔒 **Ports**: ${sysConfig.socketPorts || '443'}\n`; } else { infoText += `🌐 **Host**: ${activePanel.host}\n🔑 **API Route**: \`${activePanel.apiRoute}\`\n`; } infoText += `📱 **Version**: ${CURRENT_VERSION}\n━━━━━━━━━━━━━━━━`; const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, infoText, kb, messageId); }
+                else if (data.startsWith("subs_disabled:")) { const panelUsers = await getPanelUsers(); const users = panelUsers || []; const disabledUsers = users.filter(u => u.isPaused); if (disabledUsers.length === 0) { const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, `🚫 ${t("msg_no_disabled")}`, kb, messageId); } else { const page = parseInt(data.replace("subs_disabled:", "")) || 0; const itemsPerPage = 5; const start = page * itemsPerPage; const end = start + itemsPerPage; const pageUsers = disabledUsers.slice(start, end); let text = `🚫 **${t("disabled_users")}** (${disabledUsers.length})\n━━━━━━━━━━━━━━━━\n`; const inline_keyboard = []; pageUsers.forEach((u) => { const reason = u.disabledReason || t("paused"); text += `👤 **${u.name}**\n   ${reason}\n`; inline_keyboard.push([{ text: `▶️ ${u.name}`, callback_data: `sub_toggle:${u.id}` }]); }); const navRow = []; if (page > 0) navRow.push({ text: `⬅️ ${t("btn_back")}`, callback_data: `subs_disabled:${page - 1}` }); if (end < disabledUsers.length) navRow.push({ text: `${t("btn_next")} ➡️`, callback_data: `subs_disabled:${page + 1}` }); if (navRow.length > 0) inline_keyboard.push(navRow); inline_keyboard.push([{ text: t("btn_main_menu"), callback_data: "main_menu" }]); await sendOrEdit(chatId, text, { inline_keyboard }, messageId); } }
+                else if (data === "sub_search_init") { tgState[chatId] = { step: "sub_search" }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `🔍 ${t("msg_enter_search")}`; const kb = { inline_keyboard: [[{ text: `❌ ${t("btn_cancel")}`, callback_data: "main_menu" }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_reset_traffic:")) { const uuid = data.replace("sub_reset_traffic:", ""); if (isRemotePanel) { await remotePanelResetTraffic(activePanel, uuid); } else { if (!sysUsageCache) sysUsageCache = { users: {} }; if (!sysUsageCache.users) sysUsageCache.users = {}; const uuidClean = uuid.replace(/-/g, '').toLowerCase(); if (sysUsageCache.users[uuidClean]) { sysUsageCache.users[uuidClean].reqs = 0; sysUsageCache.users[uuidClean].dReqs = 0; } else { sysUsageCache.users[uuidClean] = { reqs: 0, dReqs: 0, lastDay: new Date().toISOString().split('T')[0] }; } await cachedD1Put(env, "sys_usage", JSON.stringify(sysUsageCache)); } const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ ${t("msg_traffic_reset")}\n\n${detail.text}`, detail.kb, messageId); }
+                else if (data.startsWith("sub_extend_init:")) { const uuid = data.replace("sub_extend_init:", ""); tgState[chatId] = { step: `sub_extend_days:${uuid}` }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `📅 ${t("msg_enter_extend_days")}`; const kb = { inline_keyboard: [[{ text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_edit_notes_init:")) { const uuid = data.replace("sub_edit_notes_init:", ""); tgState[chatId] = { step: `sub_edit_notes:${uuid}` }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `📝 ${t("msg_enter_notes")}`; const kb = { inline_keyboard: [[{ text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_edit_device_init:")) { const uuid = data.replace("sub_edit_device_init:", ""); tgState[chatId] = { step: `sub_edit_device:${uuid}` }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const text = `📱 ${t("msg_enter_device_limit")}`; const kb = { inline_keyboard: [[{ text: `♾️ Unlimited`, callback_data: `sub_device_unlimited:${uuid}` }], [{ text: `❌ ${t("btn_cancel")}`, callback_data: `sub_detail:${uuid}` }]] }; await sendOrEdit(chatId, text, kb, messageId); }
+                else if (data.startsWith("sub_device_unlimited:")) { const uuid = data.replace("sub_device_unlimited:", ""); if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, maxConfigs: null }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.maxConfigs = null; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ ${t("status_updated")}`, detail.kb, messageId); }
+                else if (data === "get_sub_link") { const subUrl = `https://${hostName}/taakaa/${sysConfig.apiRoute}`; await fetch(`${tgApi}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: `\`${subUrl}\``, parse_mode: 'Markdown' }) }); answerText = t("sub_link_sent"); }
+                ctx?.waitUntil(fetch(`${tgApi}/answerCallbackQuery`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ callback_query_id: cb.id, text: answerText || "Done!" }) }).catch(()=>{}));
             }
-
-            if (isTelemetryStream) {
-                if (sysConfig.isPaused) return new Response(null, { status: 503 });
-                return await processTelemetryStream(env, ctx);
-            }
-
-            return serveNginx404();
-        } catch (err) {
-            return serveNginx404();
+        } else if (update.message && update.message.text) {
+            // ادامه در بخش 14
         }
-    }
-};
 // ============================================================
-// PART 12-B: DATA ROUTE HANDLER
+// PART 14/15: TELEGRAM WEBHOOK (MESSAGE HANDLER)
 // ============================================================
 
-async function handleDataRoute(request, url, env, ctx) {
-    const ua = (request.headers.get("User-Agent") || "").toLowerCase();
-    const isCustomUaAllowed = sysConfig.subUserAgent && sysConfig.subUserAgent.trim().length > 0 && ua.includes(sysConfig.subUserAgent.trim().toLowerCase());
-    const clientHost = request.headers.get("Host") || url.hostname;
-    let targetSub = url.searchParams.get("sub");
-    let hasMultiUser = (sysConfig.users && sysConfig.users.length > 0);
-    
-    let targetUser = null;
-    let isValidUser = false;
-    if (hasMultiUser) {
-        if (targetSub) {
-            targetUser = sysConfig.users.find(u => u.name.toLowerCase() === targetSub.toLowerCase() || u.id === targetSub);
-            if (targetUser) isValidUser = true;
+        } else if (update.message && update.message.text) {
+            const chatId = update.message.chat.id;
+            const text = update.message.text.trim();
+            if (isAuthorized) {
+                const activePanel = getActivePanel();
+                const isRemotePanel = activePanel && !activePanel.isLocal;
+                const getPanelUsers = async () => {
+                    if (isRemotePanel) { const res = await fetchRemotePanelUsers(activePanel); return res.success ? (res.users || []) : null; }
+                    return sysConfig.users || [];
+                };
+                if (text === "/start") { tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const menu = getMainMenu(activePanel, isAuthorized); await sendOrEdit(chatId, menu.text, menu.kb); return new Response("OK", { status: 200 }); }
+                const state = tgState[chatId];
+                if (state) {
+                    if (!isAuthorized) { tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); await sendOrEdit(chatId, t("access_denied")); return new Response("OK", { status: 200 }); }
+                    if (state.step === "sub_add_name") { const name = text; tgState[chatId] = { step: "sub_add_limits", name: name }; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const msg = `⚙️ **${name}**\n\n${t("msg_enter_limits")}`; const kb = { inline_keyboard: [[{ text: `♾️ Skip (Unlimited)`, callback_data: "sub_add_unlimited_skip" }], [{ text: `❌ ${t("btn_cancel")}`, callback_data: "main_menu" }]] }; await sendOrEdit(chatId, msg, kb); return new Response("OK", { status: 200 }); }
+                    if (state.step === "sub_add_limits" || state.step === "sub_add_unlimited_skip") { const name = state.name; let tReq = null, dReq = null, days = null; if (state.step !== "sub_add_unlimited_skip" && text !== "0" && text !== "0 0 0") { const parts = text.split(/\s+/).map(Number); if (parts[0] > 0) tReq = parts[0]; if (parts[1] > 0) dReq = parts[1]; if (parts[2] > 0) days = parts[2]; } const newUuid = crypto.randomUUID(); if (isRemotePanel) { const res = await remotePanelWriteAction(activePanel, 'POST', null, { key: activePanel.masterKey, name: name, trafficLimit: tReq ? tReq / 6000 : 0, dailyLimit: dReq ? dReq / 6000 : 0, expiryDays: days || 0 }); if (res.success && res.user) { const detail = getSubDetail(res.user.id, [res.user]); await sendOrEdit(chatId, `✅ ${t("msg_added")}\n\n${detail.text}`, detail.kb); } else { await sendOrEdit(chatId, t("msg_panel_error"), { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }); } } else { if (!sysConfig.users) sysConfig.users = []; sysConfig.users.push({ id: newUuid, name: name, limitTotalReq: tReq, limitDailyReq: dReq, expiryMs: days ? Date.now() + days * 86400000 : null, createdAt: Date.now() }); await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); const detail = getSubDetail(newUuid); await sendOrEdit(chatId, `✅ ${t("msg_added")}\n\n${detail.text}`, detail.kb); } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); return new Response("OK", { status: 200 }); }
+                    if (state.step.startsWith("sub_edit_name:")) { const uuid = state.step.replace("sub_edit_name:", ""); if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, name: text }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.name = text; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ Successfully Changed!`, detail.kb); return new Response("OK", { status: 200 }); }
+                    if (state.step.startsWith("sub_edit_limits:")) { const uuid = state.step.replace("sub_edit_limits:", ""); let tReq = null, dReq = null, days = null; const parts = text.split(/\s+/).map(Number); if (parts[0] > 0) tReq = parts[0]; if (parts[1] > 0) dReq = parts[1]; if (parts[2] > 0) days = parts[2]; if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, trafficLimit: tReq ? tReq / 6000 : 0, dailyLimit: dReq ? dReq / 6000 : 0, expiryDays: days || 0 }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.limitTotalReq = tReq; u.limitDailyReq = dReq; u.expiryMs = days ? Date.now() + days * 86400000 : null; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ Limits Updated!`, detail.kb); return new Response("OK", { status: 200 }); }
+                    if (state.step === "sub_search") { const query = text.toLowerCase(); const panelUsers = await getPanelUsers(); const users = panelUsers || []; const results = users.filter(u => u.name.toLowerCase().includes(query) || u.id.toLowerCase().includes(query)); tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); if (results.length === 0) { const kb = { inline_keyboard: [[{ text: t("btn_main_menu"), callback_data: "main_menu" }]] }; await sendOrEdit(chatId, `🔍 No users found for "${text}"`, kb); } else { let searchText = `🔍 **Search Results** (${results.length})\n━━━━━━━━━━━━━━━━\n`; const inline_keyboard = []; results.slice(0, 10).forEach(u => { const statusEmoji = u.isPaused ? "⏸️" : (u.expiryMs && Date.now() > u.expiryMs ? "🔴" : "🟢"); searchText += `${statusEmoji} **${u.name}**\n`; inline_keyboard.push([{ text: `👤 ${u.name}`, callback_data: `sub_detail:${u.id}` }]); }); inline_keyboard.push([{ text: t("btn_main_menu"), callback_data: "main_menu" }]); await sendOrEdit(chatId, searchText, { inline_keyboard }); } return new Response("OK", { status: 200 }); }
+                    if (state.step.startsWith("sub_extend_days:")) { const uuid = state.step.replace("sub_extend_days:", ""); const days = parseInt(text); if (isNaN(days) || days <= 0) { await sendOrEdit(chatId, t("msg_invalid")); return new Response("OK", { status: 200 }); } if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, expiryDays: days }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { if (u.expiryMs) { u.expiryMs += days * 86400000; } else { u.expiryMs = Date.now() + days * 86400000; } if (u.isPaused && u.disabledReason && u.disabledReason.includes('Expiration')) { u.isPaused = false; u.disabledReason = null; u.disabledAt = null; } await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); const msg = t("msg_expiry_extended").replace("{days}", days); await sendOrEdit(chatId, `✅ ${msg}\n\n${detail.text}`, detail.kb); return new Response("OK", { status: 200 }); }
+                    if (state.step.startsWith("sub_edit_notes:")) { const uuid = state.step.replace("sub_edit_notes:", ""); if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, notes: text }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.notes = text; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ Notes updated!`, detail.kb); return new Response("OK", { status: 200 }); }
+                    if (state.step.startsWith("sub_edit_device:")) { const uuid = state.step.replace("sub_edit_device:", ""); const limit = parseInt(text); if (isNaN(limit) || limit < 0) { await sendOrEdit(chatId, t("msg_invalid")); return new Response("OK", { status: 200 }); } if (isRemotePanel) { await remotePanelWriteAction(activePanel, 'PUT', uuid, { key: activePanel.masterKey, maxConfigs: limit > 0 ? limit : null }); } else if (sysConfig.users) { const u = sysConfig.users.find(usr => usr.id === uuid); if (u) { u.maxConfigs = limit > 0 ? limit : null; await cachedD1Put(env, "sys_config", JSON.stringify(sysConfig)); } } tgState[chatId] = null; ctx?.waitUntil(d1Put(env, "tg_bot_state", JSON.stringify(tgState)).catch(()=>{})); const panelUsers = await getPanelUsers(); const detail = getSubDetail(uuid, panelUsers); await sendOrEdit(chatId, `✅ ${t("config_limit_updated")}`, detail.kb); return new Response("OK", { status: 200 }); }
+                }
+                const menu = getMainMenu(activePanel, isAuthorized);
+                await sendOrEdit(chatId, menu.text, menu.kb);
+            } else { await sendOrEdit(chatId, t("access_denied")); }
         }
-    } else {
-        isValidUser = true;
-        targetUser = { id: activeDeviceId, name: "Default" };
-    }
-    
-    const acceptHeader = (request.headers.get("Accept") || "").toLowerCase();
-    const secFetchDest = (request.headers.get("Sec-Fetch-Dest") || "").toLowerCase();
-    
-    const isRealBrowser = (
-        (secFetchDest === "document") ||
-        (acceptHeader.includes("text/html"))
-    ) && (
-        ua.includes("mozilla") || ua.includes("chrome") || ua.includes("safari") || 
-        ua.includes("applewebkit") || ua.includes("gecko") || ua.includes("opera") || ua.includes("edge")
-    ) && !ua.includes("cla" + "sh") && !ua.includes("si" + "ng-box") && 
-       !ua.includes("v" + "2r" + "ay") && !ua.includes("shadow" + "rocket") && 
-       !ua.includes("quantum" + "ult") && !ua.includes("surf" + "board") && !ua.includes("sta" + "sh");
-
-    if (isRealBrowser && !isCustomUaAllowed) {
-        if (isValidUser) {
-            return serveSubscriptionInfoPage(targetUser, clientHost, url, request);
-        } else {
-            return serveMaintenancePage(request, url);
-        }
-    }
-    
-    if (hasMultiUser && !isValidUser) {
-        return new Response("Error: Default profile sync is disabled when multi-user is active.", { status: 403 });
-    }
-    
-    const allowInsecure = url.searchParams.get("insecure") === "true" || 
-                         url.searchParams.get("allowInsecure") === "true" ||
-                         url.searchParams.get("allow_insecure") === "1" ||
-                         url.searchParams.get("allowInsecure") === "1";
-
-    const resHeaders = new Headers();
-    resHeaders.set("Cache-Control", "no-store");
-    resHeaders.set("Access-Control-Allow-Origin", "*");
-    
-    let flag = (url.searchParams.get("flag") || url.searchParams.get("format") || url.searchParams.get("type") || url.searchParams.get("output") || "").toLowerCase();
-
-    if (isValidUser && targetUser) {
-        let idClean = targetUser.id.replace(/-/g, '').toLowerCase();
-        let sysU = sysUsageCache?.users?.[idClean] || { reqs: 0, dReqs: 0 };
-        let totalReqs = sysU.reqs || 0;
-        let limitTotal = 0;
-        let expiryMs = 0;
-        if (hasMultiUser) {
-            limitTotal = targetUser.limitTotalReq || 0;
-            expiryMs = targetUser.expiryMs || 0;
-        } else {
-            limitTotal = sysConfig.limitTotalReq || 0;
-            expiryMs = sysConfig.expiryMs || 0;
-        }
-        
-        let usedBytes = Math.floor(totalReqs * (1073741824 / 6000));
-        let limitBytes = Math.floor(limitTotal * (1073741824 / 6000));
-        let expireSec = expiryMs ? Math.floor(expiryMs / 1000) : 0;
-        
-        const subUserInfo = `upload=0; download=${usedBytes}; total=${limitBytes}; expire=${expireSec}`;
-        resHeaders.set("Subscription-UserInfo", subUserInfo);
-        resHeaders.set("subscription-userinfo", subUserInfo);
-        resHeaders.set("Profile-Update-Interval", "12");
-        resHeaders.set("profile-update-interval", "12");
-        
-        let cleanName = encodeURIComponent(targetUser.name);
-        resHeaders.set("Content-Disposition", `attachment; filename="${cleanName}"; filename*=UTF-8''${cleanName}`);
-    }
-
-    // Determine subscription format
-    let isClashYaml = false;
-    let isSingboxJson = false;
-    let isClashJson = false;
-
-    if (flag === "clash" || flag === "yaml" || flag === "meta" || flag === "stash" || flag === "clash-meta" || flag === "y") {
-        isClashYaml = true;
-    } else if (flag === "b" || flag === "c_legacy") {
-        isClashJson = true;
-    } else if (flag === "sing" || flag === "singbox" || flag === "sing-box" || flag === "sb" || flag === "s" || flag === "c" || flag === "g") {
-        isSingboxJson = true;
-    } else if (flag === "a" || flag === "raw" || flag === "") {
-        if (ua.includes(getGamma()) || ua.includes("meta") || ua.includes("sta" + "sh") || ua.includes("verge") || ua.includes("mihomo") || ua.includes("cfw") || ua.includes("stash") || ua.includes("clash")) {
-            isClashYaml = true;
-        } else if (ua.includes("sing-box") || ua.includes("singbox") || ua.includes("hiddify") || ua.includes("nekobox") || ua.includes("sfa") || ua.includes("karing") || ua.includes("v2rayng")) {
-            isSingboxJson = true;
-        }
-    }
-
-    if (isClashYaml) {
-        resHeaders.set("Content-Type", "text/yaml; charset=utf-8");
-        return new Response(await buildYamlProfile(clientHost, targetSub, allowInsecure), { headers: resHeaders });
-    } else if (isSingboxJson) {
-        resHeaders.set("Content-Type", "application/json; charset=utf-8");
-        return new Response(JSON.stringify(await buildSingBoxJsonProfile(clientHost, targetSub, allowInsecure), null, 2), { headers: resHeaders });
-    } else if (isClashJson) {
-        resHeaders.set("Content-Type", "application/json; charset=utf-8");
-        return new Response(JSON.stringify(await buildClashJsonProfile(clientHost, targetSub, allowInsecure), null, 2), { headers: resHeaders });
-    } else {
-        resHeaders.set("Content-Type", "text/plain; charset=utf-8");
-        const raw = await buildUriProfile(clientHost, targetSub, allowInsecure);
-        return new Response(safeBtoa(raw), { headers: resHeaders });
-    }
+        return new Response("OK", { status: 200 });
+    } catch(e) { return new Response("OK", { status: 200 }); }
 }
 // ============================================================
-// PART 12-C: PAGES (Scanner, Subscribe, Protocols, Owners, 404, Welcome)
+// PART 15-A: WEBSOCKET + TELEMETRY
+// ============================================================
+
+async function processTelemetryStream(env, ctx) {
+    const [client, webSocket] = Object.values(new WebSocketPair());
+    webSocket.accept();
+    webSocket.binaryType = "arraybuffer";
+    startDataPipe(webSocket, env, ctx);
+    return new Response(null, { status: 101, webSocket: client });
+}
+
+async function startDataPipe(webSocket, env, ctx) {
+    activeConnections++;
+    webSocket.addEventListener('close', () => activeConnections--);
+    webSocket.addEventListener('error', () => activeConnections--);
+    let remoteSocket, dataWriter, isInit = true, queue = Promise.resolve();
+    let activeClientHash = null;
+    webSocket.addEventListener("message", (event) => {
+        queue = queue.then(async () => {
+            try {
+                if (isInit) {
+                    isInit = false;
+                    const isModeAlpha = await parseSensorData(event.data);
+                    if (isModeAlpha) webSocket.send(new Uint8Array([0, 0]));
+                } else if (dataWriter) {
+                    await dataWriter.write(event.data);
+                }
+            } catch (err) { webSocket.close(); }
+        });
+    });
+    async function parseSensorData(bufferData) {
+        const view = new Uint8Array(bufferData);
+        let targetAddr = "", targetPort = 0, offset = 0, isModeAlpha = false, activeProfile = null;
+        if (view[0] === 0x00) {
+            isModeAlpha = true;
+            let clientHash = Array.from(view.slice(1, 17)).map(b => b.toString(16).padStart(2, '0')).join('');
+            activeProfile = getAllProfiles().find(p => p.id.replace(/-/g, '').toLowerCase() === clientHash);
+            if (!activeProfile) return false;
+            activeClientHash = clientHash;
+            trackUsage(activeClientHash, 0, env, ctx);
+            let uTrack = uuidUsage.get(clientHash) || { connects: 0, last: 0 };
+            uTrack.connects++; uTrack.last = Date.now(); uuidUsage.set(clientHash, uTrack);
+            const optLen = view[17];
+            const pPos = 18 + optLen + 1;
+            targetPort = new DataView(bufferData.slice(pPos, pPos + 2)).getUint16(0);
+            const aType = view[pPos + 2];
+            let vPos = pPos + 3, aLen = 0;
+            if (aType === 1) { aLen = 4; targetAddr = view.slice(vPos, vPos + aLen).join("."); }
+            else if (aType === 2) { aLen = view[vPos]; vPos++; targetAddr = new TextDecoder().decode(view.slice(vPos, vPos + aLen)); }
+            else if (aType === 3) { aLen = 16; const dv = new DataView(bufferData.slice(vPos, vPos + aLen)); targetAddr = Array.from({ length: 8 }, (_, i) => dv.getUint16(i * 2).toString(16)).join(":"); }
+            offset = vPos + aLen;
+        } else {
+            let ePos = bufferData.byteLength;
+            for (let i = 0; i < bufferData.byteLength; i++) { if (view[i] === 0x0D && view[i + 1] === 0x0A) { ePos = i; break; } }
+            let clientHashHex = new TextDecoder().decode(view.slice(0, ePos));
+            activeProfile = getAllProfiles().find(p => getTrojanHash(p.id) === clientHashHex);
+            if (!activeProfile) return false;
+            activeClientHash = activeProfile.id.replace(/-/g, '').toLowerCase();
+            trackUsage(activeClientHash, 0, env, ctx);
+            let uTrack = uuidUsage.get(activeClientHash) || { connects: 0, last: 0 };
+            uTrack.connects++; uTrack.last = Date.now(); uuidUsage.set(activeClientHash, uTrack);
+            let hPos = ePos + 2; hPos++;
+            let aType = view[hPos]; hPos++; let aLen = 0;
+            if (aType === 1) { aLen = 4; targetAddr = view.slice(hPos, hPos + aLen).join("."); }
+            else if (aType === 3) { aLen = view[hPos]; hPos++; targetAddr = new TextDecoder().decode(view.slice(hPos, hPos + aLen)); }
+            else if (aType === 4) { aLen = 16; const dv = new DataView(bufferData.slice(hPos, hPos + aLen)); targetAddr = Array.from({ length: 8 }, (_, i) => dv.getUint16(i * 2).toString(16)).join(":"); }
+            hPos += aLen;
+            targetPort = new DataView(bufferData.slice(hPos, hPos + 2)).getUint16(0);
+            offset = hPos + 4;
+        }
+        let isDomain = /^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/.test(targetAddr) || /^[a-zA-Z0-9-]+$/.test(targetAddr);
+        let connectAddr = targetAddr;
+        if (isDomain && sysConfig.customDns) {
+            try {
+                const dohUrl = new URL(sysConfig.customDns);
+                dohUrl.searchParams.set("name", targetAddr);
+                dohUrl.searchParams.set("type", "A");
+                let dnsRes = await fetch(dohUrl.toString(), { headers: { "accept": "application/dns-json" }});
+                let dnsJson = await dnsRes.json();
+                if (dnsJson.Answer && dnsJson.Answer.length > 0) { connectAddr = dnsJson.Answer[0].data; }
+            } catch (e) {}
+        }
+        try {
+            remoteSocket = connect({ hostname: connectAddr, port: targetPort });
+            await remoteSocket.opened;
+        } catch {
+            let pips = [];
+            if (activeProfile && activeProfile.proxyIp) { pips = activeProfile.proxyIp.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean); }
+            if (pips.length === 0 && sysConfig.backupRelay) { pips = sysConfig.backupRelay.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean); }
+            if (pips.length === 0) { pips = [["pro", "xy", "ip.cmliussss.net"].join("")]; }
+            let startIndex = 0;
+            if (pips.length > 1) {
+                let hash = 0;
+                let hashStr = (activeProfile ? activeProfile.id : "");
+                for (let i = 0; i < hashStr.length; i++) { hash = hashStr.charCodeAt(i) + ((hash << 5) - hash); }
+                startIndex = Math.abs(hash) % pips.length;
+            }
+            let connected = false;
+            for (let attempt = 0; attempt < Math.min(pips.length, 3); attempt++) {
+                let currentIndex = (startIndex + attempt) % pips.length;
+                let currentProxy = pips[currentIndex];
+                try {
+                    const [altIP, altPortStr] = currentProxy.split(":");
+                    remoteSocket = connect({ hostname: altIP, port: altPortStr ? Number(altPortStr) : targetPort });
+                    await remoteSocket.opened;
+                    connected = true;
+                    break;
+                } catch (e) {}
+            }
+            if (!connected) { webSocket.close(); return isModeAlpha; }
+        }
+        dataWriter = remoteSocket.writable.getWriter();
+        if (offset < bufferData.byteLength) {
+            let chunk = bufferData.slice(offset);
+            await dataWriter.write(chunk);
+        }
+        remoteSocket.readable.pipeTo(new WritableStream({ write(chunk) { webSocket.send(chunk); } }));
+        return isModeAlpha;
+    }
+                }
+// ============================================================
+// PART 15-B: PROFILE HELPERS
+// ============================================================
+
+function getCleanIps(hostName, userCleanIps = null) {
+    let rawIps = userCleanIps || sysConfig.cleanIps;
+    let ips = rawIps ? rawIps.split(/[\r\n,;]+/).map(s => s.trim()).filter(Boolean) : [];
+    if (ips.length === 0) ips = [hostName.endsWith('.pages.dev') ? sysConfig.metricNode : hostName];
+    return ips;
+}
+
+function getAllProfiles(targetSub = null) {
+    let list = [{ id: activeDeviceId, name: "Default" }];
+    if (sysConfig.users && sysConfig.users.length > 0) {
+        let now = Date.now();
+        sysConfig.users.forEach(u => {
+            let skip = false;
+            if (u.expiryMs && now > u.expiryMs) skip = true;
+            if (u.isPaused) skip = true;
+            if (u.limitTotalReq && sysUsageCache && sysUsageCache.users && sysUsageCache.users[u.id.replace(/-/g, '').toLowerCase()]) {
+                if (sysUsageCache.users[u.id.replace(/-/g, '').toLowerCase()].reqs >= u.limitTotalReq) skip = true;
+            }
+            if (u.limitDailyReq && sysUsageCache && sysUsageCache.users && sysUsageCache.users[u.id.replace(/-/g, '').toLowerCase()]) {
+                let usr = sysUsageCache.users[u.id.replace(/-/g, '').toLowerCase()];
+                if (usr.lastDay === new Date().toISOString().split('T')[0] && usr.dReqs >= u.limitDailyReq) skip = true;
+            }
+            if(!skip) {
+                list.push({ id: u.id, name: u.name, proxyIp: u.proxyIp, cleanIp: u.cleanIp || null, userMode: u.userMode || null, userPorts: u.userPorts || null, maxConfigs: u.maxConfigs || null });
+            }
+        });
+    }
+    if (targetSub) { list = list.filter(p => p.name.toLowerCase() === targetSub.toLowerCase()); }
+    return list;
+}
+
+function getProxyIpsArray(proxyIpString) {
+    if (!proxyIpString) return [];
+    return proxyIpString.split(/[\r\n,;]+/).map(s => {
+        let trimmed = s.trim();
+        if (!trimmed) return "";
+        let hostPort = trimmed.split('#')[0].split('@')[0];
+        if (hostPort.includes(':') && !hostPort.includes(']')) { return hostPort.split(':')[0]; }
+        else if (hostPort.startsWith('[') && hostPort.includes(']')) { return hostPort.split(']')[0].replace('[', ''); }
+        return hostPort;
+    }).filter(Boolean);
+}
+
+const ipFlagCache = new Map();
+
+async function preloadIpFlags(profiles, hostNames) {
+    let uniqueIps = new Set();
+    profiles.forEach(p => {
+        hostNames.forEach(h => {
+            getCleanIps(h, p.cleanIp).forEach(ip => uniqueIps.add(ip));
+        });
+        if (p.proxyIp) {
+            getProxyIpsArray(p.proxyIp).forEach(ip => uniqueIps.add(ip));
+        }
+    });
+    if (sysConfig.backupRelay) {
+        getProxyIpsArray(sysConfig.backupRelay).forEach(ip => uniqueIps.add(ip));
+    }
+    let promises = Array.from(uniqueIps).map(async ip => {
+        if (ipFlagCache.has(ip)) return;
+        try {
+            let cleanIp = ip.split(':')[0].replace(/[\[\]]/g, '').split('#')[0].trim();
+            const res = await fetch(`https://api.country.is/${cleanIp}`);
+            const data = await res.json();
+            if (data && data.country) {
+                const codePoints = data.country.toUpperCase().split('').map(char => 127397 + char.charCodeAt());
+                ipFlagCache.set(ip, String.fromCodePoint(...codePoints));
+                return;
+            }
+        } catch(e) {}
+        ipFlagCache.set(ip, "🌐");
+    });
+    await Promise.all(promises);
+}
+
+function getEmojiFlag(ip) {
+    if (!ip) return "🌐";
+    let clean = ip.split(':')[0].replace(/[\[\]]/g, '').split('#')[0].trim();
+    return ipFlagCache.get(ip) || ipFlagCache.get(clean) || "🌐";
+}
+
+function getConfigName(type, profileName, port, hostName, ip, proxyIp = null) {
+    let prefix = sysConfig.namePrefix || "Core";
+    let strategy = sysConfig.nameStrategy || "default";
+    let cleanName = profileName === "Default" ? "" : `-${profileName}`;
+    let typeLab = type === "alpha" ? "V" : "T";
+    if (strategy.includes('{') && strategy.includes('}')) {
+        let lookupIp = ip;
+        if (proxyIp) {
+            let pips = getProxyIpsArray(proxyIp);
+            if (pips.length > 0) lookupIp = pips[0];
+        } else if (sysConfig.backupRelay) {
+            let pips = getProxyIpsArray(sysConfig.backupRelay);
+            if (pips.length > 0) lookupIp = pips[0];
+        }
+        let flagEmoji = getEmojiFlag(lookupIp);
+        let protoLab = type === "alpha" ? "VLESS" : "Trojan";
+        let resName = strategy.replace(/{FLAG}/g, flagEmoji).replace(/{PROTOCOL}/g, protoLab).replace(/{USER}/g, profileName).replace(/{PORT}/g, port).replace(/{PREFIX}/g, prefix).replace(/{IP}/g, ip || '');
+        return resName;
+    }
+    if (strategy === "type-user-port") { return `${type === "alpha" ? "vl" + "ess" : "tro" + "jan"}-${profileName}-${port}`; }
+    else if (strategy === "user-port") { return `${profileName}-${port}`; }
+    else if (strategy === "host-port-user") { return `${hostName}-${port}${cleanName}`; }
+    else if (strategy === "prefix-user-port") { return `${prefix}${cleanName}-${port}`; }
+    else if (strategy === "ip") { return ip || 'unknown'; }
+    else { return `${typeLab}-Core-${port}${cleanName}`; }
+}
+
+function calcEffectiveIps(ips, maxCfg, effectiveMode, effectivePorts) {
+    if (!maxCfg) return ips;
+    let protoCount = effectiveMode === "both" ? 2 : 1;
+    let portCount = effectivePorts.length;
+    let multiplier = protoCount * portCount;
+    let neededIps = Math.max(1, Math.floor(maxCfg / multiplier));
+    return ips.slice(0, neededIps);
+}
+
+function getSubscriptionStats(targetSub = null) {
+    let name = "Default";
+    let id = activeDeviceId;
+    let limitTotalReq = 0;
+    let expiryMs = 0;
+    let hasMultiUser = (sysConfig.users && sysConfig.users.length > 0);
+    if (hasMultiUser && targetSub) {
+        let user = sysConfig.users.find(u => u.name.toLowerCase() === targetSub.toLowerCase() || u.id === targetSub);
+        if (user) { name = user.name; id = user.id; limitTotalReq = user.limitTotalReq || 0; expiryMs = user.expiryMs || 0; }
+    } else if (!hasMultiUser) { limitTotalReq = sysConfig.limitTotalReq || 0; expiryMs = sysConfig.expiryMs || 0; }
+    let idClean = id.replace(/-/g, '').toLowerCase();
+    let sysU = sysUsageCache?.users?.[idClean] || { reqs: 0, dReqs: 0 };
+    let totalReqs = sysU.reqs || 0;
+    let totalGb = (totalReqs / 6000).toFixed(2);
+    let limitTotalGb = limitTotalReq ? (limitTotalReq / 6000).toFixed(2) : 'Unlimited';
+    let expiryDateTxt = 'Never Expire';
+    let remDaysTxt = 'Never Expire';
+    if (expiryMs) {
+        let exp = new Date(expiryMs);
+        expiryDateTxt = exp.toISOString().split('T')[0];
+        let remDays = Math.ceil((expiryMs - Date.now()) / (1000 * 60 * 60 * 24));
+        remDaysTxt = remDays >= 0 ? `${remDays} Days Left` : 'Expired';
+    }
+    return { usedStr: `Used: ${totalGb} GB / ${limitTotalGb} GB`, expiryStr: `Expiry: ${expiryDateTxt} (${remDaysTxt})` };
+            }
+// ============================================================
+// PART 15-C: PROFILE BUILDERS (URI + YAML)
+// ============================================================
+
+async function buildUriProfile(hostName, targetSub = null, allowInsecure = false) {
+    let allHostNames = [hostName];
+    if (sysConfig.slaveNodes) allHostNames.push(...sysConfig.slaveNodes.split(/[\r\n,;]+/).map(s=>s.trim()).filter(Boolean));
+    let ports = sysConfig.socketPorts ? sysConfig.socketPorts.split(',').map(s=>s.trim()).filter(Boolean) : ["443"];
+    let reqPath = encodeURI(`/${sysConfig.apiRoute}`);
+    let lines = [];
+    let profiles = getAllProfiles(targetSub);
+    await preloadIpFlags(profiles, allHostNames);
+    let stats = getSubscriptionStats(targetSub);
+    let fakeU1 = `trojan://00000000-0000-0000-0000-000000000000@127.0.0.1:1080?encryption=none&security=none#${encodeURIComponent("📊 " + stats.usedStr)}`;
+    let fakeU2 = `trojan://00000000-0000-0000-0000-000000000000@127.0.0.1:1080?encryption=none&security=none#${encodeURIComponent("📅 " + stats.expiryStr)}`;
+    lines.push(fakeU1, fakeU2);
+    profiles.forEach(p => {
+        let pips = getProxyIpsArray(p.proxyIp);
+        if (pips.length === 0 && sysConfig.backupRelay) { pips = getProxyIpsArray(sysConfig.backupRelay); }
+        let effectiveMode = p.userMode || sysConfig.mode;
+        let effectivePorts = p.userPorts ? p.userPorts.split(',').map(s=>s.trim()).filter(Boolean) : ports;
+        let maxCfg = p.maxConfigs || null;
+        let configIndex = 0;
+        allHostNames.forEach(hName => {
+            let allIps = getCleanIps(hName, p.cleanIp);
+            let ips = calcEffectiveIps(allIps, maxCfg, effectiveMode, effectivePorts);
+            effectivePorts.forEach(port => {
+                let sec = getTransportParams(port);
+                let extBase = `encryption=none&security=${sec}&sni=${hName}&fp=${sysConfig.agent}&type=ws&host=${hName}&path=${reqPath}`;
+                if (sysConfig.enableOpt2) extBase += `&pbk=enabled`;
+                extBase += `&allowInsecure=${allowInsecure ? "1" : "0"}`;
+                ips.forEach(ip => {
+                    let selectedProxyIp = null;
+                    if (pips.length > 0) { selectedProxyIp = pips[configIndex % pips.length]; }
+                    let vName = getConfigName("alpha", p.name, port, hName, ip, selectedProxyIp);
+                    let tName = getConfigName("beta", p.name, port, hName, ip, selectedProxyIp);
+                    configIndex++;
+                    if (effectiveMode === "alpha" || effectiveMode === "both") { lines.push(`${getAlpha()}://${p.id}@${ip}:${port}?${extBase}#${vName}`); }
+                    if (effectiveMode === "beta" || effectiveMode === "both") { lines.push(`${getBeta()}://${p.id}@${ip}:${port}?${extBase}#${tName}`); }
+                });
+            });
+        });
+    });
+    return lines.join('\n');
+}
+
+async function buildYamlProfile(hostName, targetSub = null, allowInsecure = false) {
+    let allHostNames = [hostName];
+    if (sysConfig.slaveNodes) allHostNames.push(...sysConfig.slaveNodes.split(/[\r\n,;]+/).map(s=>s.trim()).filter(Boolean));
+    let ports = sysConfig.socketPorts ? sysConfig.socketPorts.split(',').map(s=>s.trim()).filter(Boolean) : ["443"];
+    let proxies = [];
+    let proxyNames = [];
+    let nameCounts = {};
+    let profiles = getAllProfiles(targetSub);
+    await preloadIpFlags(profiles, allHostNames);
+    let stats = getSubscriptionStats(targetSub);
+    let fake1 = `📊 ${stats.usedStr}`;
+    let fake2 = `📅 ${stats.expiryStr}`;
+    proxies.push(`- name: "${fake1}"\n  type: ${getBeta()}\n  server: 127.0.0.1\n  port: 80\n  password: "${activeDeviceId}"\n  udp: true\n  tls: false`);
+    proxies.push(`- name: "${fake2}"\n  type: ${getBeta()}\n  server: 127.0.0.1\n  port: 80\n  password: "${activeDeviceId}"\n  udp: true\n  tls: false`);
+    const getUniqueName = (baseName) => {
+        if (!nameCounts[baseName]) { nameCounts[baseName] = 1; return baseName; }
+        let counter = nameCounts[baseName];
+        let newName = `${baseName}-${counter}`;
+        while (nameCounts[newName]) { counter++; newName = `${baseName}-${counter}`; }
+        nameCounts[baseName] = counter + 1;
+        nameCounts[newName] = 1;
+        return newName;
+    };
+    profiles.forEach(p => {
+        let pips = getProxyIpsArray(p.proxyIp);
+        if (pips.length === 0 && sysConfig.backupRelay) { pips = getProxyIpsArray(sysConfig.backupRelay); }
+        let effectiveMode = p.userMode || sysConfig.mode;
+        let effectivePorts = p.userPorts ? p.userPorts.split(',').map(s=>s.trim()).filter(Boolean) : ports;
+        let maxCfg = p.maxConfigs || null;
+        let configIndex = 0;
+        allHostNames.forEach(hName => {
+            let allIps = getCleanIps(hName, p.cleanIp);
+            let ips = calcEffectiveIps(allIps, maxCfg, effectiveMode, effectivePorts);
+            effectivePorts.forEach(port => {
+                let sec = getTransportParams(port) === "tls" ? "true" : "false";
+                ips.forEach(ip => {
+                    let selectedProxyIp = null;
+                    if (pips.length > 0) { selectedProxyIp = pips[configIndex % pips.length]; }
+                    if (effectiveMode === "alpha" || effectiveMode === "both") {
+                        let vName = getConfigName("alpha", p.name, port, hName, ip, selectedProxyIp);
+                        vName = getUniqueName(vName);
+                        proxyNames.push(`"${vName}"`);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadVl = { junk: randomJunk, protocol: "vl", mode: "proxyip", panelIPs: [] };
+                        let pathStrVl = "/" + btoa(JSON.stringify(payloadVl));
+                        proxies.push(`- name: "${vName}"\n  type: ${getAlpha()}\n  server: ${ip}\n  port: ${port}\n  uuid: ${p.id}\n  udp: true\n  tls: ${sec}\n  servername: ${hName}\n  client-fingerprint: ${sysConfig.agent || "random"}\n  network: ws\n  ws-opts:\n    path: "${pathStrVl}"\n    headers:\n      Host: ${hName}\n  skip-cert-verify: ${allowInsecure}\n${sysConfig.enableOpt1 ? "  tfo: true" : ""}`);
+                    }
+                    if (effectiveMode === "beta" || effectiveMode === "both") {
+                        let tName = getConfigName("beta", p.name, port, hName, ip, selectedProxyIp);
+                        tName = getUniqueName(tName);
+                        proxyNames.push(`"${tName}"`);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadTr = { junk: randomJunk, protocol: "tr", mode: "proxyip", panelIPs: [] };
+                        let pathStrTr = "/" + btoa(JSON.stringify(payloadTr));
+                        proxies.push(`- name: "${tName}"\n  type: ${getBeta()}\n  server: ${ip}\n  port: ${port}\n  password: ${p.id}\n  udp: true\n  tls: ${sec}\n  sni: ${hName}\n  client-fingerprint: ${sysConfig.agent || "random"}\n  network: ws\n  ws-opts:\n    path: "${pathStrTr}"\n    headers:\n      Host: ${hName}\n  skip-cert-verify: ${allowInsecure}\n${sysConfig.enableOpt1 ? "  tfo: true" : ""}`);
+                    }
+                    configIndex++;
+                });
+            });
+        });
+    });
+    let bestPingProxies = proxyNames.map(n => `      - ${n}`).join('\n');
+    let allProxies = proxyNames.map(n => `      - ${n}`).join('\n');
+    return `mixed-port: 7890
+ipv6: true
+allow-lan: false
+unified-delay: false
+log-level: warning
+mode: rule
+disable-keep-alive: false
+keep-alive-idle: 10
+keep-alive-interval: 15
+tcp-concurrent: true
+geo-auto-update: true
+geo-update-interval: 168
+external-controller: 127.0.0.1:9090
+external-controller-cors:
+  allow-origins:
+    - "*"
+  allow-private-network: true
+external-ui: ui
+external-ui-url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip"
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  respect-rules: true
+  use-system-hosts: false
+  listen: 127.0.0.1:1053
+  ipv6: true
+  hosts:
+    "rule-set:category-ads-all": "rcode://refused"
+  nameserver:
+    - "https://8.8.8.8/dns-query#✅ Selector"
+  proxy-server-nameserver:
+    - "8.8.8.8#DIRECT"
+  direct-nameserver:
+    - "8.8.8.8#DIRECT"
+  direct-nameserver-follow-policy: true
+  enhanced-mode: redir-host
+tun:
+  enable: true
+  stack: mixed
+  auto-route: true
+  strict-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - "any:53"
+    - "tcp://any:53"
+  mtu: 9000
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  override-destination: true
+  sniff:
+    HTTP:
+      ports: [80, 8080, 8880, 2052, 2082, 2086, 2095]
+    TLS:
+      ports: [443, 8443, 2053, 2083, 2087, 2096]
+proxies:
+${proxies.join('\n')}
+proxy-groups:
+  - name: "✅ Selector"
+    type: select
+    proxies:
+      - "💦 Best Ping 🚀"
+      - "${fake1}"
+      - "${fake2}"
+${allProxies}
+  - name: "💦 Best Ping 🚀"
+    type: url-test
+    url: "https://www.gstatic.com/generate_204"
+    interval: 30
+    tolerance: 50
+    proxies:
+${bestPingProxies}
+rules:
+  - DOMAIN-SUFFIX,ir,DIRECT
+  - DOMAIN-KEYWORD,gov.ir,DIRECT
+  - DOMAIN-SUFFIX,fa,DIRECT
+  - GEOIP,IR,DIRECT
+  - MATCH,✅ Selector
+`;
+        }
+// ============================================================
+// PART 15-D-1: CLASH JSON PROFILE BUILDER (PART 1)
+// ============================================================
+
+const k_pxs = "pro" + "xies";
+const k_px_gps = "pro" + "xy-gro" + "ups";
+const k_obds = "out" + "bounds";
+const k_vl_mode = "vl" + "ess";
+const k_tr_mode = "tro" + "jan";
+
+async function buildClashJsonProfile(hostName, targetSub = null, allowInsecure = false) {
+    let allHostNames = [hostName];
+    if (sysConfig.slaveNodes) allHostNames.push(...sysConfig.slaveNodes.split(/[\r\n,;]+/).map(s=>s.trim()).filter(Boolean));
+    let ports = sysConfig.socketPorts ? sysConfig.socketPorts.split(',').map(s=>s.trim()).filter(Boolean) : ["443"];
+    let profiles = getAllProfiles(targetSub);
+    await preloadIpFlags(profiles, allHostNames);
+    let reqPath = encodeURI(`/${sysConfig.apiRoute}`);
+    let proxiesArr = [];
+    let dynamicTags = [];
+    let nameCounts = {};
+    let stats = getSubscriptionStats(targetSub);
+    let fake1 = `📊 ${stats.usedStr}`;
+    let fake2 = `📅 ${stats.expiryStr}`;
+    proxiesArr.push({ "name": fake1, "type": k_tr_mode, "server": "127.0.0.1", "port": 80, "password": activeDeviceId, "tls": false, "udp": true });
+    proxiesArr.push({ "name": fake2, "type": k_tr_mode, "server": "127.0.0.1", "port": 80, "password": activeDeviceId, "tls": false, "udp": true });
+    const getUniqueName = (baseName) => {
+        if (!nameCounts[baseName]) { nameCounts[baseName] = 1; return baseName; }
+        let counter = nameCounts[baseName];
+        let newName = `${baseName}-${counter}`;
+        while (nameCounts[newName]) { counter++; newName = `${baseName}-${counter}`; }
+        nameCounts[baseName] = counter + 1;
+        nameCounts[newName] = 1;
+        return newName;
+    };
+    profiles.forEach(p => {
+        let pips = getProxyIpsArray(p.proxyIp);
+        if (pips.length === 0 && sysConfig.backupRelay) { pips = getProxyIpsArray(sysConfig.backupRelay); }
+        let effectiveMode = p.userMode || sysConfig.mode;
+        let effectivePorts = p.userPorts ? p.userPorts.split(',').map(s=>s.trim()).filter(Boolean) : ports;
+        let maxCfg = p.maxConfigs || null;
+        let configIndex = 0;
+        allHostNames.forEach(hName => {
+            let allIps = getCleanIps(hName, p.cleanIp);
+            let ips = calcEffectiveIps(allIps, maxCfg, effectiveMode, effectivePorts);
+            effectivePorts.forEach(port => {
+                let sec = getTransportParams(port) === "tls";
+                ips.forEach(ip => {
+                    let isVless = effectiveMode === "alpha" || effectiveMode === "both";
+                    let isTrojan = effectiveMode === "beta" || effectiveMode === "both";
+                    let selectedProxyIp = null;
+                    if (pips.length > 0) { selectedProxyIp = pips[configIndex % pips.length]; }
+                    if (isVless) {
+                        let tagStr = getConfigName("alpha", p.name, port, hName, ip, selectedProxyIp);
+                        tagStr = getUniqueName(tagStr);
+                        dynamicTags.push(tagStr);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadVl = { junk: randomJunk, protocol: "vl", mode: "proxyip", panelIPs: [] };
+                        let pathStrVl = "/" + btoa(JSON.stringify(payloadVl));
+                        let ob = { "name": tagStr, "type": k_vl_mode, "server": ip, "port": parseInt(port), "ip-version": "ipv4-prefer", "tfo": sysConfig.enableOpt1 || false, "udp": true, "uuid": p.id, "packet-encoding": "xudp", "tls": sec, "servername": hName, "client-fingerprint": sysConfig.agent || "random", "skip-cert-verify": allowInsecure, "alpn": ["http/1.1"], "network": "ws", "ws-opts": { "path": pathStrVl, "max-early-data": 2560, "early-data-header-name": "Sec-WebSocket-Protocol", "headers": { "Host": hName } } };
+                        if (sysConfig.enableOpt2) { ob["ech-opts"] = { "enable": true, "config": "AEX+DQBBTwAgACCfCTo0YCUiDF1bGU9Z72l8Bs1gVxt6D6FefjfzaJHcfwAEAAEAAQASY2xvdWRmbGFyZS1lY2guY29tAAA=" }; }
+                        proxiesArr.push(ob);
+                    }
+                    if (isTrojan) {
+                        let tagStr = getConfigName("beta", p.name, port, hName, ip, selectedProxyIp);
+                        tagStr = getUniqueName(tagStr);
+                        dynamicTags.push(tagStr);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadTr = { junk: randomJunk, protocol: "tr", mode: "proxyip", panelIPs: [] };
+                        let pathStrTr = "/" + btoa(JSON.stringify(payloadTr));
+                        let ob = { "name": tagStr, "type": k_tr_mode, "server": ip, "port": parseInt(port), "ip-version": "ipv4-prefer", "tfo": sysConfig.enableOpt1 || false, "udp": true, "password": p.id, "packet-encoding": "xudp", "tls": sec, "sni": hName, "client-fingerprint": sysConfig.agent || "random", "skip-cert-verify": allowInsecure, "alpn": ["http/1.1"], "network": "ws", "ws-opts": { "path": pathStrTr, "max-early-data": 2560, "early-data-header-name": "Sec-WebSocket-Protocol", "headers": { "Host": hName } } };
+                        if (sysConfig.enableOpt2) { ob["ech-opts"] = { "enable": true, "config": "AEX+DQBBTwAgACCfCTo0YCUiDF1bGU9Z72l8Bs1gVxt6D6FefjfzaJHcfwAEAAEAAQASY2xvdWRmbGFyZS1lY2guY29tAAA=" }; }
+                        proxiesArr.push(ob);
+                    }
+                    configIndex++;
+                });
+            });
+        });
+    });
+    if (dynamicTags.length === 0) { dynamicTags.push("DIRECT"); }
+    // ادامه در بخش بعدی
+// ============================================================
+// PART 15-D-2: CLASH JSON PROFILE BUILDER (PART 2 - RETURN)
+// ============================================================
+
+    return {
+        "mixed-port": 7890, "ipv6": true, "allow-lan": false, "unified-delay": false,
+        "log-level": "warning", "mode": "rule", "disable-keep-alive": false,
+        "keep-alive-idle": 10, "keep-alive-interval": 15, "tcp-concurrent": true,
+        "geo-auto-update": true, "geo-update-interval": 168,
+        "external-controller": "127.0.0.1:9090",
+        "external-controller-cors": { "allow-origins": ["*"], "allow-private-network": true },
+        "external-ui": "ui", "external-ui-url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip",
+        "profile": { "store-selected": true, "store-fake-ip": true },
+        "dns": {
+            "enable": true, "respect-rules": true, "use-system-hosts": false,
+            "listen": "127.0.0.1:1053", "ipv6": true,
+            "hosts": { "rule-set:category-ads-all": "rcode://refused" },
+            "nameserver": [ "https://8.8.8.8/dns-query#✅ Selector" ],
+            "proxy-server-nameserver": [ "8.8.8.8#DIRECT" ],
+            "direct-nameserver": [ "8.8.8.8#DIRECT" ],
+            "direct-nameserver-follow-policy": true,
+            "nameserver-policy": { "rule-set:ir": "8.8.8.8#DIRECT" },
+            "enhanced-mode": "redir-host"
+        },
+        "tun": {
+            "enable": true, "stack": "mixed", "auto-route": true,
+            "strict-route": true, "auto-detect-interface": true,
+            "dns-hijack": ["any:53", "tcp://any:53"], "mtu": 9000
+        },
+        "sniffer": {
+            "enable": true, "force-dns-mapping": true,
+            "parse-pure-ip": true, "override-destination": true,
+            "sniff": {
+                "HTTP": { "ports": [80, 8080, 8880, 2052, 2082, 2086, 2095] },
+                "TLS": { "ports": [443, 8443, 2053, 2083, 2087, 2096] }
+            }
+        },
+        [k_pxs]: proxiesArr,
+        [k_px_gps]: [
+            { "name": "✅ Selector", "type": "select", "proxies": ["💦 Best Ping 🚀", fake1, fake2, ...dynamicTags] },
+            { "name": "💦 Best Ping 🚀", "type": "url-test", "proxies": [...dynamicTags], "url": "https://www.gstatic.com/generate_204", "interval": 30, "tolerance": 50 }
+        ],
+        "rule-providers": {
+            "category-ads-all": { "type": "http", "format": "text", "behavior": "domain", "path": "./ruleset/category-ads-all.txt", "interval": 86400, "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/category-ads-all.txt" },
+            "ir": { "type": "http", "format": "text", "behavior": "domain", "path": "./ruleset/ir.txt", "interval": 86400, "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ir.txt" },
+            "ir-cidr": { "type": "http", "format": "text", "behavior": "ipcidr", "path": "./ruleset/ir-cidr.txt", "interval": 86400, "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt" }
+        },
+        "rules": [
+            "GEOIP,lan,DIRECT,no-resolve",
+            "NETWORK,udp,REJECT",
+            "RULE-SET,category-ads-all,REJECT",
+            "RULE-SET,ir,DIRECT",
+            "RULE-SET,ir-cidr,DIRECT",
+            "MATCH,✅ Selector"
+        ],
+        "ntp": { "enable": true, "server": "time.cloudflare.com", "port": 123, "interval": 30 }
+    };
+}
+// ============================================================
+// PART 15-D-3: SING-BOX JSON PROFILE BUILDER (PART 1)
+// ============================================================
+
+async function buildSingBoxJsonProfile(hostName, targetSub = null, allowInsecure = false) {
+    let allHostNames = [hostName];
+    if (sysConfig.slaveNodes) allHostNames.push(...sysConfig.slaveNodes.split(/[\r\n,;]+/).map(s=>s.trim()).filter(Boolean));
+    let ports = sysConfig.socketPorts ? sysConfig.socketPorts.split(',').map(s=>s.trim()).filter(Boolean) : ["443"];
+    let profiles = getAllProfiles(targetSub);
+    await preloadIpFlags(profiles, allHostNames);
+    let reqPath = encodeURI(`/${sysConfig.apiRoute}`);
+    let outboundsArr = [];
+    let dynamicTags = [];
+    let nameCounts = {};
+    let stats = getSubscriptionStats(targetSub);
+    let fake1 = `📊 ${stats.usedStr}`;
+    let fake2 = `📅 ${stats.expiryStr}`;
+    outboundsArr.push({ "type": "direct", "tag": fake1 });
+    outboundsArr.push({ "type": "direct", "tag": fake2 });
+    const getUniqueName = (baseName) => {
+        if (!nameCounts[baseName]) { nameCounts[baseName] = 1; return baseName; }
+        let counter = nameCounts[baseName];
+        let newName = `${baseName}-${counter}`;
+        while (nameCounts[newName]) { counter++; newName = `${baseName}-${counter}`; }
+        nameCounts[baseName] = counter + 1;
+        nameCounts[newName] = 1;
+        return newName;
+    };
+    profiles.forEach(p => {
+        let pips = getProxyIpsArray(p.proxyIp);
+        if (pips.length === 0 && sysConfig.backupRelay) { pips = getProxyIpsArray(sysConfig.backupRelay); }
+        let effectiveMode = p.userMode || sysConfig.mode;
+        let effectivePorts = p.userPorts ? p.userPorts.split(',').map(s=>s.trim()).filter(Boolean) : ports;
+        let maxCfg = p.maxConfigs || null;
+        let configIndex = 0;
+        allHostNames.forEach(hName => {
+            let allIps = getCleanIps(hName, p.cleanIp);
+            let ips = calcEffectiveIps(allIps, maxCfg, effectiveMode, effectivePorts);
+            effectivePorts.forEach(port => {
+                let sec = getTransportParams(port) === "tls";
+                ips.forEach(ip => {
+                    let isVless = effectiveMode === "alpha" || effectiveMode === "both";
+                    let isTrojan = effectiveMode === "beta" || effectiveMode === "both";
+                    let selectedProxyIp = null;
+                    if (pips.length > 0) { selectedProxyIp = pips[configIndex % pips.length]; }
+                    if (isVless) {
+                        let tagStr = getConfigName("alpha", p.name, port, hName, ip, selectedProxyIp);
+                        tagStr = getUniqueName(tagStr);
+                        dynamicTags.push(tagStr);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadVl = { junk: randomJunk, protocol: "vl", mode: "proxyip", panelIPs: [] };
+                        let pathStrVl = "/" + btoa(JSON.stringify(payloadVl));
+                        let ob = { "type": k_vl_mode, "tag": tagStr, "server": ip, "server_port": parseInt(port), "tcp_fast_open": sysConfig.enableOpt1 || false, "uuid": p.id, "packet_encoding": "xudp", "network": "tcp", "tls": { "enabled": sec, "server_name": hName, "insecure": allowInsecure, "alpn": ["http/1.1"], "utls": { "enabled": true, "fingerprint": "randomized" } }, "transport": { "type": "ws", "path": pathStrVl, "max_early_data": 2560, "early_data_header_name": "Sec-WebSocket-Protocol", "headers": { "Host": hName } } };
+                        outboundsArr.push(ob);
+                    }
+                    if (isTrojan) {
+                        let tagStr = getConfigName("beta", p.name, port, hName, ip, selectedProxyIp);
+                        tagStr = getUniqueName(tagStr);
+                        dynamicTags.push(tagStr);
+                        let randomJunk = Array.from({length: 11}, () => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 62)]).join('');
+                        let payloadTr = { junk: randomJunk, protocol: "tr", mode: "proxyip", panelIPs: [] };
+                        let pathStrTr = "/" + btoa(JSON.stringify(payloadTr));
+                        let ob = { "type": k_tr_mode, "tag": tagStr, "server": ip, "server_port": parseInt(port), "tcp_fast_open": sysConfig.enableOpt1 || false, "password": p.id, "network": "tcp", "tls": { "enabled": sec, "server_name": hName, "insecure": allowInsecure, "alpn": ["http/1.1"], "utls": { "enabled": true, "fingerprint": "randomized" } }, "transport": { "type": "ws", "path": pathStrTr, "max_early_data": 2560, "early_data_header_name": "Sec-WebSocket-Protocol", "headers": { "Host": hName } } };
+                        outboundsArr.push(ob);
+                    }
+                    configIndex++;
+                });
+            });
+        });
+    });
+    if (dynamicTags.length === 0) { dynamicTags.push("direct"); }
+    // ادامه در بخش بعدی
+// ============================================================
+// PART 15-D-4: SING-BOX JSON PROFILE BUILDER (PART 2 - RETURN)
+// ============================================================
+
+    return {
+        "log": { "disabled": false, "level": "warn", "timestamp": true },
+        "dns": {
+            "servers": [
+                { "address": "https://8.8.8.8/dns-query", "detour": "✅ Selector", "tag": "dns-remote" },
+                { "address": "8.8.8.8", "detour": "direct", "tag": "dns-direct" }
+            ],
+            "rules": [
+                { "clash_mode": "Direct", "server": "dns-direct" },
+                { "clash_mode": "Global", "server": "dns-remote" },
+                { "query_type": ["HTTPS"], "action": "reject" },
+                { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+                { "type": "logical", "mode": "and", "rules": [{ "rule_set": ["geosite-ir"] }, { "rule_set": "geoip-ir" }], "action": "route", "server": "dns-direct" }
+            ],
+            "strategy": "prefer_ipv4", "independent_cache": true
+        },
+        "inbounds": [
+            { "type": "tun", "tag": "tun-in", "address": ["172.19.0.1/28"], "mtu": 9000, "auto_route": true, "strict_route": true, "stack": "mixed" },
+            { "type": "mixed", "tag": "mixed-in", "listen": "127.0.0.1", "listen_port": 2080 }
+        ],
+        [k_obds]: [
+            ...outboundsArr,
+            { "type": "selector", "tag": "✅ Selector", "outbounds": ["💦 Best Ping 🚀", fake1, fake2, ...dynamicTags], "interrupt_exist_connections": false },
+            { "type": "direct", "tag": "direct" },
+            { "type": "urltest", "tag": "💦 Best Ping 🚀", "outbounds": [...dynamicTags], "url": "https://www.gstatic.com/generate_204", "interrupt_exist_connections": false, "interval": "30s" }
+        ],
+        "route": {
+            "rules": [
+                { "ip_cidr": "172.19.0.2", "action": "hijack-dns" },
+                { "clash_mode": "Direct", "outbound": "direct" },
+                { "clash_mode": "Global", "outbound": "✅ Selector" },
+                { "action": "sniff" },
+                { "protocol": "dns", "action": "hijack-dns" },
+                { "ip_is_private": true, "outbound": "direct" },
+                { "network": "udp", "action": "reject" },
+                { "rule_set": ["geosite-category-ads-all"], "action": "reject" },
+                { "rule_set": ["geosite-ir"], "action": "route", "outbound": "direct" },
+                { "rule_set": ["geoip-ir"], "action": "route", "outbound": "direct" }
+            ],
+            "rule_set": [
+                { "type": "remote", "tag": "geosite-category-ads-all", "format": "binary", "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-category-ads-all.srs", "download_detour": "direct" },
+                { "type": "remote", "tag": "geosite-ir", "format": "binary", "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geosite-ir.srs", "download_detour": "direct" },
+                { "type": "remote", "tag": "geoip-ir", "format": "binary", "url": "https://raw.githubusercontent.com/Chocolate4U/Iran-sing-box-rules/rule-set/geoip-ir.srs", "download_detour": "direct" }
+            ],
+            "auto_detect_interface": true, "final": "✅ Selector"
+        },
+        "ntp": { "enabled": true, "server": "time.cloudflare.com", "server_port": 123, "interval": "30m", "write_to_system": false },
+        "experimental": {
+            "cache_file": { "enabled": true, "store_fakeip": true },
+            "clash_api": { "external_controller": "127.0.0.1:9090", "external_ui": "ui", "default_mode": "Rule", "external_ui_download_url": "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip", "external_ui_download_detour": "direct" }
+        }
+    };
+}
+// ============================================================
+// PART 15-D-5: PAGES + MAINTENANCE + DASHBOARD UI + MAIN FETCH
 // ============================================================
 
 function serveScannerPage() {
     return new Response(`<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>IP Scanner - TaaKaa-Xi</title>
+<html><head><meta charset="UTF-8"><title>IP Scanner - TaaKaa-Xi</title>
 <style>
 body { font-family: -apple-system, sans-serif; background: #0a0a0f; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
 .container { max-width: 800px; width: 100%; background: rgba(26, 26, 46, 0.85); padding: 40px; border-radius: 20px; border: 1px solid rgba(255, 107, 0, 0.3); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
@@ -1587,4 +2155,23 @@ p { color: #94a3b8; line-height: 1.8; }
 </div>
 </body>
 </html>`, { status: 404, headers: { "Content-Type": "text/html;charset=utf-8" } });
+}
+
+async function serveMaintenancePage(request, url) {
+    let fakeList = sysConfig.maintenanceHost ? sysConfig.maintenanceHost.split(',').map(s => s.trim()).filter(s => s) : ["https://www.nginx.com"];
+    const clientIP = request.headers.get("cf-connecting-ip") || "0.0.0.0";
+    const ipHash = Array.from(clientIP).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const targetStr = fakeList[ipHash % fakeList.length].startsWith('http') ? fakeList[ipHash % fakeList.length] : `https://${fakeList[ipHash % fakeList.length]}`;
+    try {
+        const targetUrl = new URL(targetStr);
+        if (url.pathname !== "/") targetUrl.pathname = url.pathname;
+        targetUrl.search = url.search;
+        const cleanHeaders = new Headers(request.headers);
+        cleanHeaders.set("Host", targetUrl.hostname);
+        cleanHeaders.delete("cf-connecting-ip");
+        cleanHeaders.delete("x-forwarded-for");
+        const fetchInit = { method: request.method, headers: cleanHeaders, redirect: "follow" };
+        if (request.method !== "GET" && request.method !== "HEAD") fetchInit.body = request.body;
+        return await fetch(new Request(targetUrl.toString(), fetchInit));
+    } catch (e) { return new Response("Not Found", { status: 404 }); }
 }
