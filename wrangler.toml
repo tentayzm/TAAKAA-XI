@@ -1,38 +1,62 @@
 # ============================================================
-# Cloudflare Workers Configuration
+# wrangler.toml - تنظیمات دیپلوی TaaKaa-Xi Gateway
 # ============================================================
 
-name = "taakaa-worker"
-main = "worker.js"
+name = "taakaa-gateway"
+main = "_worker.js"
 compatibility_date = "2024-03-01"
-compatibility_flags = ["allow_eval_during_startup"]
+compatibility_flags = ["nodejs_compat"]
+
+# ============================================================
+# تنظیمات محیطی (Environment Variables)
+# ============================================================
+
+[vars]
+RELAY_IP = "proxy.cmliussss.net"
 
 # ============================================================
 # D1 Database Binding
 # ============================================================
+
 [[d1_databases]]
 binding = "TAAKAA_DB"
 database_name = "taakaa-db"
-database_id = "	
-
-49ef21a0-9795-4b26-9cef-257535d83f06
-"  # ⚠️ این را با ID واقعی جایگزین کنید
+database_id = "49ef21a0-9795-4b26-9cef-257535d83f06"
 
 # ============================================================
-# Environment Variables
+# R2 Bucket Binding (اختیاری)
 # ============================================================
-[vars]
-RELAY_IP = ""
+
+# [[r2_buckets]]
+# binding = "TAAKAA_BUCKET"
+# bucket_name = "taakaa-storage"
 
 # ============================================================
-# Production Environment (اختیاری)
+# KV Namespace Binding (اختیاری)
 # ============================================================
-[env.production]
-vars = { RELAY_IP = "" }
+
+# [[kv_namespaces]]
+# binding = "TAAKAA_KV"
+# id = "YOUR_KV_ID"
 
 # ============================================================
-# Observability (اختیاری)
+# تنظیمات Routes (اختیاری - برای اتصال به دامنه)
 # ============================================================
-[observability]
-enabled = true
-head_sampling_rate = 1
+
+# [[routes]]
+# pattern = "your-domain.com/*"
+# zone_name = "your-domain.com"
+
+# ============================================================
+# Migrations (برای D1)
+# ============================================================
+
+[[migrations]]
+tag = "v1"
+[[migrations.sql]]
+sql = """
+CREATE TABLE IF NOT EXISTS kv_store (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+"""
