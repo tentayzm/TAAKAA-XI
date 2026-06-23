@@ -1,17 +1,38 @@
-name = "taakaa-worker"
-main = "worker (56).js"
-compatibility_date = "2024-03-01"
+# ============================================================
+# Cloudflare Workers Configuration
+# ============================================================
 
+name = "taakaa-worker"
+main = "worker.js"
+compatibility_date = "2024-03-01"
+compatibility_flags = ["allow_eval_during_startup"]
+
+# ============================================================
 # D1 Database Binding
+# ============================================================
 [[d1_databases]]
 binding = "TAAKAA_DB"
 database_name = "taakaa-db"
-database_id = "your-database-id-here"
+database_id = "	
 
-# Environment Variables (اختیاری)
+49ef21a0-9795-4b26-9cef-257535d83f06
+"  # ⚠️ این را با ID واقعی جایگزین کنید
+
+# ============================================================
+# Environment Variables
+# ============================================================
 [vars]
 RELAY_IP = ""
 
-# برای دیباگ (اختیاری)
+# ============================================================
+# Production Environment (اختیاری)
+# ============================================================
 [env.production]
 vars = { RELAY_IP = "" }
+
+# ============================================================
+# Observability (اختیاری)
+# ============================================================
+[observability]
+enabled = true
+head_sampling_rate = 1
