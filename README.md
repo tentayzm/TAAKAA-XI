@@ -42,6 +42,59 @@
 
 ---
 
+## 🚀 راهنمای سریع نصب
+
+### پیش‌نیازها
+- یک حساب Cloudflare با دسترسی به Workers و D1
+- آشنایی اولیه با خط فرمان (برای روش دستی)
+
+### نصب خودکار (به زودی)
+> 🔜 دکمه Deploy to Cloudflare به زودی اضافه می‌شود
+
+### نصب دستی
+
+1. **کلون کردن مخزن**
+```bash
+git clone https://github.com/tentayzm/TAAKAA-XI.git
+cd TAAKAA-XI
+```
+
+2. **نصب Wrangler**
+```bash
+npm install -g wrangler
+```
+
+3. **ایجاد D1 Database**
+```bash
+wrangler d1 create taakaa-db
+```
+> 📌 خروجی این دستور شامل `database_id` است که در مرحله بعد نیاز دارید.
+
+4. **تنظیم `wrangler.toml`**
+فایل `wrangler.toml` را با اطلاعات دیتابیس خود ویرایش کنید:
+```toml
+[[d1_databases]]
+binding = "TAAKAA_DB"
+database_name = "taakaa-db"
+database_id = "your-database-id-here"
+```
+
+5. **تنظیم متغیر محیطی**
+```bash
+wrangler secret put TAAKAA_DB
+```
+
+6. **دیپلوی روی Cloudflare**
+```bash
+wrangler deploy
+```
+
+7. **دسترسی به پنل**
+- آدرس: `https://your-worker.dev/taakaa`
+- رمز پیش‌فرض: `taakaa`
+
+---
+
 ## ✨ ویژگی‌های برجسته
 
 ### 🎯 قابلیت‌های هسته
@@ -158,41 +211,6 @@ TAAKAA-XI/
 
 ---
 
-## 🚀 نحوه راه‌اندازی
-
-### روش اول: Deploy to Cloudflare (ساده)
-> 🔜 به زودی اضافه می‌شود
-
-### روش دوم: نصب دستی
-
-1. **کلون کردن مخزن**
-```bash
-git clone https://github.com/tentayzm/TAAKAA-XI.git
-cd TAAKAA-XI
-```
-
-2. **نصب وابستگی‌ها**
-```bash
-npm install -g wrangler
-```
-
-3. **تنظیم D1 Database**
-```bash
-wrangler d1 create taakaa-db
-```
-
-4. **تنظیم متغیرهای محیطی**
-```bash
-wrangler secret put TAAKAA_DB
-```
-
-5. **دیپلوی روی Cloudflare**
-```bash
-wrangler deploy
-```
-
----
-
 ## 🛠️ فناوری‌های استفاده‌شده
 
 | فناوری | کاربرد |
@@ -268,5 +286,5 @@ wrangler deploy
   <br>
   <b>ساخته شده با ❤️ برای هم میهنان‌مان</b>
   <br>
-  <i>🇮🇷 ایران • ۱۴۰۵ • © 2026</i>
+  <i>🇮🇷 ایران • ۱۴۰۵ • © ۲۰۲۶</i>
 </p>
