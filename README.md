@@ -27,9 +27,9 @@
 <br>
 
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/40px-Emblem_of_Iran.svg.png" alt="Iran Emblem" style="vertical-align:middle;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/40px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun" style="vertical-align:middle;"/>
   <span style="font-size:24px;vertical-align:middle;">🇮🇷</span>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/40px-Emblem_of_Iran.svg.png" alt="Iran Emblem" style="vertical-align:middle;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/40px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun" style="vertical-align:middle;"/>
 </div>
 
 ---
@@ -262,9 +262,9 @@ wrangler deploy
 </p>
 
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/30px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/30px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/30px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun"/>
   <br>
   <b>ساخته شده با ❤️ برای هم میهنان‌مان</b>
   <br>
