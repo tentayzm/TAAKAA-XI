@@ -27,7 +27,7 @@
 <br>
 
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/40px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun" style="vertical-align:middle;"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/a/a8/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.svg/40px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun" style="vertical-align:middle;"/>
   <span style="font-size:24px;vertical-align:middle;">🇮🇷</span>
   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg/40px-Official_Lion_and_Sun_emblem_of_Iran_stylized_1970s_color.svg.png" alt="Lion and Sun" style="vertical-align:middle;"/>
 </div>
