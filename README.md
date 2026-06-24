@@ -24,6 +24,14 @@
   [![GitHub](https://img.shields.io/badge/GitHub-tentayzm/TAAKAA--XI-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/tentayzm/TAAKAA-XI)
 </div>
 
+<br>
+
+<div align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/40px-Emblem_of_Iran.svg.png" alt="Iran Emblem" style="vertical-align:middle;"/>
+  <span style="font-size:24px;vertical-align:middle;">🇮🇷</span>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/40px-Emblem_of_Iran.svg.png" alt="Iran Emblem" style="vertical-align:middle;"/>
+</div>
+
 ---
 
 ## 📖 درباره پروژه
@@ -254,7 +262,9 @@ wrangler deploy
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/TAAKAA--XI-2026-FF6B6B?style=for-the-badge" alt="TAAKAA-XI 2026"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Emblem_of_Iran.svg/30px-Emblem_of_Iran.svg.png" alt="Iran Emblem"/>
   <br>
   <b>ساخته شده با ❤️ برای هم میهنان‌مان</b>
   <br>
